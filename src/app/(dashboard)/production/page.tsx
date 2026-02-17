@@ -45,26 +45,26 @@ export default function ProductionPage() {
       {/* Production Flow Diagram */}
       <Card className="mb-8">
         <CardContent>
-          <div className="flex items-center justify-between">
+          <div className="flex flex-wrap items-center justify-center gap-y-4 sm:flex-nowrap sm:justify-between">
             {["Raw Block", "Gang Saw", "Epoxy/Vacuum", "Polishing", "Warehouse"].map(
               (stage, i) => (
                 <div key={stage} className="flex items-center">
                   <div className="flex flex-col items-center">
                     <div
-                      className={`flex h-12 w-12 items-center justify-center rounded-full ${
+                      className={`flex h-10 w-10 items-center justify-center rounded-full sm:h-12 sm:w-12 ${
                         i === 0
                           ? "bg-amber-100 text-amber-700"
                           : i === 4
                             ? "bg-green-100 text-green-700"
                             : "bg-blue-100 text-blue-700"
-                      } font-bold`}
+                      } text-sm font-bold sm:text-base`}
                     >
                       {i + 1}
                     </div>
-                    <p className="mt-2 text-xs font-medium text-gray-600">{stage}</p>
+                    <p className="mt-1 text-[10px] font-medium text-gray-600 sm:mt-2 sm:text-xs">{stage}</p>
                   </div>
                   {i < 4 && (
-                    <div className="mx-4 h-0.5 w-16 bg-gray-300 lg:w-24" />
+                    <div className="mx-2 h-0.5 w-6 bg-gray-300 sm:mx-4 sm:w-16 lg:w-24" />
                   )}
                 </div>
               )

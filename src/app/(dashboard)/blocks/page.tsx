@@ -104,7 +104,7 @@ export default function BlocksPage() {
 
   return (
     <div>
-      <div className="mb-6 flex items-center justify-between">
+      <div className="mb-6 flex flex-col gap-3 sm:flex-row sm:items-center sm:justify-between">
         <div>
           <h1 className="text-2xl font-bold text-gray-900">Raw Blocks</h1>
           <p className="text-sm text-gray-500">
@@ -113,14 +113,14 @@ export default function BlocksPage() {
         </div>
         <Link
           href="/blocks/new"
-          className="rounded-lg bg-amber-500 px-4 py-2 font-medium text-white transition-colors hover:bg-amber-600"
+          className="w-fit rounded-lg bg-amber-500 px-4 py-2 font-medium text-white transition-colors hover:bg-amber-600"
         >
           + Add Block
         </Link>
       </div>
 
       {/* Filters */}
-      <div className="mb-4 flex gap-3">
+      <div className="mb-4 flex flex-col gap-3 sm:flex-row">
         <form onSubmit={handleSearch} className="flex gap-2">
           <input
             type="text"

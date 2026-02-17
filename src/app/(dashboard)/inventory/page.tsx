@@ -99,7 +99,7 @@ export default function InventoryPage() {
 
   return (
     <div>
-      <div className="mb-6 flex items-center justify-between">
+      <div className="mb-6 flex flex-col gap-3 sm:flex-row sm:items-center sm:justify-between">
         <div>
           <h1 className="text-2xl font-bold text-gray-900">
             Slab Inventory
@@ -110,14 +110,14 @@ export default function InventoryPage() {
         </div>
         <button
           onClick={() => setShowAddModal(true)}
-          className="rounded-lg bg-green-600 px-4 py-2 font-medium text-white transition-colors hover:bg-green-700"
+          className="w-fit rounded-lg bg-green-600 px-4 py-2 font-medium text-white transition-colors hover:bg-green-700"
         >
           + Add to Inventory
         </button>
       </div>
 
       {/* Stats */}
-      <div className="mb-6 grid grid-cols-1 gap-4 sm:grid-cols-4">
+      <div className="mb-6 grid grid-cols-2 gap-4 sm:grid-cols-4">
         <div className="rounded-xl border border-gray-200 bg-white p-4">
           <p className="text-sm text-gray-500">Total Items</p>
           <p className="text-2xl font-bold text-gray-900">{items.length}</p>

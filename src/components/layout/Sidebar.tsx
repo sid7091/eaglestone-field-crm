@@ -4,6 +4,11 @@ import Link from "next/link";
 import { usePathname } from "next/navigation";
 import { cn } from "@/lib/utils";
 
+interface SidebarProps {
+  open: boolean;
+  onClose: () => void;
+}
+
 const navigation = [
   {
     name: "Dashboard",
@@ -37,11 +42,11 @@ const navigation = [
   },
 ];
 
-export default function Sidebar() {
+export default function Sidebar({ open, onClose }: SidebarProps) {
   const pathname = usePathname();
 
-  return (
-    <aside className="fixed left-0 top-0 z-40 h-screen w-64 bg-slate-900 text-white">
+  const sidebarContent = (
+    <>
       {/* Logo */}
       <div className="flex h-16 items-center border-b border-slate-700 px-6">
         <div className="flex items-center gap-3">
@@ -70,6 +75,7 @@ export default function Sidebar() {
               <li key={item.name}>
                 <Link
                   href={item.href}
+                  onClick={onClose}
                   className={cn(
                     "flex items-center gap-3 rounded-lg px-3 py-2.5 text-sm font-medium transition-colors",
                     isActive || isParentActive
@@ -100,6 +106,7 @@ export default function Sidebar() {
                       <li key={child.name}>
                         <Link
                           href={child.href}
+                          onClick={onClose}
                           className={cn(
                             "block rounded-lg px-3 py-2 text-sm transition-colors",
                             pathname === child.href ||
@@ -126,6 +133,42 @@ export default function Sidebar() {
           Eagle Stone ERP v1.0
         </p>
       </div>
-    </aside>
+    </>
+  );
+
+  return (
+    <>
+      {/* Mobile overlay */}
+      {open && (
+        <div
+          className="fixed inset-0 z-40 bg-black/50 lg:hidden"
+          onClick={onClose}
+        />
+      )}
+
+      {/* Mobile sidebar (slide-in drawer) */}
+      <aside
+        className={cn(
+          "fixed left-0 top-0 z-50 h-screen w-64 bg-slate-900 text-white transition-transform duration-200 ease-in-out lg:hidden",
+          open ? "translate-x-0" : "-translate-x-full"
+        )}
+      >
+        {/* Close button */}
+        <button
+          onClick={onClose}
+          className="absolute right-3 top-4 rounded-lg p-1 text-slate-400 hover:text-white"
+        >
+          <svg className="h-6 w-6" fill="none" viewBox="0 0 24 24" strokeWidth={1.5} stroke="currentColor">
+            <path strokeLinecap="round" strokeLinejoin="round" d="M6 18L18 6M6 6l12 12" />
+          </svg>
+        </button>
+        {sidebarContent}
+      </aside>
+
+      {/* Desktop sidebar (always visible) */}
+      <aside className="fixed left-0 top-0 z-40 hidden h-screen w-64 bg-slate-900 text-white lg:block">
+        {sidebarContent}
+      </aside>
+    </>
   );
 }

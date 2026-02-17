@@ -95,7 +95,7 @@ export default function EpoxyPage() {
 
   return (
     <div>
-      <div className="mb-6 flex items-center justify-between">
+      <div className="mb-6 flex flex-col gap-3 sm:flex-row sm:items-center sm:justify-between">
         <div>
           <h1 className="text-2xl font-bold text-gray-900">
             Epoxy / Vacuum Line
@@ -106,7 +106,7 @@ export default function EpoxyPage() {
         </div>
         <Link
           href="/production/epoxy/new"
-          className="rounded-lg bg-purple-600 px-4 py-2 font-medium text-white transition-colors hover:bg-purple-700"
+          className="w-fit rounded-lg bg-purple-600 px-4 py-2 font-medium text-white transition-colors hover:bg-purple-700"
         >
           + New Entry
         </Link>

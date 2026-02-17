@@ -63,7 +63,7 @@ export default function MachinesPage() {
 
   return (
     <div>
-      <div className="mb-6 flex items-center justify-between">
+      <div className="mb-6 flex flex-col gap-3 sm:flex-row sm:items-center sm:justify-between">
         <div>
           <h1 className="text-2xl font-bold text-gray-900">Machines</h1>
           <p className="text-sm text-gray-500">
@@ -72,7 +72,7 @@ export default function MachinesPage() {
         </div>
         <Link
           href="/machines/new"
-          className="rounded-lg bg-amber-500 px-4 py-2 font-medium text-white transition-colors hover:bg-amber-600"
+          className="w-fit rounded-lg bg-amber-500 px-4 py-2 font-medium text-white transition-colors hover:bg-amber-600"
         >
           + Add Machine
         </Link>

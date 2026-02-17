@@ -108,7 +108,7 @@ export default function DashboardPage() {
           <h2 className="text-lg font-semibold text-gray-900">Production Pipeline</h2>
         </CardHeader>
         <CardContent>
-          <div className="grid grid-cols-5 gap-4">
+          <div className="grid grid-cols-2 gap-3 sm:grid-cols-3 sm:gap-4 lg:grid-cols-5">
             {["GANG_SAW", "EPOXY", "POLISHING", "QC", "WAREHOUSE"].map((stage) => (
               <div key={stage} className="rounded-lg bg-gray-50 p-4 text-center">
                 <p className="text-sm font-medium text-gray-500">
