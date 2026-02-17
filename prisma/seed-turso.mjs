@@ -1,8 +1,6 @@
-import "dotenv/config";
 import { fileURLToPath } from "node:url";
 import path from "node:path";
 import bcrypt from "bcryptjs";
-import { createClient } from "@libsql/client";
 import { PrismaLibSql } from "@prisma/adapter-libsql";
 
 // Prisma 7 generated client needs __dirname set for ESM
@@ -20,8 +18,7 @@ if (!tursoUrl || !tursoToken) {
   process.exit(1);
 }
 
-const libsql = createClient({ url: tursoUrl, authToken: tursoToken });
-const adapter = new PrismaLibSql(libsql);
+const adapter = new PrismaLibSql({ url: tursoUrl, authToken: tursoToken });
 const prisma = new PrismaClient({ adapter });
 
 async function main() {
