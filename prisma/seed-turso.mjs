@@ -1,3 +1,4 @@
+import "dotenv/config";
 import { fileURLToPath } from "node:url";
 import path from "node:path";
 import bcrypt from "bcryptjs";
@@ -21,7 +22,7 @@ if (!tursoUrl || !tursoToken) {
 
 const libsql = createClient({ url: tursoUrl, authToken: tursoToken });
 const adapter = new PrismaLibSql(libsql);
-const prisma = new PrismaClient({ adapter, datasourceUrl: tursoUrl });
+const prisma = new PrismaClient({ adapter });
 
 async function main() {
   console.log("Seeding Turso database...");
