@@ -1,0 +1,257 @@
+generator client {
+  provider = "prisma-client"
+  output   = "../src/generated/prisma"
+}
+
+datasource db {
+  provider = "sqlite"
+}
+
+// ==================== AUTH & USERS ====================
+
+model User {
+  id        String   @id @default(cuid())
+  email     String   @unique
+  password  String
+  name      String
+  role      String   @default("OPERATOR") // ADMIN, MANAGER, SUPERVISOR, OPERATOR, VIEWER
+  department String  @default("PRODUCTION") // PRODUCTION, SALES, PURCHASE, ACCOUNTS, HR, ADMIN
+  phone     String?
+  isActive  Boolean  @default(true)
+  createdAt DateTime @default(now())
+  updatedAt DateTime @updatedAt
+
+  // Relations
+  gangSawEntries    GangSawEntry[]
+  epoxyEntries      EpoxyEntry[]
+  polishingEntries  PolishingEntry[]
+}
+
+// ==================== RAW BLOCKS ====================
+
+model Block {
+  id            String   @id @default(cuid())
+  blockNumber   String   @unique // e.g., BLK-2024-001
+  type          String   // Italian Marble, Indian Marble, Granite, etc.
+  color         String   // White, Beige, Grey, Black, etc.
+  variety       String   // Statuario, Calacatta, Carrara, etc.
+  origin        String   // Italy, Turkey, India, etc.
+  quarryName    String?
+  supplierName  String
+
+  // Dimensions in cm
+  lengthCm      Float
+  widthCm       Float
+  heightCm      Float
+  weightKg      Float
+
+  grade         String   @default("A") // A, B, C, D
+  status        String   @default("RECEIVED") // RECEIVED, IN_PRODUCTION, PARTIALLY_CUT, FULLY_CUT, EXHAUSTED
+
+  arrivalDate   DateTime
+  importBatchNo String?
+  landedCostINR Float?
+  vehicleNumber String?
+  notes         String?
+
+  createdAt     DateTime @default(now())
+  updatedAt     DateTime @updatedAt
+
+  // Relations
+  gangSawEntries GangSawEntry[]
+  slabs          Slab[]
+}
+
+// ==================== SLABS ====================
+
+model Slab {
+  id          String   @id @default(cuid())
+  slabNumber  String   @unique // e.g., SLB-2024-001
+  blockId     String
+  block       Block    @relation(fields: [blockId], references: [id])
+
+  // Dimensions in cm
+  lengthCm    Float
+  widthCm     Float
+  thicknessMm Float    @default(18) // 18mm standard
+  weightKg    Float?
+
+  grade       String   @default("A") // A, B, C, D
+  status      String   @default("RAW") // RAW, EPOXY_DONE, POLISHED, QC_PASSED, QC_FAILED, IN_STOCK, RESERVED, SOLD, DAMAGED
+  currentStage String  @default("GANG_SAW") // GANG_SAW, EPOXY, POLISHING, QC, WAREHOUSE
+  finishType  String?  // POLISHED, HONED, LEATHER, BRUSHED, FLAMED
+  glossLevel  Int?     // 0-100
+
+  qcStatus    String?  // PASSED, FAILED, PENDING
+  qcNotes     String?
+
+  notes       String?
+  createdAt   DateTime @default(now())
+  updatedAt   DateTime @updatedAt
+
+  // Relations
+  gangSawEntryId String?
+  gangSawEntry   GangSawEntry? @relation(fields: [gangSawEntryId], references: [id])
+  epoxyEntries   EpoxyEntry[]
+  polishingEntries PolishingEntry[]
+  inventoryItem  InventoryItem?
+}
+
+// ==================== MACHINES ====================
+
+model Machine {
+  id              String   @id @default(cuid())
+  name            String   // e.g., "Gang Saw 1", "Epoxy Line A"
+  code            String   @unique // e.g., GS-01, EP-01, PL-01
+  type            String   // GANG_SAW, EPOXY_LINE, POLISHING_MACHINE, CALIBRATION_MACHINE
+  manufacturer    String?
+  model           String?
+  location        String?  // Factory floor location
+  status          String   @default("ACTIVE") // ACTIVE, MAINTENANCE, INACTIVE
+  lastMaintenance DateTime?
+  nextMaintenance DateTime?
+  notes           String?
+  createdAt       DateTime @default(now())
+  updatedAt       DateTime @updatedAt
+
+  // Relations
+  gangSawEntries    GangSawEntry[]
+  epoxyEntries      EpoxyEntry[]
+  polishingEntries  PolishingEntry[]
+}
+
+// ==================== PRODUCTION: GANG SAW ====================
+
+model GangSawEntry {
+  id              String   @id @default(cuid())
+  entryNumber     String   @unique // GS-ENT-2024-001
+  blockId         String
+  block           Block    @relation(fields: [blockId], references: [id])
+  machineId       String
+  machine         Machine  @relation(fields: [machineId], references: [id])
+  operatorId      String
+  operator        User     @relation(fields: [operatorId], references: [id])
+
+  startTime       DateTime
+  endTime         DateTime?
+
+  numberOfSlabs   Int
+  slabThicknessMm Float    @default(18)
+  bladesUsed      Int?
+
+  // Wastage
+  wastageKg       Float?
+  wastagePercent  Float?
+
+  // Power
+  powerConsumptionKwh Float?
+
+  status          String   @default("IN_PROGRESS") // IN_PROGRESS, COMPLETED, PAUSED, CANCELLED
+  notes           String?
+
+  createdAt       DateTime @default(now())
+  updatedAt       DateTime @updatedAt
+
+  // Relations
+  slabs           Slab[]
+}
+
+// ==================== PRODUCTION: EPOXY / VACUUM ====================
+
+model EpoxyEntry {
+  id              String   @id @default(cuid())
+  entryNumber     String   @unique // EP-ENT-2024-001
+  slabId          String
+  slab            Slab     @relation(fields: [slabId], references: [id])
+  machineId       String
+  machine         Machine  @relation(fields: [machineId], references: [id])
+  operatorId      String
+  operator        User     @relation(fields: [operatorId], references: [id])
+
+  startTime       DateTime
+  endTime         DateTime?
+
+  epoxyType       String?  // Standard, Premium, etc.
+  epoxyQuantityMl Float?
+  vacuumPressure  Float?   // in bar/PSI
+  curingTimeMin   Int?
+  temperatureC    Float?
+
+  meshApplied     Boolean  @default(false)
+  meshType        String?
+
+  status          String   @default("IN_PROGRESS") // IN_PROGRESS, COMPLETED, CURING, FAILED
+  qualityCheck    String?  // PASS, FAIL, PENDING
+  notes           String?
+
+  createdAt       DateTime @default(now())
+  updatedAt       DateTime @updatedAt
+}
+
+// ==================== PRODUCTION: POLISHING ====================
+
+model PolishingEntry {
+  id                String   @id @default(cuid())
+  entryNumber       String   @unique // PL-ENT-2024-001
+  slabId            String
+  slab              Slab     @relation(fields: [slabId], references: [id])
+  machineId         String
+  machine           Machine  @relation(fields: [machineId], references: [id])
+  operatorId        String
+  operator          User     @relation(fields: [operatorId], references: [id])
+
+  startTime         DateTime
+  endTime           DateTime?
+
+  finishType        String   @default("POLISHED") // POLISHED, HONED, LEATHER, BRUSHED, FLAMED
+  glossLevel        Int?     // 0-100
+
+  // Abrasives tracking
+  abrasivesUsed     String?  // Description of abrasives used
+  abrasivesCostINR  Float?
+
+  status            String   @default("IN_PROGRESS") // IN_PROGRESS, COMPLETED, REWORK_NEEDED
+  qualityCheck      String?  // PASS, FAIL, PENDING
+  notes             String?
+
+  createdAt         DateTime @default(now())
+  updatedAt         DateTime @updatedAt
+}
+
+// ==================== INVENTORY ====================
+
+model InventoryItem {
+  id            String   @id @default(cuid())
+  slabId        String   @unique
+  slab          Slab     @relation(fields: [slabId], references: [id])
+
+  warehouseId   String
+  warehouse     Warehouse @relation(fields: [warehouseId], references: [id])
+
+  bundleNumber  String?  // Slabs are grouped in bundles
+  rackLocation  String?  // e.g., "A-3-2" (Section-Row-Position)
+
+  status        String   @default("IN_STOCK") // IN_STOCK, RESERVED, SOLD, DAMAGED, RETURNED
+
+  reservedFor   String?  // Customer name if reserved
+  reservedDate  DateTime?
+  soldDate      DateTime?
+  soldPriceINR  Float?
+
+  notes         String?
+  createdAt     DateTime @default(now())
+  updatedAt     DateTime @updatedAt
+}
+
+model Warehouse {
+  id        String   @id @default(cuid())
+  name      String   @unique
+  location  String?
+  capacity  Int?     // Max slab capacity
+  notes     String?
+  createdAt DateTime @default(now())
+  updatedAt DateTime @updatedAt
+
+  // Relations
+  items     InventoryItem[]
+}
