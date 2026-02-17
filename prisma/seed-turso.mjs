@@ -21,7 +21,7 @@ if (!tursoUrl || !tursoToken) {
 
 const libsql = createClient({ url: tursoUrl, authToken: tursoToken });
 const adapter = new PrismaLibSql(libsql);
-const prisma = new PrismaClient({ adapter });
+const prisma = new PrismaClient({ adapter, datasourceUrl: tursoUrl });
 
 async function main() {
   console.log("Seeding Turso database...");
