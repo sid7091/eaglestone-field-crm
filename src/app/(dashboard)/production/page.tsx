@@ -36,8 +36,8 @@ export default function ProductionPage() {
   return (
     <div>
       <div className="mb-6">
-        <h1 className="text-2xl font-bold text-gray-900">Production</h1>
-        <p className="text-sm text-gray-500">
+        <h1 className="text-2xl font-bold text-stone-900">Production</h1>
+        <p className="text-sm text-stone-500">
           Manage production stages — Block to finished slab
         </p>
       </div>
@@ -61,10 +61,10 @@ export default function ProductionPage() {
                     >
                       {i + 1}
                     </div>
-                    <p className="mt-1 text-[10px] font-medium text-gray-600 sm:mt-2 sm:text-xs">{stage}</p>
+                    <p className="mt-1 text-[10px] font-medium text-stone-600 sm:mt-2 sm:text-xs">{stage}</p>
                   </div>
                   {i < 4 && (
-                    <div className="mx-2 h-0.5 w-6 bg-gray-300 sm:mx-4 sm:w-16 lg:w-24" />
+                    <div className="mx-2 h-0.5 w-6 bg-stone-300 sm:mx-4 sm:w-16 lg:w-24" />
                   )}
                 </div>
               )
@@ -96,13 +96,13 @@ export default function ProductionPage() {
                     </svg>
                   </div>
                   <div>
-                    <p className="text-xs font-semibold text-gray-400">
+                    <p className="text-xs font-semibold text-stone-400">
                       {stage.stage}
                     </p>
-                    <h3 className="text-lg font-semibold text-gray-900">
+                    <h3 className="text-lg font-semibold text-stone-900">
                       {stage.name}
                     </h3>
-                    <p className="mt-1 text-sm text-gray-500">
+                    <p className="mt-1 text-sm text-stone-500">
                       {stage.description}
                     </p>
                   </div>

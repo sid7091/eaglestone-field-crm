@@ -1,0 +1,28 @@
+<svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 400 180" fill="none">
+  <rect width="400" height="180" rx="0" fill="transparent"/>
+  <g fill="currentColor">
+    <!-- E -->
+    <rect x="20" y="20" width="60" height="14" rx="2"/>
+    <rect x="20" y="20" width="14" height="80" rx="2"/>
+    <rect x="20" y="53" width="45" height="14" rx="2"/>
+    <rect x="20" y="86" width="60" height="14" rx="2"/>
+    <!-- A with eagle wing -->
+    <polygon points="100,100 130,20 140,20 170,100 156,100 148,78 122,78 114,100"/>
+    <polygon points="127,65 143,65 135,40"/>
+    <!-- Wing detail on the A -->
+    <path d="M108,58 Q90,45 88,30 Q100,40 120,48 Z" fill="currentColor"/>
+    <path d="M108,62 Q85,55 78,42 Q92,50 115,55 Z" fill="currentColor"/>
+    <!-- G -->
+    <path d="M190,50 Q190,20 220,20 Q245,20 250,38 L237,42 Q234,30 220,30 Q202,30 202,50 L202,70 Q202,90 220,90 Q234,90 237,80 L237,65 L218,65 L218,55 L250,55 L250,85 Q245,100 220,100 Q190,100 190,70 Z"/>
+    <!-- L -->
+    <rect x="265" y="20" width="14" height="80" rx="2"/>
+    <rect x="265" y="86" width="55" height="14" rx="2"/>
+    <!-- E -->
+    <rect x="335" y="20" width="55" height="14" rx="2"/>
+    <rect x="335" y="20" width="14" height="80" rx="2"/>
+    <rect x="335" y="53" width="42" height="14" rx="2"/>
+    <rect x="335" y="86" width="55" height="14" rx="2"/>
+    <!-- S T O N E text below -->
+    <text x="200" y="150" text-anchor="middle" font-family="Arial, sans-serif" font-size="32" font-weight="300" letter-spacing="18" fill="currentColor">STONE</text>
+  </g>
+</svg>

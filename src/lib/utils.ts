@@ -145,8 +145,8 @@ export function getStatusColor(status: string): string {
     IN_PRODUCTION: "bg-yellow-100 text-yellow-800",
     PARTIALLY_CUT: "bg-orange-100 text-orange-800",
     FULLY_CUT: "bg-green-100 text-green-800",
-    EXHAUSTED: "bg-gray-100 text-gray-800",
-    RAW: "bg-gray-100 text-gray-800",
+    EXHAUSTED: "bg-stone-100 text-stone-800",
+    RAW: "bg-stone-100 text-stone-800",
     EPOXY_DONE: "bg-purple-100 text-purple-800",
     POLISHED: "bg-indigo-100 text-indigo-800",
     QC_PASSED: "bg-green-100 text-green-800",
@@ -164,10 +164,10 @@ export function getStatusColor(status: string): string {
     REWORK_NEEDED: "bg-orange-100 text-orange-800",
     ACTIVE: "bg-green-100 text-green-800",
     MAINTENANCE: "bg-yellow-100 text-yellow-800",
-    INACTIVE: "bg-gray-100 text-gray-800",
+    INACTIVE: "bg-stone-100 text-stone-800",
     PASS: "bg-green-100 text-green-800",
     FAIL: "bg-red-100 text-red-800",
     PENDING: "bg-yellow-100 text-yellow-800",
   };
-  return colors[status] || "bg-gray-100 text-gray-800";
+  return colors[status] || "bg-stone-100 text-stone-800";
 }

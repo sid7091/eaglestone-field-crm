@@ -58,7 +58,7 @@ export default function DashboardPage() {
   }
 
   if (!data?.stats) {
-    return <div className="text-center text-gray-500">Failed to load dashboard data</div>;
+    return <div className="text-center text-stone-500">Failed to load dashboard data</div>;
   }
 
   const { stats, recentBlocks, recentSlabs } = data;
@@ -66,8 +66,8 @@ export default function DashboardPage() {
   return (
     <div>
       <div className="mb-6">
-        <h1 className="text-2xl font-bold text-gray-900">Dashboard</h1>
-        <p className="text-sm text-gray-500">Eagle Stone ERP - Production Overview</p>
+        <h1 className="text-2xl font-bold text-stone-900">Dashboard</h1>
+        <p className="text-sm text-stone-500">Eagle Stone ERP - Production Overview</p>
       </div>
 
       {/* Stats Grid */}
@@ -105,19 +105,19 @@ export default function DashboardPage() {
       {/* Production Pipeline */}
       <Card className="mb-8">
         <CardHeader>
-          <h2 className="text-lg font-semibold text-gray-900">Production Pipeline</h2>
+          <h2 className="text-lg font-semibold text-stone-900">Production Pipeline</h2>
         </CardHeader>
         <CardContent>
           <div className="grid grid-cols-2 gap-3 sm:grid-cols-3 sm:gap-4 lg:grid-cols-5">
             {["GANG_SAW", "EPOXY", "POLISHING", "QC", "WAREHOUSE"].map((stage) => (
-              <div key={stage} className="rounded-lg bg-gray-50 p-4 text-center">
-                <p className="text-sm font-medium text-gray-500">
+              <div key={stage} className="rounded-lg bg-stone-50 p-4 text-center">
+                <p className="text-sm font-medium text-stone-500">
                   {stage.replace(/_/g, " ")}
                 </p>
-                <p className="mt-1 text-3xl font-bold text-gray-900">
+                <p className="mt-1 text-3xl font-bold text-stone-900">
                   {stats.slabsByStage[stage] || 0}
                 </p>
-                <p className="text-xs text-gray-400">slabs</p>
+                <p className="text-xs text-stone-400">slabs</p>
               </div>
             ))}
           </div>
@@ -128,12 +128,12 @@ export default function DashboardPage() {
       <div className="grid grid-cols-1 gap-6 lg:grid-cols-2">
         <Card>
           <CardHeader>
-            <h2 className="text-lg font-semibold text-gray-900">Recent Blocks</h2>
+            <h2 className="text-lg font-semibold text-stone-900">Recent Blocks</h2>
           </CardHeader>
           <CardContent className="p-0">
-            <div className="divide-y divide-gray-100">
+            <div className="divide-y divide-stone-100">
               {recentBlocks.length === 0 ? (
-                <p className="p-6 text-center text-sm text-gray-500">No blocks yet</p>
+                <p className="p-6 text-center text-sm text-stone-500">No blocks yet</p>
               ) : (
                 recentBlocks.map((block) => (
                   <div
@@ -141,14 +141,14 @@ export default function DashboardPage() {
                     className="flex items-center justify-between px-6 py-3"
                   >
                     <div>
-                      <p className="font-medium text-gray-900">{block.blockNumber}</p>
-                      <p className="text-sm text-gray-500">
+                      <p className="font-medium text-stone-900">{block.blockNumber}</p>
+                      <p className="text-sm text-stone-500">
                         {block.variety} - {block.color}
                       </p>
                     </div>
                     <div className="text-right">
                       <StatusBadge status={block.status} />
-                      <p className="mt-1 text-xs text-gray-400">
+                      <p className="mt-1 text-xs text-stone-400">
                         {formatDate(block.createdAt)}
                       </p>
                     </div>
@@ -161,12 +161,12 @@ export default function DashboardPage() {
 
         <Card>
           <CardHeader>
-            <h2 className="text-lg font-semibold text-gray-900">Recent Slab Activity</h2>
+            <h2 className="text-lg font-semibold text-stone-900">Recent Slab Activity</h2>
           </CardHeader>
           <CardContent className="p-0">
-            <div className="divide-y divide-gray-100">
+            <div className="divide-y divide-stone-100">
               {recentSlabs.length === 0 ? (
-                <p className="p-6 text-center text-sm text-gray-500">No slabs yet</p>
+                <p className="p-6 text-center text-sm text-stone-500">No slabs yet</p>
               ) : (
                 recentSlabs.map((slab) => (
                   <div
@@ -174,12 +174,12 @@ export default function DashboardPage() {
                     className="flex items-center justify-between px-6 py-3"
                   >
                     <div>
-                      <p className="font-medium text-gray-900">{slab.slabNumber}</p>
-                      <p className="text-sm text-gray-500">{slab.block.variety}</p>
+                      <p className="font-medium text-stone-900">{slab.slabNumber}</p>
+                      <p className="text-sm text-stone-500">{slab.block.variety}</p>
                     </div>
                     <div className="text-right">
                       <StatusBadge status={slab.currentStage} />
-                      <p className="mt-1 text-xs text-gray-400">
+                      <p className="mt-1 text-xs text-stone-400">
                         {formatDate(slab.updatedAt)}
                       </p>
                     </div>

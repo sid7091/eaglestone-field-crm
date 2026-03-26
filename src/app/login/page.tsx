@@ -2,6 +2,7 @@
 
 import { useState } from "react";
 import { useRouter } from "next/navigation";
+import Image from "next/image";
 
 export default function LoginPage() {
   const router = useRouter();
@@ -38,22 +39,28 @@ export default function LoginPage() {
   };
 
   return (
-    <div className="flex min-h-screen items-center justify-center bg-gradient-to-br from-slate-900 via-slate-800 to-slate-900">
-      <div className="w-full max-w-md">
+    <div className="flex min-h-screen items-center justify-center bg-gradient-to-br from-brand-dark via-brand-medium to-brand-dark">
+      <div className="w-full max-w-md px-4">
         {/* Logo */}
-        <div className="mb-8 text-center">
-          <div className="mx-auto mb-4 flex h-16 w-16 items-center justify-center rounded-2xl bg-amber-500 text-2xl font-bold text-slate-900">
-            ES
-          </div>
-          <h1 className="text-3xl font-bold text-white">Eagle Stone</h1>
-          <p className="mt-1 text-slate-400">ERP System - Login</p>
+        <div className="mb-8 flex justify-center">
+          <Image
+            src="/logo.svg"
+            alt="Eagle Stone"
+            width={220}
+            height={100}
+            className="h-20 w-auto"
+            style={{ filter: "brightness(0) invert(93%) sepia(8%) saturate(300%) hue-rotate(15deg)" }}
+            priority
+          />
         </div>
 
         {/* Login Form */}
         <form
           onSubmit={handleSubmit}
-          className="rounded-2xl border border-slate-700 bg-slate-800/50 p-8 shadow-xl backdrop-blur"
+          className="rounded-2xl border border-stone-600/30 bg-brand-medium/50 p-8 shadow-xl backdrop-blur"
         >
+          <p className="mb-6 text-center text-sm text-stone-300">Sign in to your ERP account</p>
+
           {error && (
             <div className="mb-4 rounded-lg bg-red-500/10 p-3 text-sm text-red-400">
               {error}
@@ -62,7 +69,7 @@ export default function LoginPage() {
 
           <div className="space-y-4">
             <div>
-              <label className="mb-1.5 block text-sm font-medium text-slate-300">
+              <label className="mb-1.5 block text-sm font-medium text-stone-300">
                 Email
               </label>
               <input
@@ -70,13 +77,13 @@ export default function LoginPage() {
                 value={email}
                 onChange={(e) => setEmail(e.target.value)}
                 placeholder="admin@eaglestone.in"
-                className="w-full rounded-lg border border-slate-600 bg-slate-700/50 px-4 py-2.5 text-white placeholder-slate-400 focus:border-amber-500 focus:outline-none focus:ring-1 focus:ring-amber-500"
+                className="w-full rounded-lg border border-stone-600 bg-stone-700/50 px-4 py-2.5 text-white placeholder-stone-400 focus:border-brand-accent focus:outline-none focus:ring-1 focus:ring-brand-accent"
                 required
               />
             </div>
 
             <div>
-              <label className="mb-1.5 block text-sm font-medium text-slate-300">
+              <label className="mb-1.5 block text-sm font-medium text-stone-300">
                 Password
               </label>
               <input
@@ -84,7 +91,7 @@ export default function LoginPage() {
                 value={password}
                 onChange={(e) => setPassword(e.target.value)}
                 placeholder="Enter password"
-                className="w-full rounded-lg border border-slate-600 bg-slate-700/50 px-4 py-2.5 text-white placeholder-slate-400 focus:border-amber-500 focus:outline-none focus:ring-1 focus:ring-amber-500"
+                className="w-full rounded-lg border border-stone-600 bg-stone-700/50 px-4 py-2.5 text-white placeholder-stone-400 focus:border-brand-accent focus:outline-none focus:ring-1 focus:ring-brand-accent"
                 required
               />
             </div>
@@ -93,13 +100,13 @@ export default function LoginPage() {
           <button
             type="submit"
             disabled={loading}
-            className="mt-6 w-full rounded-lg bg-amber-500 py-2.5 font-semibold text-slate-900 transition-colors hover:bg-amber-400 disabled:opacity-50"
+            className="mt-6 w-full rounded-lg bg-brand-accent py-2.5 font-semibold text-brand-dark transition-colors hover:brightness-110 disabled:opacity-50"
           >
             {loading ? "Signing in..." : "Sign In"}
           </button>
 
-          <div className="mt-4 rounded-lg bg-slate-700/30 p-3 text-xs text-slate-400">
-            <p className="font-medium text-slate-300">Demo Credentials:</p>
+          <div className="mt-4 rounded-lg bg-stone-700/30 p-3 text-xs text-stone-400">
+            <p className="font-medium text-stone-300">Demo Credentials:</p>
             <p>Admin: admin@eaglestone.in / admin123</p>
             <p>Operator: operator@eaglestone.in / operator123</p>
           </div>

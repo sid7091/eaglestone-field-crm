@@ -69,10 +69,10 @@ export default function NewPolishingEntryPage() {
   return (
     <div>
       <div className="mb-6">
-        <h1 className="text-2xl font-bold text-gray-900">
+        <h1 className="text-2xl font-bold text-stone-900">
           New Polishing Entry
         </h1>
-        <p className="text-sm text-gray-500">Record polishing details</p>
+        <p className="text-sm text-stone-500">Record polishing details</p>
       </div>
 
       <form onSubmit={handleSubmit}>
@@ -85,18 +85,18 @@ export default function NewPolishingEntryPage() {
         <div className="grid grid-cols-1 gap-6 lg:grid-cols-2">
           <Card>
             <CardHeader>
-              <h2 className="font-semibold text-gray-900">Slab & Machine</h2>
+              <h2 className="font-semibold text-stone-900">Slab & Machine</h2>
             </CardHeader>
             <CardContent>
               <div className="space-y-4">
                 <div>
-                  <label className="mb-1 block text-sm font-medium text-gray-700">
+                  <label className="mb-1 block text-sm font-medium text-stone-700">
                     Select Slab *
                   </label>
                   <select
                     name="slabId"
                     required
-                    className="w-full rounded-lg border border-gray-300 px-3 py-2 text-sm focus:border-indigo-500 focus:outline-none focus:ring-1 focus:ring-indigo-500"
+                    className="w-full rounded-lg border border-stone-300 px-3 py-2 text-sm focus:border-indigo-500 focus:outline-none focus:ring-1 focus:ring-indigo-500"
                   >
                     <option value="">Choose a slab</option>
                     {slabs.map((slab) => (
@@ -112,13 +112,13 @@ export default function NewPolishingEntryPage() {
                   )}
                 </div>
                 <div>
-                  <label className="mb-1 block text-sm font-medium text-gray-700">
+                  <label className="mb-1 block text-sm font-medium text-stone-700">
                     Machine *
                   </label>
                   <select
                     name="machineId"
                     required
-                    className="w-full rounded-lg border border-gray-300 px-3 py-2 text-sm focus:border-indigo-500 focus:outline-none focus:ring-1 focus:ring-indigo-500"
+                    className="w-full rounded-lg border border-stone-300 px-3 py-2 text-sm focus:border-indigo-500 focus:outline-none focus:ring-1 focus:ring-indigo-500"
                   >
                     <option value="">Select machine</option>
                     {machines.map((m) => (
@@ -129,24 +129,24 @@ export default function NewPolishingEntryPage() {
                   </select>
                 </div>
                 <div>
-                  <label className="mb-1 block text-sm font-medium text-gray-700">
+                  <label className="mb-1 block text-sm font-medium text-stone-700">
                     Start Time *
                   </label>
                   <input
                     type="datetime-local"
                     name="startTime"
                     required
-                    className="w-full rounded-lg border border-gray-300 px-3 py-2 text-sm focus:border-indigo-500 focus:outline-none focus:ring-1 focus:ring-indigo-500"
+                    className="w-full rounded-lg border border-stone-300 px-3 py-2 text-sm focus:border-indigo-500 focus:outline-none focus:ring-1 focus:ring-indigo-500"
                   />
                 </div>
                 <div>
-                  <label className="mb-1 block text-sm font-medium text-gray-700">
+                  <label className="mb-1 block text-sm font-medium text-stone-700">
                     End Time
                   </label>
                   <input
                     type="datetime-local"
                     name="endTime"
-                    className="w-full rounded-lg border border-gray-300 px-3 py-2 text-sm focus:border-indigo-500 focus:outline-none focus:ring-1 focus:ring-indigo-500"
+                    className="w-full rounded-lg border border-stone-300 px-3 py-2 text-sm focus:border-indigo-500 focus:outline-none focus:ring-1 focus:ring-indigo-500"
                   />
                 </div>
               </div>
@@ -155,17 +155,17 @@ export default function NewPolishingEntryPage() {
 
           <Card>
             <CardHeader>
-              <h2 className="font-semibold text-gray-900">Polishing Details</h2>
+              <h2 className="font-semibold text-stone-900">Polishing Details</h2>
             </CardHeader>
             <CardContent>
               <div className="space-y-4">
                 <div>
-                  <label className="mb-1 block text-sm font-medium text-gray-700">
+                  <label className="mb-1 block text-sm font-medium text-stone-700">
                     Finish Type
                   </label>
                   <select
                     name="finishType"
-                    className="w-full rounded-lg border border-gray-300 px-3 py-2 text-sm focus:border-indigo-500 focus:outline-none focus:ring-1 focus:ring-indigo-500"
+                    className="w-full rounded-lg border border-stone-300 px-3 py-2 text-sm focus:border-indigo-500 focus:outline-none focus:ring-1 focus:ring-indigo-500"
                   >
                     {FINISH_TYPES.map((f) => (
                       <option key={f} value={f.toUpperCase()}>
@@ -175,7 +175,7 @@ export default function NewPolishingEntryPage() {
                   </select>
                 </div>
                 <div>
-                  <label className="mb-1 block text-sm font-medium text-gray-700">
+                  <label className="mb-1 block text-sm font-medium text-stone-700">
                     Gloss Level (0-100)
                   </label>
                   <input
@@ -183,38 +183,38 @@ export default function NewPolishingEntryPage() {
                     name="glossLevel"
                     min="0"
                     max="100"
-                    className="w-full rounded-lg border border-gray-300 px-3 py-2 text-sm focus:border-indigo-500 focus:outline-none focus:ring-1 focus:ring-indigo-500"
+                    className="w-full rounded-lg border border-stone-300 px-3 py-2 text-sm focus:border-indigo-500 focus:outline-none focus:ring-1 focus:ring-indigo-500"
                   />
                 </div>
                 <div>
-                  <label className="mb-1 block text-sm font-medium text-gray-700">
+                  <label className="mb-1 block text-sm font-medium text-stone-700">
                     Abrasives Used
                   </label>
                   <input
                     type="text"
                     name="abrasivesUsed"
                     placeholder="e.g., 120, 220, 400, 800, 1500 grit"
-                    className="w-full rounded-lg border border-gray-300 px-3 py-2 text-sm focus:border-indigo-500 focus:outline-none focus:ring-1 focus:ring-indigo-500"
+                    className="w-full rounded-lg border border-stone-300 px-3 py-2 text-sm focus:border-indigo-500 focus:outline-none focus:ring-1 focus:ring-indigo-500"
                   />
                 </div>
                 <div>
-                  <label className="mb-1 block text-sm font-medium text-gray-700">
+                  <label className="mb-1 block text-sm font-medium text-stone-700">
                     Abrasives Cost (INR)
                   </label>
                   <input
                     type="number"
                     name="abrasivesCostINR"
                     step="1"
-                    className="w-full rounded-lg border border-gray-300 px-3 py-2 text-sm focus:border-indigo-500 focus:outline-none focus:ring-1 focus:ring-indigo-500"
+                    className="w-full rounded-lg border border-stone-300 px-3 py-2 text-sm focus:border-indigo-500 focus:outline-none focus:ring-1 focus:ring-indigo-500"
                   />
                 </div>
                 <div>
-                  <label className="mb-1 block text-sm font-medium text-gray-700">
+                  <label className="mb-1 block text-sm font-medium text-stone-700">
                     Status
                   </label>
                   <select
                     name="status"
-                    className="w-full rounded-lg border border-gray-300 px-3 py-2 text-sm focus:border-indigo-500 focus:outline-none focus:ring-1 focus:ring-indigo-500"
+                    className="w-full rounded-lg border border-stone-300 px-3 py-2 text-sm focus:border-indigo-500 focus:outline-none focus:ring-1 focus:ring-indigo-500"
                   >
                     <option value="IN_PROGRESS">In Progress</option>
                     <option value="COMPLETED">Completed</option>
@@ -222,12 +222,12 @@ export default function NewPolishingEntryPage() {
                   </select>
                 </div>
                 <div>
-                  <label className="mb-1 block text-sm font-medium text-gray-700">
+                  <label className="mb-1 block text-sm font-medium text-stone-700">
                     Quality Check
                   </label>
                   <select
                     name="qualityCheck"
-                    className="w-full rounded-lg border border-gray-300 px-3 py-2 text-sm focus:border-indigo-500 focus:outline-none focus:ring-1 focus:ring-indigo-500"
+                    className="w-full rounded-lg border border-stone-300 px-3 py-2 text-sm focus:border-indigo-500 focus:outline-none focus:ring-1 focus:ring-indigo-500"
                   >
                     <option value="">Pending</option>
                     <option value="PASS">Pass</option>
@@ -235,13 +235,13 @@ export default function NewPolishingEntryPage() {
                   </select>
                 </div>
                 <div>
-                  <label className="mb-1 block text-sm font-medium text-gray-700">
+                  <label className="mb-1 block text-sm font-medium text-stone-700">
                     Notes
                   </label>
                   <textarea
                     name="notes"
                     rows={3}
-                    className="w-full rounded-lg border border-gray-300 px-3 py-2 text-sm focus:border-indigo-500 focus:outline-none focus:ring-1 focus:ring-indigo-500"
+                    className="w-full rounded-lg border border-stone-300 px-3 py-2 text-sm focus:border-indigo-500 focus:outline-none focus:ring-1 focus:ring-indigo-500"
                   />
                 </div>
               </div>
@@ -253,7 +253,7 @@ export default function NewPolishingEntryPage() {
           <button
             type="button"
             onClick={() => router.back()}
-            className="rounded-lg border border-gray-300 px-6 py-2 text-sm font-medium text-gray-700 hover:bg-gray-50"
+            className="rounded-lg border border-stone-300 px-6 py-2 text-sm font-medium text-stone-700 hover:bg-stone-50"
           >
             Cancel
           </button>

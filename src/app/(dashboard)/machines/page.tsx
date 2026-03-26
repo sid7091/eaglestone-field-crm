@@ -65,8 +65,8 @@ export default function MachinesPage() {
     <div>
       <div className="mb-6 flex flex-col gap-3 sm:flex-row sm:items-center sm:justify-between">
         <div>
-          <h1 className="text-2xl font-bold text-gray-900">Machines</h1>
-          <p className="text-sm text-gray-500">
+          <h1 className="text-2xl font-bold text-stone-900">Machines</h1>
+          <p className="text-sm text-stone-500">
             Manage factory machines and equipment
           </p>
         </div>
@@ -80,18 +80,18 @@ export default function MachinesPage() {
 
       {/* Stats */}
       <div className="mb-6 grid grid-cols-1 gap-4 sm:grid-cols-3">
-        <div className="rounded-xl border border-gray-200 bg-white p-4">
-          <p className="text-sm text-gray-500">Total Machines</p>
-          <p className="text-2xl font-bold text-gray-900">{machines.length}</p>
+        <div className="rounded-xl border border-stone-200 bg-white p-4">
+          <p className="text-sm text-stone-500">Total Machines</p>
+          <p className="text-2xl font-bold text-stone-900">{machines.length}</p>
         </div>
-        <div className="rounded-xl border border-gray-200 bg-white p-4">
-          <p className="text-sm text-gray-500">Active</p>
+        <div className="rounded-xl border border-stone-200 bg-white p-4">
+          <p className="text-sm text-stone-500">Active</p>
           <p className="text-2xl font-bold text-green-600">
             {machines.filter((m) => m.status === "ACTIVE").length}
           </p>
         </div>
-        <div className="rounded-xl border border-gray-200 bg-white p-4">
-          <p className="text-sm text-gray-500">Under Maintenance</p>
+        <div className="rounded-xl border border-stone-200 bg-white p-4">
+          <p className="text-sm text-stone-500">Under Maintenance</p>
           <p className="text-2xl font-bold text-yellow-600">
             {machines.filter((m) => m.status === "MAINTENANCE").length}
           </p>
@@ -102,7 +102,7 @@ export default function MachinesPage() {
       {Object.entries(groupedMachines).length === 0 ? (
         <Card>
           <CardContent>
-            <p className="py-8 text-center text-gray-500">
+            <p className="py-8 text-center text-stone-500">
               No machines registered yet. Add your first machine to get started.
             </p>
           </CardContent>
@@ -111,7 +111,7 @@ export default function MachinesPage() {
         <div className="space-y-6">
           {Object.entries(groupedMachines).map(([type, typeMachines]) => (
             <div key={type}>
-              <h2 className="mb-3 text-lg font-semibold text-gray-900">
+              <h2 className="mb-3 text-lg font-semibold text-stone-900">
                 {machineTypeLabels[type] || type}
               </h2>
               <div className="grid grid-cols-1 gap-4 md:grid-cols-2 lg:grid-cols-3">
@@ -123,10 +123,10 @@ export default function MachinesPage() {
                     <CardContent>
                       <div className="flex items-start justify-between">
                         <div>
-                          <h3 className="text-lg font-semibold text-gray-900">
+                          <h3 className="text-lg font-semibold text-stone-900">
                             {machine.name}
                           </h3>
-                          <p className="text-sm text-gray-500">
+                          <p className="text-sm text-stone-500">
                             Code: {machine.code}
                           </p>
                         </div>
@@ -134,26 +134,26 @@ export default function MachinesPage() {
                       </div>
                       <div className="mt-4 space-y-2 text-sm">
                         {machine.manufacturer && (
-                          <p className="text-gray-600">
+                          <p className="text-stone-600">
                             <span className="font-medium">Make:</span>{" "}
                             {machine.manufacturer}
                             {machine.model ? ` - ${machine.model}` : ""}
                           </p>
                         )}
                         {machine.location && (
-                          <p className="text-gray-600">
+                          <p className="text-stone-600">
                             <span className="font-medium">Location:</span>{" "}
                             {machine.location}
                           </p>
                         )}
                         {machine.lastMaintenance && (
-                          <p className="text-gray-600">
+                          <p className="text-stone-600">
                             <span className="font-medium">Last Maintenance:</span>{" "}
                             {formatDate(machine.lastMaintenance)}
                           </p>
                         )}
                         {machine.nextMaintenance && (
-                          <p className="text-gray-600">
+                          <p className="text-stone-600">
                             <span className="font-medium">Next Maintenance:</span>{" "}
                             {formatDate(machine.nextMaintenance)}
                           </p>

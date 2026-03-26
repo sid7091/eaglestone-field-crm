@@ -46,7 +46,7 @@ export default function GangSawPage() {
       accessor: (row: GangSawEntry) => (
         <div>
           <p className="font-medium">{row.block.blockNumber}</p>
-          <p className="text-xs text-gray-500">
+          <p className="text-xs text-stone-500">
             {row.block.variety} - {row.block.color}
           </p>
         </div>
@@ -89,10 +89,10 @@ export default function GangSawPage() {
     <div>
       <div className="mb-6 flex flex-col gap-3 sm:flex-row sm:items-center sm:justify-between">
         <div>
-          <h1 className="text-2xl font-bold text-gray-900">
+          <h1 className="text-2xl font-bold text-stone-900">
             Gang Saw - Block Cutting
           </h1>
-          <p className="text-sm text-gray-500">
+          <p className="text-sm text-stone-500">
             Stage 1: Cut raw blocks into slabs
           </p>
         </div>

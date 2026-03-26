@@ -101,10 +101,10 @@ export default function InventoryPage() {
     <div>
       <div className="mb-6 flex flex-col gap-3 sm:flex-row sm:items-center sm:justify-between">
         <div>
-          <h1 className="text-2xl font-bold text-gray-900">
+          <h1 className="text-2xl font-bold text-stone-900">
             Slab Inventory
           </h1>
-          <p className="text-sm text-gray-500">
+          <p className="text-sm text-stone-500">
             Track finished slabs in warehouse
           </p>
         </div>
@@ -118,24 +118,24 @@ export default function InventoryPage() {
 
       {/* Stats */}
       <div className="mb-6 grid grid-cols-2 gap-4 sm:grid-cols-4">
-        <div className="rounded-xl border border-gray-200 bg-white p-4">
-          <p className="text-sm text-gray-500">Total Items</p>
-          <p className="text-2xl font-bold text-gray-900">{items.length}</p>
+        <div className="rounded-xl border border-stone-200 bg-white p-4">
+          <p className="text-sm text-stone-500">Total Items</p>
+          <p className="text-2xl font-bold text-stone-900">{items.length}</p>
         </div>
-        <div className="rounded-xl border border-gray-200 bg-white p-4">
-          <p className="text-sm text-gray-500">In Stock</p>
+        <div className="rounded-xl border border-stone-200 bg-white p-4">
+          <p className="text-sm text-stone-500">In Stock</p>
           <p className="text-2xl font-bold text-green-600">
             {items.filter((i) => i.status === "IN_STOCK").length}
           </p>
         </div>
-        <div className="rounded-xl border border-gray-200 bg-white p-4">
-          <p className="text-sm text-gray-500">Reserved</p>
+        <div className="rounded-xl border border-stone-200 bg-white p-4">
+          <p className="text-sm text-stone-500">Reserved</p>
           <p className="text-2xl font-bold text-yellow-600">
             {items.filter((i) => i.status === "RESERVED").length}
           </p>
         </div>
-        <div className="rounded-xl border border-gray-200 bg-white p-4">
-          <p className="text-sm text-gray-500">Sold</p>
+        <div className="rounded-xl border border-stone-200 bg-white p-4">
+          <p className="text-sm text-stone-500">Sold</p>
           <p className="text-2xl font-bold text-blue-600">
             {items.filter((i) => i.status === "SOLD").length}
           </p>
@@ -148,30 +148,30 @@ export default function InventoryPage() {
           <div className="overflow-x-auto">
             <table className="w-full">
               <thead>
-                <tr className="border-b border-gray-200">
-                  <th className="px-4 py-3 text-left text-xs font-semibold uppercase text-gray-500">Slab #</th>
-                  <th className="px-4 py-3 text-left text-xs font-semibold uppercase text-gray-500">Variety</th>
-                  <th className="px-4 py-3 text-left text-xs font-semibold uppercase text-gray-500">Color</th>
-                  <th className="px-4 py-3 text-left text-xs font-semibold uppercase text-gray-500">Dimensions</th>
-                  <th className="px-4 py-3 text-left text-xs font-semibold uppercase text-gray-500">Grade</th>
-                  <th className="px-4 py-3 text-left text-xs font-semibold uppercase text-gray-500">Finish</th>
-                  <th className="px-4 py-3 text-left text-xs font-semibold uppercase text-gray-500">Warehouse</th>
-                  <th className="px-4 py-3 text-left text-xs font-semibold uppercase text-gray-500">Bundle</th>
-                  <th className="px-4 py-3 text-left text-xs font-semibold uppercase text-gray-500">Location</th>
-                  <th className="px-4 py-3 text-left text-xs font-semibold uppercase text-gray-500">Status</th>
-                  <th className="px-4 py-3 text-left text-xs font-semibold uppercase text-gray-500">Date</th>
+                <tr className="border-b border-stone-200">
+                  <th className="px-4 py-3 text-left text-xs font-semibold uppercase text-stone-500">Slab #</th>
+                  <th className="px-4 py-3 text-left text-xs font-semibold uppercase text-stone-500">Variety</th>
+                  <th className="px-4 py-3 text-left text-xs font-semibold uppercase text-stone-500">Color</th>
+                  <th className="px-4 py-3 text-left text-xs font-semibold uppercase text-stone-500">Dimensions</th>
+                  <th className="px-4 py-3 text-left text-xs font-semibold uppercase text-stone-500">Grade</th>
+                  <th className="px-4 py-3 text-left text-xs font-semibold uppercase text-stone-500">Finish</th>
+                  <th className="px-4 py-3 text-left text-xs font-semibold uppercase text-stone-500">Warehouse</th>
+                  <th className="px-4 py-3 text-left text-xs font-semibold uppercase text-stone-500">Bundle</th>
+                  <th className="px-4 py-3 text-left text-xs font-semibold uppercase text-stone-500">Location</th>
+                  <th className="px-4 py-3 text-left text-xs font-semibold uppercase text-stone-500">Status</th>
+                  <th className="px-4 py-3 text-left text-xs font-semibold uppercase text-stone-500">Date</th>
                 </tr>
               </thead>
-              <tbody className="divide-y divide-gray-100">
+              <tbody className="divide-y divide-stone-100">
                 {items.length === 0 ? (
                   <tr>
-                    <td colSpan={11} className="px-4 py-12 text-center text-sm text-gray-500">
+                    <td colSpan={11} className="px-4 py-12 text-center text-sm text-stone-500">
                       No inventory items yet. Complete slabs through production and add them here.
                     </td>
                   </tr>
                 ) : (
                   items.map((item) => (
-                    <tr key={item.id} className="hover:bg-gray-50">
+                    <tr key={item.id} className="hover:bg-stone-50">
                       <td className="px-4 py-3 text-sm font-medium text-amber-700">
                         {item.slab.slabNumber}
                       </td>
@@ -188,7 +188,7 @@ export default function InventoryPage() {
                       <td className="px-4 py-3">
                         <StatusBadge status={item.status} />
                       </td>
-                      <td className="px-4 py-3 text-sm text-gray-500">
+                      <td className="px-4 py-3 text-sm text-stone-500">
                         {formatDate(item.createdAt)}
                       </td>
                     </tr>
@@ -205,19 +205,19 @@ export default function InventoryPage() {
         <div className="fixed inset-0 z-50 flex items-center justify-center bg-black/50">
           <Card className="w-full max-w-md">
             <CardHeader>
-              <h2 className="font-semibold text-gray-900">Add Slab to Inventory</h2>
+              <h2 className="font-semibold text-stone-900">Add Slab to Inventory</h2>
             </CardHeader>
             <CardContent>
               <form onSubmit={handleAddToInventory}>
                 <div className="space-y-4">
                   <div>
-                    <label className="mb-1 block text-sm font-medium text-gray-700">
+                    <label className="mb-1 block text-sm font-medium text-stone-700">
                       Select Slab *
                     </label>
                     <select
                       name="slabId"
                       required
-                      className="w-full rounded-lg border border-gray-300 px-3 py-2 text-sm"
+                      className="w-full rounded-lg border border-stone-300 px-3 py-2 text-sm"
                     >
                       <option value="">Choose a slab</option>
                       {availableSlabs.map((slab) => (
@@ -228,7 +228,7 @@ export default function InventoryPage() {
                     </select>
                   </div>
                   <div>
-                    <label className="mb-1 block text-sm font-medium text-gray-700">
+                    <label className="mb-1 block text-sm font-medium text-stone-700">
                       Warehouse *
                     </label>
                     <input
@@ -236,28 +236,28 @@ export default function InventoryPage() {
                       name="warehouseId"
                       placeholder="Enter warehouse ID"
                       required
-                      className="w-full rounded-lg border border-gray-300 px-3 py-2 text-sm"
+                      className="w-full rounded-lg border border-stone-300 px-3 py-2 text-sm"
                     />
                   </div>
                   <div>
-                    <label className="mb-1 block text-sm font-medium text-gray-700">
+                    <label className="mb-1 block text-sm font-medium text-stone-700">
                       Bundle Number
                     </label>
                     <input
                       type="text"
                       name="bundleNumber"
-                      className="w-full rounded-lg border border-gray-300 px-3 py-2 text-sm"
+                      className="w-full rounded-lg border border-stone-300 px-3 py-2 text-sm"
                     />
                   </div>
                   <div>
-                    <label className="mb-1 block text-sm font-medium text-gray-700">
+                    <label className="mb-1 block text-sm font-medium text-stone-700">
                       Rack Location
                     </label>
                     <input
                       type="text"
                       name="rackLocation"
                       placeholder="e.g., A-3-2"
-                      className="w-full rounded-lg border border-gray-300 px-3 py-2 text-sm"
+                      className="w-full rounded-lg border border-stone-300 px-3 py-2 text-sm"
                     />
                   </div>
                 </div>
@@ -265,7 +265,7 @@ export default function InventoryPage() {
                   <button
                     type="button"
                     onClick={() => setShowAddModal(false)}
-                    className="rounded-lg border border-gray-300 px-4 py-2 text-sm text-gray-700 hover:bg-gray-50"
+                    className="rounded-lg border border-stone-300 px-4 py-2 text-sm text-stone-700 hover:bg-stone-50"
                   >
                     Cancel
                   </button>

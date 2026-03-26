@@ -68,7 +68,7 @@ export default function BlocksPage() {
       accessor: (row: Block) => (
         <div>
           <p className="font-medium">{row.variety}</p>
-          <p className="text-xs text-gray-500">{row.type}</p>
+          <p className="text-xs text-stone-500">{row.type}</p>
         </div>
       ),
     },
@@ -106,8 +106,8 @@ export default function BlocksPage() {
     <div>
       <div className="mb-6 flex flex-col gap-3 sm:flex-row sm:items-center sm:justify-between">
         <div>
-          <h1 className="text-2xl font-bold text-gray-900">Raw Blocks</h1>
-          <p className="text-sm text-gray-500">
+          <h1 className="text-2xl font-bold text-stone-900">Raw Blocks</h1>
+          <p className="text-sm text-stone-500">
             Manage imported marble blocks
           </p>
         </div>
@@ -127,11 +127,11 @@ export default function BlocksPage() {
             placeholder="Search blocks..."
             value={search}
             onChange={(e) => setSearch(e.target.value)}
-            className="rounded-lg border border-gray-300 px-4 py-2 text-sm focus:border-amber-500 focus:outline-none focus:ring-1 focus:ring-amber-500"
+            className="rounded-lg border border-stone-300 px-4 py-2 text-sm focus:border-amber-500 focus:outline-none focus:ring-1 focus:ring-amber-500"
           />
           <button
             type="submit"
-            className="rounded-lg bg-gray-100 px-4 py-2 text-sm font-medium text-gray-700 hover:bg-gray-200"
+            className="rounded-lg bg-stone-100 px-4 py-2 text-sm font-medium text-stone-700 hover:bg-stone-200"
           >
             Search
           </button>
@@ -139,7 +139,7 @@ export default function BlocksPage() {
         <select
           value={statusFilter}
           onChange={(e) => setStatusFilter(e.target.value)}
-          className="rounded-lg border border-gray-300 px-3 py-2 text-sm focus:border-amber-500 focus:outline-none"
+          className="rounded-lg border border-stone-300 px-3 py-2 text-sm focus:border-amber-500 focus:outline-none"
         >
           <option value="">All Status</option>
           <option value="RECEIVED">Received</option>

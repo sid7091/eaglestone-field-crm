@@ -51,8 +51,8 @@ export default function NewBlockPage() {
   return (
     <div>
       <div className="mb-6">
-        <h1 className="text-2xl font-bold text-gray-900">Add New Block</h1>
-        <p className="text-sm text-gray-500">Register a new raw marble block</p>
+        <h1 className="text-2xl font-bold text-stone-900">Add New Block</h1>
+        <p className="text-sm text-stone-500">Register a new raw marble block</p>
       </div>
 
       <form onSubmit={handleSubmit}>
@@ -66,18 +66,18 @@ export default function NewBlockPage() {
           {/* Block Details */}
           <Card>
             <CardHeader>
-              <h2 className="font-semibold text-gray-900">Block Details</h2>
+              <h2 className="font-semibold text-stone-900">Block Details</h2>
             </CardHeader>
             <CardContent>
               <div className="space-y-4">
                 <div>
-                  <label className="mb-1 block text-sm font-medium text-gray-700">
+                  <label className="mb-1 block text-sm font-medium text-stone-700">
                     Type *
                   </label>
                   <select
                     name="type"
                     required
-                    className="w-full rounded-lg border border-gray-300 px-3 py-2 text-sm focus:border-amber-500 focus:outline-none focus:ring-1 focus:ring-amber-500"
+                    className="w-full rounded-lg border border-stone-300 px-3 py-2 text-sm focus:border-amber-500 focus:outline-none focus:ring-1 focus:ring-amber-500"
                   >
                     <option value="">Select type</option>
                     {BLOCK_TYPES.map((t) => (
@@ -86,13 +86,13 @@ export default function NewBlockPage() {
                   </select>
                 </div>
                 <div>
-                  <label className="mb-1 block text-sm font-medium text-gray-700">
+                  <label className="mb-1 block text-sm font-medium text-stone-700">
                     Variety *
                   </label>
                   <select
                     name="variety"
                     required
-                    className="w-full rounded-lg border border-gray-300 px-3 py-2 text-sm focus:border-amber-500 focus:outline-none focus:ring-1 focus:ring-amber-500"
+                    className="w-full rounded-lg border border-stone-300 px-3 py-2 text-sm focus:border-amber-500 focus:outline-none focus:ring-1 focus:ring-amber-500"
                   >
                     <option value="">Select variety</option>
                     {MARBLE_VARIETIES.map((v) => (
@@ -101,13 +101,13 @@ export default function NewBlockPage() {
                   </select>
                 </div>
                 <div>
-                  <label className="mb-1 block text-sm font-medium text-gray-700">
+                  <label className="mb-1 block text-sm font-medium text-stone-700">
                     Color *
                   </label>
                   <select
                     name="color"
                     required
-                    className="w-full rounded-lg border border-gray-300 px-3 py-2 text-sm focus:border-amber-500 focus:outline-none focus:ring-1 focus:ring-amber-500"
+                    className="w-full rounded-lg border border-stone-300 px-3 py-2 text-sm focus:border-amber-500 focus:outline-none focus:ring-1 focus:ring-amber-500"
                   >
                     <option value="">Select color</option>
                     {MARBLE_COLORS.map((c) => (
@@ -116,13 +116,13 @@ export default function NewBlockPage() {
                   </select>
                 </div>
                 <div>
-                  <label className="mb-1 block text-sm font-medium text-gray-700">
+                  <label className="mb-1 block text-sm font-medium text-stone-700">
                     Origin *
                   </label>
                   <select
                     name="origin"
                     required
-                    className="w-full rounded-lg border border-gray-300 px-3 py-2 text-sm focus:border-amber-500 focus:outline-none focus:ring-1 focus:ring-amber-500"
+                    className="w-full rounded-lg border border-stone-300 px-3 py-2 text-sm focus:border-amber-500 focus:outline-none focus:ring-1 focus:ring-amber-500"
                   >
                     <option value="">Select origin</option>
                     {ORIGINS.map((o) => (
@@ -131,12 +131,12 @@ export default function NewBlockPage() {
                   </select>
                 </div>
                 <div>
-                  <label className="mb-1 block text-sm font-medium text-gray-700">
+                  <label className="mb-1 block text-sm font-medium text-stone-700">
                     Grade
                   </label>
                   <select
                     name="grade"
-                    className="w-full rounded-lg border border-gray-300 px-3 py-2 text-sm focus:border-amber-500 focus:outline-none focus:ring-1 focus:ring-amber-500"
+                    className="w-full rounded-lg border border-stone-300 px-3 py-2 text-sm focus:border-amber-500 focus:outline-none focus:ring-1 focus:ring-amber-500"
                   >
                     {GRADES.map((g) => (
                       <option key={g} value={g}>{g}</option>
@@ -144,13 +144,13 @@ export default function NewBlockPage() {
                   </select>
                 </div>
                 <div>
-                  <label className="mb-1 block text-sm font-medium text-gray-700">
+                  <label className="mb-1 block text-sm font-medium text-stone-700">
                     Quarry Name
                   </label>
                   <input
                     type="text"
                     name="quarryName"
-                    className="w-full rounded-lg border border-gray-300 px-3 py-2 text-sm focus:border-amber-500 focus:outline-none focus:ring-1 focus:ring-amber-500"
+                    className="w-full rounded-lg border border-stone-300 px-3 py-2 text-sm focus:border-amber-500 focus:outline-none focus:ring-1 focus:ring-amber-500"
                   />
                 </div>
               </div>
@@ -160,13 +160,13 @@ export default function NewBlockPage() {
           {/* Dimensions & Supplier */}
           <Card>
             <CardHeader>
-              <h2 className="font-semibold text-gray-900">Dimensions & Supplier</h2>
+              <h2 className="font-semibold text-stone-900">Dimensions & Supplier</h2>
             </CardHeader>
             <CardContent>
               <div className="space-y-4">
                 <div className="grid grid-cols-3 gap-3">
                   <div>
-                    <label className="mb-1 block text-sm font-medium text-gray-700">
+                    <label className="mb-1 block text-sm font-medium text-stone-700">
                       Length (cm) *
                     </label>
                     <input
@@ -174,11 +174,11 @@ export default function NewBlockPage() {
                       name="lengthCm"
                       step="0.1"
                       required
-                      className="w-full rounded-lg border border-gray-300 px-3 py-2 text-sm focus:border-amber-500 focus:outline-none focus:ring-1 focus:ring-amber-500"
+                      className="w-full rounded-lg border border-stone-300 px-3 py-2 text-sm focus:border-amber-500 focus:outline-none focus:ring-1 focus:ring-amber-500"
                     />
                   </div>
                   <div>
-                    <label className="mb-1 block text-sm font-medium text-gray-700">
+                    <label className="mb-1 block text-sm font-medium text-stone-700">
                       Width (cm) *
                     </label>
                     <input
@@ -186,11 +186,11 @@ export default function NewBlockPage() {
                       name="widthCm"
                       step="0.1"
                       required
-                      className="w-full rounded-lg border border-gray-300 px-3 py-2 text-sm focus:border-amber-500 focus:outline-none focus:ring-1 focus:ring-amber-500"
+                      className="w-full rounded-lg border border-stone-300 px-3 py-2 text-sm focus:border-amber-500 focus:outline-none focus:ring-1 focus:ring-amber-500"
                     />
                   </div>
                   <div>
-                    <label className="mb-1 block text-sm font-medium text-gray-700">
+                    <label className="mb-1 block text-sm font-medium text-stone-700">
                       Height (cm) *
                     </label>
                     <input
@@ -198,12 +198,12 @@ export default function NewBlockPage() {
                       name="heightCm"
                       step="0.1"
                       required
-                      className="w-full rounded-lg border border-gray-300 px-3 py-2 text-sm focus:border-amber-500 focus:outline-none focus:ring-1 focus:ring-amber-500"
+                      className="w-full rounded-lg border border-stone-300 px-3 py-2 text-sm focus:border-amber-500 focus:outline-none focus:ring-1 focus:ring-amber-500"
                     />
                   </div>
                 </div>
                 <div>
-                  <label className="mb-1 block text-sm font-medium text-gray-700">
+                  <label className="mb-1 block text-sm font-medium text-stone-700">
                     Weight (kg) *
                   </label>
                   <input
@@ -211,70 +211,70 @@ export default function NewBlockPage() {
                     name="weightKg"
                     step="0.1"
                     required
-                    className="w-full rounded-lg border border-gray-300 px-3 py-2 text-sm focus:border-amber-500 focus:outline-none focus:ring-1 focus:ring-amber-500"
+                    className="w-full rounded-lg border border-stone-300 px-3 py-2 text-sm focus:border-amber-500 focus:outline-none focus:ring-1 focus:ring-amber-500"
                   />
                 </div>
                 <div>
-                  <label className="mb-1 block text-sm font-medium text-gray-700">
+                  <label className="mb-1 block text-sm font-medium text-stone-700">
                     Supplier Name *
                   </label>
                   <input
                     type="text"
                     name="supplierName"
                     required
-                    className="w-full rounded-lg border border-gray-300 px-3 py-2 text-sm focus:border-amber-500 focus:outline-none focus:ring-1 focus:ring-amber-500"
+                    className="w-full rounded-lg border border-stone-300 px-3 py-2 text-sm focus:border-amber-500 focus:outline-none focus:ring-1 focus:ring-amber-500"
                   />
                 </div>
                 <div>
-                  <label className="mb-1 block text-sm font-medium text-gray-700">
+                  <label className="mb-1 block text-sm font-medium text-stone-700">
                     Arrival Date *
                   </label>
                   <input
                     type="date"
                     name="arrivalDate"
                     required
-                    className="w-full rounded-lg border border-gray-300 px-3 py-2 text-sm focus:border-amber-500 focus:outline-none focus:ring-1 focus:ring-amber-500"
+                    className="w-full rounded-lg border border-stone-300 px-3 py-2 text-sm focus:border-amber-500 focus:outline-none focus:ring-1 focus:ring-amber-500"
                   />
                 </div>
                 <div>
-                  <label className="mb-1 block text-sm font-medium text-gray-700">
+                  <label className="mb-1 block text-sm font-medium text-stone-700">
                     Landed Cost (INR)
                   </label>
                   <input
                     type="number"
                     name="landedCostINR"
                     step="1"
-                    className="w-full rounded-lg border border-gray-300 px-3 py-2 text-sm focus:border-amber-500 focus:outline-none focus:ring-1 focus:ring-amber-500"
+                    className="w-full rounded-lg border border-stone-300 px-3 py-2 text-sm focus:border-amber-500 focus:outline-none focus:ring-1 focus:ring-amber-500"
                   />
                 </div>
                 <div>
-                  <label className="mb-1 block text-sm font-medium text-gray-700">
+                  <label className="mb-1 block text-sm font-medium text-stone-700">
                     Import Batch No.
                   </label>
                   <input
                     type="text"
                     name="importBatchNo"
-                    className="w-full rounded-lg border border-gray-300 px-3 py-2 text-sm focus:border-amber-500 focus:outline-none focus:ring-1 focus:ring-amber-500"
+                    className="w-full rounded-lg border border-stone-300 px-3 py-2 text-sm focus:border-amber-500 focus:outline-none focus:ring-1 focus:ring-amber-500"
                   />
                 </div>
                 <div>
-                  <label className="mb-1 block text-sm font-medium text-gray-700">
+                  <label className="mb-1 block text-sm font-medium text-stone-700">
                     Vehicle Number
                   </label>
                   <input
                     type="text"
                     name="vehicleNumber"
-                    className="w-full rounded-lg border border-gray-300 px-3 py-2 text-sm focus:border-amber-500 focus:outline-none focus:ring-1 focus:ring-amber-500"
+                    className="w-full rounded-lg border border-stone-300 px-3 py-2 text-sm focus:border-amber-500 focus:outline-none focus:ring-1 focus:ring-amber-500"
                   />
                 </div>
                 <div>
-                  <label className="mb-1 block text-sm font-medium text-gray-700">
+                  <label className="mb-1 block text-sm font-medium text-stone-700">
                     Notes
                   </label>
                   <textarea
                     name="notes"
                     rows={3}
-                    className="w-full rounded-lg border border-gray-300 px-3 py-2 text-sm focus:border-amber-500 focus:outline-none focus:ring-1 focus:ring-amber-500"
+                    className="w-full rounded-lg border border-stone-300 px-3 py-2 text-sm focus:border-amber-500 focus:outline-none focus:ring-1 focus:ring-amber-500"
                   />
                 </div>
               </div>
@@ -287,7 +287,7 @@ export default function NewBlockPage() {
           <button
             type="button"
             onClick={() => router.back()}
-            className="rounded-lg border border-gray-300 px-6 py-2 text-sm font-medium text-gray-700 hover:bg-gray-50"
+            className="rounded-lg border border-stone-300 px-6 py-2 text-sm font-medium text-stone-700 hover:bg-stone-50"
           >
             Cancel
           </button>

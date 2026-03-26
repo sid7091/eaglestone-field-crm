@@ -1,5 +1,6 @@
 "use client";
 
+import Image from "next/image";
 import Link from "next/link";
 import { usePathname } from "next/navigation";
 import { cn } from "@/lib/utils";
@@ -48,16 +49,18 @@ export default function Sidebar({ open, onClose }: SidebarProps) {
   const sidebarContent = (
     <>
       {/* Logo */}
-      <div className="flex h-16 items-center border-b border-slate-700 px-6">
-        <div className="flex items-center gap-3">
-          <div className="flex h-9 w-9 items-center justify-center rounded-lg bg-amber-500 font-bold text-slate-900">
-            ES
-          </div>
-          <div>
-            <h1 className="text-lg font-bold leading-tight">Eagle Stone</h1>
-            <p className="text-xs text-slate-400">ERP System</p>
-          </div>
-        </div>
+      <div className="flex h-16 items-center border-b border-stone-600/50 px-4">
+        <Link href="/" className="flex items-center gap-2" onClick={onClose}>
+          <Image
+            src="/logo.svg"
+            alt="Eagle Stone"
+            width={140}
+            height={60}
+            className="h-10 w-auto text-brand-cream"
+            style={{ filter: "brightness(0) invert(93%) sepia(8%) saturate(300%) hue-rotate(15deg)" }}
+            priority
+          />
+        </Link>
       </div>
 
       {/* Navigation */}
@@ -79,8 +82,8 @@ export default function Sidebar({ open, onClose }: SidebarProps) {
                   className={cn(
                     "flex items-center gap-3 rounded-lg px-3 py-2.5 text-sm font-medium transition-colors",
                     isActive || isParentActive
-                      ? "bg-slate-800 text-amber-400"
-                      : "text-slate-300 hover:bg-slate-800 hover:text-white"
+                      ? "bg-stone-700/60 text-brand-accent"
+                      : "text-stone-300 hover:bg-stone-700/40 hover:text-white"
                   )}
                 >
                   <svg
@@ -111,8 +114,8 @@ export default function Sidebar({ open, onClose }: SidebarProps) {
                             "block rounded-lg px-3 py-2 text-sm transition-colors",
                             pathname === child.href ||
                               pathname.startsWith(child.href)
-                              ? "text-amber-400"
-                              : "text-slate-400 hover:text-white"
+                              ? "text-brand-accent"
+                              : "text-stone-400 hover:text-white"
                           )}
                         >
                           {child.name}
@@ -128,8 +131,8 @@ export default function Sidebar({ open, onClose }: SidebarProps) {
       </nav>
 
       {/* Footer */}
-      <div className="absolute bottom-0 left-0 right-0 border-t border-slate-700 p-4">
-        <p className="text-center text-xs text-slate-500">
+      <div className="absolute bottom-0 left-0 right-0 border-t border-stone-600/50 p-4">
+        <p className="text-center text-xs text-stone-500">
           Eagle Stone ERP v1.0
         </p>
       </div>
@@ -149,14 +152,14 @@ export default function Sidebar({ open, onClose }: SidebarProps) {
       {/* Mobile sidebar (slide-in drawer) */}
       <aside
         className={cn(
-          "fixed left-0 top-0 z-50 h-screen w-64 bg-slate-900 text-white transition-transform duration-200 ease-in-out lg:hidden",
+          "fixed left-0 top-0 z-50 h-screen w-64 bg-brand-dark text-white transition-transform duration-200 ease-in-out lg:hidden",
           open ? "translate-x-0" : "-translate-x-full"
         )}
       >
         {/* Close button */}
         <button
           onClick={onClose}
-          className="absolute right-3 top-4 rounded-lg p-1 text-slate-400 hover:text-white"
+          className="absolute right-3 top-4 z-10 rounded-lg p-1 text-stone-400 hover:text-white"
         >
           <svg className="h-6 w-6" fill="none" viewBox="0 0 24 24" strokeWidth={1.5} stroke="currentColor">
             <path strokeLinecap="round" strokeLinejoin="round" d="M6 18L18 6M6 6l12 12" />
@@ -166,7 +169,7 @@ export default function Sidebar({ open, onClose }: SidebarProps) {
       </aside>
 
       {/* Desktop sidebar (always visible) */}
-      <aside className="fixed left-0 top-0 z-40 hidden h-screen w-64 bg-slate-900 text-white lg:block">
+      <aside className="fixed left-0 top-0 z-40 hidden h-screen w-64 bg-brand-dark text-white lg:block">
         {sidebarContent}
       </aside>
     </>

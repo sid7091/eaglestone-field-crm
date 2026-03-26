@@ -51,7 +51,7 @@ export default function EpoxyPage() {
       accessor: (row: EpoxyEntry) => (
         <div>
           <p className="font-medium">{row.slab.slabNumber}</p>
-          <p className="text-xs text-gray-500">
+          <p className="text-xs text-stone-500">
             {row.slab.block.variety} - {row.slab.block.color}
           </p>
         </div>
@@ -97,10 +97,10 @@ export default function EpoxyPage() {
     <div>
       <div className="mb-6 flex flex-col gap-3 sm:flex-row sm:items-center sm:justify-between">
         <div>
-          <h1 className="text-2xl font-bold text-gray-900">
+          <h1 className="text-2xl font-bold text-stone-900">
             Epoxy / Vacuum Line
           </h1>
-          <p className="text-sm text-gray-500">
+          <p className="text-sm text-stone-500">
             Stage 2: Strengthen slabs with epoxy infusion and vacuum sealing
           </p>
         </div>

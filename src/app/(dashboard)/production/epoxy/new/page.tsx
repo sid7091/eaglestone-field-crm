@@ -72,10 +72,10 @@ export default function NewEpoxyEntryPage() {
   return (
     <div>
       <div className="mb-6">
-        <h1 className="text-2xl font-bold text-gray-900">
+        <h1 className="text-2xl font-bold text-stone-900">
           New Epoxy / Vacuum Entry
         </h1>
-        <p className="text-sm text-gray-500">
+        <p className="text-sm text-stone-500">
           Record epoxy infusion and vacuum sealing details
         </p>
       </div>
@@ -90,18 +90,18 @@ export default function NewEpoxyEntryPage() {
         <div className="grid grid-cols-1 gap-6 lg:grid-cols-2">
           <Card>
             <CardHeader>
-              <h2 className="font-semibold text-gray-900">Slab & Machine</h2>
+              <h2 className="font-semibold text-stone-900">Slab & Machine</h2>
             </CardHeader>
             <CardContent>
               <div className="space-y-4">
                 <div>
-                  <label className="mb-1 block text-sm font-medium text-gray-700">
+                  <label className="mb-1 block text-sm font-medium text-stone-700">
                     Select Slab *
                   </label>
                   <select
                     name="slabId"
                     required
-                    className="w-full rounded-lg border border-gray-300 px-3 py-2 text-sm focus:border-purple-500 focus:outline-none focus:ring-1 focus:ring-purple-500"
+                    className="w-full rounded-lg border border-stone-300 px-3 py-2 text-sm focus:border-purple-500 focus:outline-none focus:ring-1 focus:ring-purple-500"
                   >
                     <option value="">Choose a slab</option>
                     {slabs.map((slab) => (
@@ -117,13 +117,13 @@ export default function NewEpoxyEntryPage() {
                   )}
                 </div>
                 <div>
-                  <label className="mb-1 block text-sm font-medium text-gray-700">
+                  <label className="mb-1 block text-sm font-medium text-stone-700">
                     Machine *
                   </label>
                   <select
                     name="machineId"
                     required
-                    className="w-full rounded-lg border border-gray-300 px-3 py-2 text-sm focus:border-purple-500 focus:outline-none focus:ring-1 focus:ring-purple-500"
+                    className="w-full rounded-lg border border-stone-300 px-3 py-2 text-sm focus:border-purple-500 focus:outline-none focus:ring-1 focus:ring-purple-500"
                   >
                     <option value="">Select machine</option>
                     {machines.map((m) => (
@@ -134,24 +134,24 @@ export default function NewEpoxyEntryPage() {
                   </select>
                 </div>
                 <div>
-                  <label className="mb-1 block text-sm font-medium text-gray-700">
+                  <label className="mb-1 block text-sm font-medium text-stone-700">
                     Start Time *
                   </label>
                   <input
                     type="datetime-local"
                     name="startTime"
                     required
-                    className="w-full rounded-lg border border-gray-300 px-3 py-2 text-sm focus:border-purple-500 focus:outline-none focus:ring-1 focus:ring-purple-500"
+                    className="w-full rounded-lg border border-stone-300 px-3 py-2 text-sm focus:border-purple-500 focus:outline-none focus:ring-1 focus:ring-purple-500"
                   />
                 </div>
                 <div>
-                  <label className="mb-1 block text-sm font-medium text-gray-700">
+                  <label className="mb-1 block text-sm font-medium text-stone-700">
                     End Time
                   </label>
                   <input
                     type="datetime-local"
                     name="endTime"
-                    className="w-full rounded-lg border border-gray-300 px-3 py-2 text-sm focus:border-purple-500 focus:outline-none focus:ring-1 focus:ring-purple-500"
+                    className="w-full rounded-lg border border-stone-300 px-3 py-2 text-sm focus:border-purple-500 focus:outline-none focus:ring-1 focus:ring-purple-500"
                   />
                 </div>
               </div>
@@ -160,17 +160,17 @@ export default function NewEpoxyEntryPage() {
 
           <Card>
             <CardHeader>
-              <h2 className="font-semibold text-gray-900">Epoxy Details</h2>
+              <h2 className="font-semibold text-stone-900">Epoxy Details</h2>
             </CardHeader>
             <CardContent>
               <div className="space-y-4">
                 <div>
-                  <label className="mb-1 block text-sm font-medium text-gray-700">
+                  <label className="mb-1 block text-sm font-medium text-stone-700">
                     Epoxy Type
                   </label>
                   <select
                     name="epoxyType"
-                    className="w-full rounded-lg border border-gray-300 px-3 py-2 text-sm focus:border-purple-500 focus:outline-none focus:ring-1 focus:ring-purple-500"
+                    className="w-full rounded-lg border border-stone-300 px-3 py-2 text-sm focus:border-purple-500 focus:outline-none focus:ring-1 focus:ring-purple-500"
                   >
                     <option value="">Select type</option>
                     <option value="Standard">Standard</option>
@@ -181,46 +181,46 @@ export default function NewEpoxyEntryPage() {
                   </select>
                 </div>
                 <div>
-                  <label className="mb-1 block text-sm font-medium text-gray-700">
+                  <label className="mb-1 block text-sm font-medium text-stone-700">
                     Epoxy Quantity (ml)
                   </label>
                   <input
                     type="number"
                     name="epoxyQuantityMl"
                     step="0.1"
-                    className="w-full rounded-lg border border-gray-300 px-3 py-2 text-sm focus:border-purple-500 focus:outline-none focus:ring-1 focus:ring-purple-500"
+                    className="w-full rounded-lg border border-stone-300 px-3 py-2 text-sm focus:border-purple-500 focus:outline-none focus:ring-1 focus:ring-purple-500"
                   />
                 </div>
                 <div>
-                  <label className="mb-1 block text-sm font-medium text-gray-700">
+                  <label className="mb-1 block text-sm font-medium text-stone-700">
                     Vacuum Pressure (bar)
                   </label>
                   <input
                     type="number"
                     name="vacuumPressure"
                     step="0.01"
-                    className="w-full rounded-lg border border-gray-300 px-3 py-2 text-sm focus:border-purple-500 focus:outline-none focus:ring-1 focus:ring-purple-500"
+                    className="w-full rounded-lg border border-stone-300 px-3 py-2 text-sm focus:border-purple-500 focus:outline-none focus:ring-1 focus:ring-purple-500"
                   />
                 </div>
                 <div>
-                  <label className="mb-1 block text-sm font-medium text-gray-700">
+                  <label className="mb-1 block text-sm font-medium text-stone-700">
                     Curing Time (minutes)
                   </label>
                   <input
                     type="number"
                     name="curingTimeMin"
-                    className="w-full rounded-lg border border-gray-300 px-3 py-2 text-sm focus:border-purple-500 focus:outline-none focus:ring-1 focus:ring-purple-500"
+                    className="w-full rounded-lg border border-stone-300 px-3 py-2 text-sm focus:border-purple-500 focus:outline-none focus:ring-1 focus:ring-purple-500"
                   />
                 </div>
                 <div>
-                  <label className="mb-1 block text-sm font-medium text-gray-700">
+                  <label className="mb-1 block text-sm font-medium text-stone-700">
                     Temperature (°C)
                   </label>
                   <input
                     type="number"
                     name="temperatureC"
                     step="0.1"
-                    className="w-full rounded-lg border border-gray-300 px-3 py-2 text-sm focus:border-purple-500 focus:outline-none focus:ring-1 focus:ring-purple-500"
+                    className="w-full rounded-lg border border-stone-300 px-3 py-2 text-sm focus:border-purple-500 focus:outline-none focus:ring-1 focus:ring-purple-500"
                   />
                 </div>
                 <div className="flex items-center gap-2">
@@ -228,19 +228,19 @@ export default function NewEpoxyEntryPage() {
                     type="checkbox"
                     name="meshApplied"
                     id="meshApplied"
-                    className="rounded border-gray-300 text-purple-600"
+                    className="rounded border-stone-300 text-purple-600"
                   />
-                  <label htmlFor="meshApplied" className="text-sm text-gray-700">
+                  <label htmlFor="meshApplied" className="text-sm text-stone-700">
                     Fiber mesh applied
                   </label>
                 </div>
                 <div>
-                  <label className="mb-1 block text-sm font-medium text-gray-700">
+                  <label className="mb-1 block text-sm font-medium text-stone-700">
                     Status
                   </label>
                   <select
                     name="status"
-                    className="w-full rounded-lg border border-gray-300 px-3 py-2 text-sm focus:border-purple-500 focus:outline-none focus:ring-1 focus:ring-purple-500"
+                    className="w-full rounded-lg border border-stone-300 px-3 py-2 text-sm focus:border-purple-500 focus:outline-none focus:ring-1 focus:ring-purple-500"
                   >
                     <option value="IN_PROGRESS">In Progress</option>
                     <option value="CURING">Curing</option>
@@ -249,12 +249,12 @@ export default function NewEpoxyEntryPage() {
                   </select>
                 </div>
                 <div>
-                  <label className="mb-1 block text-sm font-medium text-gray-700">
+                  <label className="mb-1 block text-sm font-medium text-stone-700">
                     Quality Check
                   </label>
                   <select
                     name="qualityCheck"
-                    className="w-full rounded-lg border border-gray-300 px-3 py-2 text-sm focus:border-purple-500 focus:outline-none focus:ring-1 focus:ring-purple-500"
+                    className="w-full rounded-lg border border-stone-300 px-3 py-2 text-sm focus:border-purple-500 focus:outline-none focus:ring-1 focus:ring-purple-500"
                   >
                     <option value="">Pending</option>
                     <option value="PASS">Pass</option>
@@ -262,13 +262,13 @@ export default function NewEpoxyEntryPage() {
                   </select>
                 </div>
                 <div>
-                  <label className="mb-1 block text-sm font-medium text-gray-700">
+                  <label className="mb-1 block text-sm font-medium text-stone-700">
                     Notes
                   </label>
                   <textarea
                     name="notes"
                     rows={3}
-                    className="w-full rounded-lg border border-gray-300 px-3 py-2 text-sm focus:border-purple-500 focus:outline-none focus:ring-1 focus:ring-purple-500"
+                    className="w-full rounded-lg border border-stone-300 px-3 py-2 text-sm focus:border-purple-500 focus:outline-none focus:ring-1 focus:ring-purple-500"
                   />
                 </div>
               </div>
@@ -280,7 +280,7 @@ export default function NewEpoxyEntryPage() {
           <button
             type="button"
             onClick={() => router.back()}
-            className="rounded-lg border border-gray-300 px-6 py-2 text-sm font-medium text-gray-700 hover:bg-gray-50"
+            className="rounded-lg border border-stone-300 px-6 py-2 text-sm font-medium text-stone-700 hover:bg-stone-50"
           >
             Cancel
           </button>

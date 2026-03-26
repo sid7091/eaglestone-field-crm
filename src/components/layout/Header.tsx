@@ -32,32 +32,32 @@ export default function Header({ onMenuClick }: HeaderProps) {
   };
 
   return (
-    <header className="fixed left-0 right-0 top-0 z-30 flex h-16 items-center justify-between border-b border-gray-200 bg-white px-4 sm:px-6 lg:left-64">
+    <header className="fixed left-0 right-0 top-0 z-30 flex h-16 items-center justify-between border-b border-stone-200 bg-white px-4 sm:px-6 lg:left-64">
       <div className="flex items-center gap-3">
         {/* Hamburger menu - mobile only */}
         <button
           onClick={onMenuClick}
-          className="rounded-lg p-1.5 text-gray-500 hover:bg-gray-100 lg:hidden"
+          className="rounded-lg p-1.5 text-stone-500 hover:bg-stone-100 lg:hidden"
         >
           <svg className="h-6 w-6" fill="none" viewBox="0 0 24 24" strokeWidth={1.5} stroke="currentColor">
             <path strokeLinecap="round" strokeLinejoin="round" d="M3.75 6.75h16.5M3.75 12h16.5m-16.5 5.25h16.5" />
           </svg>
         </button>
         <div>
-          <h2 className="text-sm text-gray-500">Welcome back,</h2>
-          <p className="font-semibold text-gray-900">
+          <h2 className="text-sm text-stone-500">Welcome back,</h2>
+          <p className="font-semibold text-stone-900">
             {user?.name || "Loading..."}
           </p>
         </div>
       </div>
 
       <div className="flex items-center gap-2 sm:gap-4">
-        <span className="hidden rounded-full bg-amber-100 px-3 py-1 text-xs font-medium text-amber-800 sm:inline-block">
+        <span className="hidden rounded-full bg-brand-cream px-3 py-1 text-xs font-medium text-brand-dark sm:inline-block">
           {user?.role || ""}
         </span>
         <button
           onClick={handleLogout}
-          className="rounded-lg border border-gray-300 px-3 py-1.5 text-sm text-gray-600 transition-colors hover:bg-gray-50"
+          className="rounded-lg border border-stone-300 px-3 py-1.5 text-sm text-stone-600 transition-colors hover:bg-stone-50"
         >
           Logout
         </button>

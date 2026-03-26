@@ -79,10 +79,10 @@ export default function NewGangSawEntryPage() {
   return (
     <div>
       <div className="mb-6">
-        <h1 className="text-2xl font-bold text-gray-900">
+        <h1 className="text-2xl font-bold text-stone-900">
           New Gang Saw Entry
         </h1>
-        <p className="text-sm text-gray-500">Record block cutting details</p>
+        <p className="text-sm text-stone-500">Record block cutting details</p>
       </div>
 
       <form onSubmit={handleSubmit}>
@@ -95,18 +95,18 @@ export default function NewGangSawEntryPage() {
         <div className="grid grid-cols-1 gap-6 lg:grid-cols-2">
           <Card>
             <CardHeader>
-              <h2 className="font-semibold text-gray-900">Block & Machine</h2>
+              <h2 className="font-semibold text-stone-900">Block & Machine</h2>
             </CardHeader>
             <CardContent>
               <div className="space-y-4">
                 <div>
-                  <label className="mb-1 block text-sm font-medium text-gray-700">
+                  <label className="mb-1 block text-sm font-medium text-stone-700">
                     Select Block *
                   </label>
                   <select
                     name="blockId"
                     required
-                    className="w-full rounded-lg border border-gray-300 px-3 py-2 text-sm focus:border-blue-500 focus:outline-none focus:ring-1 focus:ring-blue-500"
+                    className="w-full rounded-lg border border-stone-300 px-3 py-2 text-sm focus:border-blue-500 focus:outline-none focus:ring-1 focus:ring-blue-500"
                   >
                     <option value="">Choose a block</option>
                     {blocks.map((block) => (
@@ -117,13 +117,13 @@ export default function NewGangSawEntryPage() {
                   </select>
                 </div>
                 <div>
-                  <label className="mb-1 block text-sm font-medium text-gray-700">
+                  <label className="mb-1 block text-sm font-medium text-stone-700">
                     Machine *
                   </label>
                   <select
                     name="machineId"
                     required
-                    className="w-full rounded-lg border border-gray-300 px-3 py-2 text-sm focus:border-blue-500 focus:outline-none focus:ring-1 focus:ring-blue-500"
+                    className="w-full rounded-lg border border-stone-300 px-3 py-2 text-sm focus:border-blue-500 focus:outline-none focus:ring-1 focus:ring-blue-500"
                   >
                     <option value="">Select machine</option>
                     {machines.map((m) => (
@@ -134,24 +134,24 @@ export default function NewGangSawEntryPage() {
                   </select>
                 </div>
                 <div>
-                  <label className="mb-1 block text-sm font-medium text-gray-700">
+                  <label className="mb-1 block text-sm font-medium text-stone-700">
                     Start Time *
                   </label>
                   <input
                     type="datetime-local"
                     name="startTime"
                     required
-                    className="w-full rounded-lg border border-gray-300 px-3 py-2 text-sm focus:border-blue-500 focus:outline-none focus:ring-1 focus:ring-blue-500"
+                    className="w-full rounded-lg border border-stone-300 px-3 py-2 text-sm focus:border-blue-500 focus:outline-none focus:ring-1 focus:ring-blue-500"
                   />
                 </div>
                 <div>
-                  <label className="mb-1 block text-sm font-medium text-gray-700">
+                  <label className="mb-1 block text-sm font-medium text-stone-700">
                     End Time
                   </label>
                   <input
                     type="datetime-local"
                     name="endTime"
-                    className="w-full rounded-lg border border-gray-300 px-3 py-2 text-sm focus:border-blue-500 focus:outline-none focus:ring-1 focus:ring-blue-500"
+                    className="w-full rounded-lg border border-stone-300 px-3 py-2 text-sm focus:border-blue-500 focus:outline-none focus:ring-1 focus:ring-blue-500"
                   />
                 </div>
               </div>
@@ -160,12 +160,12 @@ export default function NewGangSawEntryPage() {
 
           <Card>
             <CardHeader>
-              <h2 className="font-semibold text-gray-900">Cutting Details</h2>
+              <h2 className="font-semibold text-stone-900">Cutting Details</h2>
             </CardHeader>
             <CardContent>
               <div className="space-y-4">
                 <div>
-                  <label className="mb-1 block text-sm font-medium text-gray-700">
+                  <label className="mb-1 block text-sm font-medium text-stone-700">
                     Number of Slabs *
                   </label>
                   <input
@@ -173,11 +173,11 @@ export default function NewGangSawEntryPage() {
                     name="numberOfSlabs"
                     min="1"
                     required
-                    className="w-full rounded-lg border border-gray-300 px-3 py-2 text-sm focus:border-blue-500 focus:outline-none focus:ring-1 focus:ring-blue-500"
+                    className="w-full rounded-lg border border-stone-300 px-3 py-2 text-sm focus:border-blue-500 focus:outline-none focus:ring-1 focus:ring-blue-500"
                   />
                 </div>
                 <div>
-                  <label className="mb-1 block text-sm font-medium text-gray-700">
+                  <label className="mb-1 block text-sm font-medium text-stone-700">
                     Slab Thickness (mm)
                   </label>
                   <input
@@ -185,48 +185,48 @@ export default function NewGangSawEntryPage() {
                     name="slabThicknessMm"
                     defaultValue="18"
                     step="0.1"
-                    className="w-full rounded-lg border border-gray-300 px-3 py-2 text-sm focus:border-blue-500 focus:outline-none focus:ring-1 focus:ring-blue-500"
+                    className="w-full rounded-lg border border-stone-300 px-3 py-2 text-sm focus:border-blue-500 focus:outline-none focus:ring-1 focus:ring-blue-500"
                   />
                 </div>
                 <div>
-                  <label className="mb-1 block text-sm font-medium text-gray-700">
+                  <label className="mb-1 block text-sm font-medium text-stone-700">
                     Blades Used
                   </label>
                   <input
                     type="number"
                     name="bladesUsed"
-                    className="w-full rounded-lg border border-gray-300 px-3 py-2 text-sm focus:border-blue-500 focus:outline-none focus:ring-1 focus:ring-blue-500"
+                    className="w-full rounded-lg border border-stone-300 px-3 py-2 text-sm focus:border-blue-500 focus:outline-none focus:ring-1 focus:ring-blue-500"
                   />
                 </div>
                 <div>
-                  <label className="mb-1 block text-sm font-medium text-gray-700">
+                  <label className="mb-1 block text-sm font-medium text-stone-700">
                     Wastage (kg)
                   </label>
                   <input
                     type="number"
                     name="wastageKg"
                     step="0.1"
-                    className="w-full rounded-lg border border-gray-300 px-3 py-2 text-sm focus:border-blue-500 focus:outline-none focus:ring-1 focus:ring-blue-500"
+                    className="w-full rounded-lg border border-stone-300 px-3 py-2 text-sm focus:border-blue-500 focus:outline-none focus:ring-1 focus:ring-blue-500"
                   />
                 </div>
                 <div>
-                  <label className="mb-1 block text-sm font-medium text-gray-700">
+                  <label className="mb-1 block text-sm font-medium text-stone-700">
                     Power Consumption (kWh)
                   </label>
                   <input
                     type="number"
                     name="powerConsumptionKwh"
                     step="0.1"
-                    className="w-full rounded-lg border border-gray-300 px-3 py-2 text-sm focus:border-blue-500 focus:outline-none focus:ring-1 focus:ring-blue-500"
+                    className="w-full rounded-lg border border-stone-300 px-3 py-2 text-sm focus:border-blue-500 focus:outline-none focus:ring-1 focus:ring-blue-500"
                   />
                 </div>
                 <div>
-                  <label className="mb-1 block text-sm font-medium text-gray-700">
+                  <label className="mb-1 block text-sm font-medium text-stone-700">
                     Status
                   </label>
                   <select
                     name="status"
-                    className="w-full rounded-lg border border-gray-300 px-3 py-2 text-sm focus:border-blue-500 focus:outline-none focus:ring-1 focus:ring-blue-500"
+                    className="w-full rounded-lg border border-stone-300 px-3 py-2 text-sm focus:border-blue-500 focus:outline-none focus:ring-1 focus:ring-blue-500"
                   >
                     <option value="IN_PROGRESS">In Progress</option>
                     <option value="COMPLETED">Completed</option>
@@ -238,20 +238,20 @@ export default function NewGangSawEntryPage() {
                     type="checkbox"
                     name="blockFullyCut"
                     id="blockFullyCut"
-                    className="rounded border-gray-300 text-blue-600"
+                    className="rounded border-stone-300 text-blue-600"
                   />
-                  <label htmlFor="blockFullyCut" className="text-sm text-gray-700">
+                  <label htmlFor="blockFullyCut" className="text-sm text-stone-700">
                     Block fully cut (no material remaining)
                   </label>
                 </div>
                 <div>
-                  <label className="mb-1 block text-sm font-medium text-gray-700">
+                  <label className="mb-1 block text-sm font-medium text-stone-700">
                     Notes
                   </label>
                   <textarea
                     name="notes"
                     rows={3}
-                    className="w-full rounded-lg border border-gray-300 px-3 py-2 text-sm focus:border-blue-500 focus:outline-none focus:ring-1 focus:ring-blue-500"
+                    className="w-full rounded-lg border border-stone-300 px-3 py-2 text-sm focus:border-blue-500 focus:outline-none focus:ring-1 focus:ring-blue-500"
                   />
                 </div>
               </div>
@@ -263,7 +263,7 @@ export default function NewGangSawEntryPage() {
           <button
             type="button"
             onClick={() => router.back()}
-            className="rounded-lg border border-gray-300 px-6 py-2 text-sm font-medium text-gray-700 hover:bg-gray-50"
+            className="rounded-lg border border-stone-300 px-6 py-2 text-sm font-medium text-stone-700 hover:bg-stone-50"
           >
             Cancel
           </button>
