@@ -1,0 +1,102 @@
+version: "3.9"
+
+services:
+  # ─── PostgreSQL (Primary Datastore) ───────────────────────────
+  postgres:
+    image: postgis/postgis:16-3.4-alpine
+    container_name: eaglestone-postgres
+    restart: unless-stopped
+    environment:
+      POSTGRES_DB: eaglestone_crm
+      POSTGRES_USER: eaglestone
+      POSTGRES_PASSWORD: ${POSTGRES_PASSWORD:-eaglestone_secret}
+    ports:
+      - "5432:5432"
+    volumes:
+      - pgdata:/var/lib/postgresql/data
+      - ./backend/scripts/init-db.sql:/docker-entrypoint-initdb.d/01-init.sql
+    healthcheck:
+      test: ["CMD-SHELL", "pg_isready -U eaglestone -d eaglestone_crm"]
+      interval: 10s
+      timeout: 5s
+      retries: 5
+    networks:
+      - eaglestone-net
+
+  # ─── Redis (Sync Queue / Caching) ────────────────────────────
+  redis:
+    image: redis:7-alpine
+    container_name: eaglestone-redis
+    restart: unless-stopped
+    ports:
+      - "6379:6379"
+    volumes:
+      - redisdata:/data
+    healthcheck:
+      test: ["CMD", "redis-cli", "ping"]
+      interval: 10s
+      timeout: 5s
+      retries: 5
+    networks:
+      - eaglestone-net
+
+  # ─── Backend API (Node.js / TypeORM / Express) ───────────────
+  backend:
+    build:
+      context: ./backend
+      dockerfile: Dockerfile
+    container_name: eaglestone-backend
+    restart: unless-stopped
+    environment:
+      NODE_ENV: ${NODE_ENV:-development}
+      PORT: 4000
+      DB_HOST: postgres
+      DB_PORT: 5432
+      DB_NAME: eaglestone_crm
+      DB_USER: eaglestone
+      DB_PASSWORD: ${POSTGRES_PASSWORD:-eaglestone_secret}
+      REDIS_HOST: redis
+      REDIS_PORT: 6379
+      JWT_SECRET: ${JWT_SECRET:-change-me-in-production}
+      GEOFENCE_RADIUS_METERS: 100
+    ports:
+      - "4000:4000"
+    depends_on:
+      postgres:
+        condition: service_healthy
+      redis:
+        condition: service_healthy
+    volumes:
+      - ./backend/src:/app/src
+    networks:
+      - eaglestone-net
+
+  # ─── Frontend (Next.js PWA) ──────────────────────────────────
+  frontend:
+    build:
+      context: .
+      dockerfile: Dockerfile.frontend
+    container_name: eaglestone-frontend
+    restart: unless-stopped
+    environment:
+      NODE_ENV: ${NODE_ENV:-development}
+      NEXT_PUBLIC_API_URL: http://backend:4000/api/v1
+    ports:
+      - "3000:3000"
+    depends_on:
+      - backend
+    volumes:
+      - ./src:/app/src
+      - ./public:/app/public
+    networks:
+      - eaglestone-net
+
+volumes:
+  pgdata:
+    driver: local
+  redisdata:
+    driver: local
+
+networks:
+  eaglestone-net:
+    driver: bridge
