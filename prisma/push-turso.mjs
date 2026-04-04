@@ -202,6 +202,109 @@ const statements = [
     CONSTRAINT "InventoryItem_warehouseId_fkey" FOREIGN KEY ("warehouseId") REFERENCES "Warehouse" ("id") ON DELETE RESTRICT ON UPDATE CASCADE
   )`,
   `CREATE UNIQUE INDEX IF NOT EXISTS "InventoryItem_slabId_key" ON "InventoryItem"("slabId")`,
+
+  // Customer
+  `CREATE TABLE IF NOT EXISTS "Customer" (
+    "id" TEXT NOT NULL PRIMARY KEY,
+    "businessName" TEXT NOT NULL,
+    "contactPerson" TEXT,
+    "phone" TEXT NOT NULL,
+    "altPhone" TEXT,
+    "email" TEXT,
+    "gstin" TEXT,
+    "pan" TEXT,
+    "customerType" TEXT NOT NULL DEFAULT 'DEALER',
+    "tier" TEXT NOT NULL DEFAULT 'BRONZE',
+    "leadStatus" TEXT NOT NULL DEFAULT 'NEW',
+    "regionCode" TEXT NOT NULL,
+    "district" TEXT NOT NULL,
+    "city" TEXT,
+    "address" TEXT NOT NULL,
+    "pincode" TEXT,
+    "locationLat" REAL,
+    "locationLng" REAL,
+    "locationAccuracy" REAL,
+    "preferredMaterials" TEXT,
+    "annualPotentialINR" REAL NOT NULL DEFAULT 0,
+    "lifetimeValueINR" REAL NOT NULL DEFAULT 0,
+    "notes" TEXT,
+    "erpMetadata" TEXT,
+    "createdAt" DATETIME NOT NULL DEFAULT CURRENT_TIMESTAMP,
+    "updatedAt" DATETIME NOT NULL
+  )`,
+  `CREATE UNIQUE INDEX IF NOT EXISTS "Customer_gstin_key" ON "Customer"("gstin")`,
+
+  // Visit
+  `CREATE TABLE IF NOT EXISTS "Visit" (
+    "id" TEXT NOT NULL PRIMARY KEY,
+    "regionCode" TEXT NOT NULL,
+    "visitDate" TEXT NOT NULL,
+    "purpose" TEXT NOT NULL,
+    "status" TEXT NOT NULL DEFAULT 'PLANNED',
+    "checkinTime" DATETIME,
+    "checkoutTime" DATETIME,
+    "durationMinutes" INTEGER,
+    "checkinLat" REAL,
+    "checkinLng" REAL,
+    "checkinAccuracy" REAL,
+    "checkoutLat" REAL,
+    "checkoutLng" REAL,
+    "checkoutAccuracy" REAL,
+    "geofenceDistance" REAL,
+    "geofenceValid" BOOLEAN,
+    "summary" TEXT,
+    "actionItems" TEXT,
+    "nextSteps" TEXT,
+    "followUpDate" TEXT,
+    "orderValueINR" REAL,
+    "photoUrls" TEXT,
+    "createdOffline" BOOLEAN NOT NULL DEFAULT false,
+    "offlineId" TEXT,
+    "erpMetadata" TEXT,
+    "createdAt" DATETIME NOT NULL DEFAULT CURRENT_TIMESTAMP,
+    "updatedAt" DATETIME NOT NULL,
+    "fieldRepId" TEXT NOT NULL,
+    "customerId" TEXT NOT NULL,
+    CONSTRAINT "Visit_fieldRepId_fkey" FOREIGN KEY ("fieldRepId") REFERENCES "User" ("id") ON DELETE RESTRICT ON UPDATE CASCADE,
+    CONSTRAINT "Visit_customerId_fkey" FOREIGN KEY ("customerId") REFERENCES "Customer" ("id") ON DELETE RESTRICT ON UPDATE CASCADE
+  )`,
+  `CREATE UNIQUE INDEX IF NOT EXISTS "Visit_offlineId_key" ON "Visit"("offlineId")`,
+
+  // FieldInventory
+  `CREATE TABLE IF NOT EXISTS "FieldInventory" (
+    "id" TEXT NOT NULL PRIMARY KEY,
+    "regionCode" TEXT NOT NULL,
+    "sku" TEXT NOT NULL,
+    "materialType" TEXT NOT NULL,
+    "variety" TEXT NOT NULL,
+    "color" TEXT NOT NULL,
+    "finishType" TEXT NOT NULL,
+    "grade" TEXT NOT NULL DEFAULT 'A',
+    "lengthCm" REAL NOT NULL,
+    "widthCm" REAL NOT NULL,
+    "thicknessMm" REAL NOT NULL,
+    "quantityAvailable" INTEGER NOT NULL DEFAULT 1,
+    "quantityReserved" INTEGER NOT NULL DEFAULT 0,
+    "pricePerSqftINR" REAL NOT NULL,
+    "landedCostPerSqftINR" REAL,
+    "warehouseCode" TEXT NOT NULL,
+    "rackLocation" TEXT,
+    "bundleNumber" TEXT,
+    "blockReference" TEXT,
+    "status" TEXT NOT NULL DEFAULT 'IN_STOCK',
+    "reservedForId" TEXT,
+    "reservedDate" DATETIME,
+    "soldDate" DATETIME,
+    "notes" TEXT,
+    "erpMetadata" TEXT,
+    "createdAt" DATETIME NOT NULL DEFAULT CURRENT_TIMESTAMP,
+    "updatedAt" DATETIME NOT NULL,
+    CONSTRAINT "FieldInventory_reservedForId_fkey" FOREIGN KEY ("reservedForId") REFERENCES "Customer" ("id") ON DELETE SET NULL ON UPDATE CASCADE
+  )`,
+  `CREATE UNIQUE INDEX IF NOT EXISTS "FieldInventory_sku_key" ON "FieldInventory"("sku")`,
+
+  // Add regionCode to User if not exists
+  `ALTER TABLE "User" ADD COLUMN "regionCode" TEXT NOT NULL DEFAULT 'RJ'`,
 ];
 
 console.log("Pushing schema to Turso...");
@@ -212,8 +315,12 @@ for (const sql of statements) {
     await client.execute(sql);
     console.log(`  OK: ${tableName}`);
   } catch (err) {
-    console.error(`  FAIL: ${tableName} - ${err.message}`);
-    process.exit(1);
+    if (err.message?.includes("duplicate column") || err.message?.includes("already exists")) {
+      console.log(`  SKIP: ${tableName} (already exists)`);
+    } else {
+      console.error(`  FAIL: ${tableName} - ${err.message}`);
+      process.exit(1);
+    }
   }
 }
 
