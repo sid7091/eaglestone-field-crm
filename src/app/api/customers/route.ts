@@ -8,38 +8,47 @@ export async function GET(request: NextRequest) {
 
   const sp = request.nextUrl.searchParams;
   const search = sp.get("search");
-  const materialType = sp.get("materialType");
-  const finishType = sp.get("finishType");
-  const grade = sp.get("grade");
-  const status = sp.get("status");
+  const customerType = sp.get("customerType");
+  const tier = sp.get("tier");
+  const leadStatus = sp.get("leadStatus");
+  const regionCode = sp.get("regionCode");
   const page = Math.max(1, parseInt(sp.get("page") || "1", 10));
   const limit = Math.min(200, Math.max(1, parseInt(sp.get("limit") || "50", 10)));
 
   const where: Record<string, unknown> = {};
-  if (materialType) where.materialType = materialType;
-  if (finishType) where.finishType = finishType;
-  if (grade) where.grade = grade;
-  if (status) where.status = status;
+  if (customerType) where.customerType = customerType;
+  if (tier) where.tier = tier;
+  if (leadStatus) where.leadStatus = leadStatus;
+  if (regionCode) where.regionCode = regionCode;
   if (search) {
     where.OR = [
-      { sku: { contains: search } },
-      { variety: { contains: search } },
-      { color: { contains: search } },
+      { businessName: { contains: search } },
+      { contactPerson: { contains: search } },
+      { phone: { contains: search } },
     ];
   }
 
   const [data, total] = await Promise.all([
-    prisma.fieldInventory.findMany({
+    prisma.customer.findMany({
       where,
       orderBy: { createdAt: "desc" },
       skip: (page - 1) * limit,
       take: limit,
     }),
-    prisma.fieldInventory.count({ where }),
+    prisma.customer.count({ where }),
   ]);
 
   return NextResponse.json({
     data,
     meta: { total, page, limit, totalPages: Math.ceil(total / limit) },
   });
+}
+
+export async function POST(request: NextRequest) {
+  const user = await getCurrentUser();
+  if (!user) return NextResponse.json({ error: "Unauthorized" }, { status: 401 });
+
+  const body = await request.json();
+  const customer = await prisma.customer.create({ data: body });
+  return NextResponse.json(customer, { status: 201 });
 }

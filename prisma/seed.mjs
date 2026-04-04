@@ -219,11 +219,231 @@ async function main() {
     },
   });
 
+  // ==================== FIELD CRM DATA ====================
+
+  // Field Rep user
+  const fieldRepPassword = await bcrypt.hash("fieldrep123", 12);
+  const fieldRep1 = await prisma.user.create({
+    data: {
+      email: "fieldrep@eaglestone.in",
+      password: fieldRepPassword,
+      name: "Arjun Sharma",
+      role: "OPERATOR",
+      department: "SALES",
+      phone: "+91-9876543214",
+      regionCode: "RJ",
+    },
+  });
+
+  // Customers
+  const customer1 = await prisma.customer.create({
+    data: {
+      businessName: "Rajasthan Marble House",
+      contactPerson: "Vikram Singh",
+      phone: "+91-9412345678",
+      email: "vikram@rajmarble.in",
+      customerType: "DEALER",
+      tier: "GOLD",
+      leadStatus: "QUALIFIED",
+      regionCode: "RJ",
+      district: "Jaipur",
+      city: "Jaipur",
+      address: "123 MI Road, Jaipur",
+      pincode: "302001",
+      locationLat: 26.9124,
+      locationLng: 75.7873,
+      annualPotentialINR: 5000000,
+    },
+  });
+
+  const customer2 = await prisma.customer.create({
+    data: {
+      businessName: "Mehta Constructions",
+      contactPerson: "Priya Mehta",
+      phone: "+91-9823456789",
+      email: "priya@mehtaconstruction.in",
+      customerType: "BUILDER",
+      tier: "PLATINUM",
+      leadStatus: "NEGOTIATION",
+      regionCode: "MH",
+      district: "Mumbai",
+      city: "Mumbai",
+      address: "45 Marine Drive, Mumbai",
+      pincode: "400020",
+      locationLat: 18.9440,
+      locationLng: 72.8234,
+      annualPotentialINR: 15000000,
+    },
+  });
+
+  const customer3 = await prisma.customer.create({
+    data: {
+      businessName: "Stone Age Interiors",
+      contactPerson: "Karan Patel",
+      phone: "+91-9734567890",
+      customerType: "ARCHITECT",
+      tier: "SILVER",
+      leadStatus: "PROPOSAL_SENT",
+      regionCode: "KA",
+      district: "Bangalore",
+      city: "Bangalore",
+      address: "78 MG Road, Bangalore",
+      pincode: "560001",
+      locationLat: 12.9716,
+      locationLng: 77.5946,
+      annualPotentialINR: 3000000,
+    },
+  });
+
+  const customer4 = await prisma.customer.create({
+    data: {
+      businessName: "Andhra Granite Works",
+      contactPerson: "Srinivas Reddy",
+      phone: "+91-9645678901",
+      customerType: "DEALER",
+      tier: "BRONZE",
+      leadStatus: "NEW",
+      regionCode: "AP",
+      district: "Guntur",
+      city: "Ongole",
+      address: "Plot 12, Industrial Area, Ongole",
+      pincode: "523001",
+      locationLat: 15.5057,
+      locationLng: 80.0499,
+      annualPotentialINR: 1500000,
+    },
+  });
+
+  const customer5 = await prisma.customer.create({
+    data: {
+      businessName: "Delhi Marble Emporium",
+      contactPerson: "Ankit Gupta",
+      phone: "+91-9556789012",
+      email: "ankit@delhimarble.com",
+      customerType: "DEALER",
+      tier: "GOLD",
+      leadStatus: "WON",
+      regionCode: "DL",
+      district: "New Delhi",
+      city: "New Delhi",
+      address: "22 Chandni Chowk, Delhi",
+      pincode: "110006",
+      locationLat: 28.6505,
+      locationLng: 77.2303,
+      annualPotentialINR: 8000000,
+      lifetimeValueINR: 12000000,
+    },
+  });
+
+  console.log("Field CRM customers created");
+
+  // Visits
+  const today = new Date();
+  const todayStr = today.toISOString().slice(0, 10);
+  const yesterday = new Date(today); yesterday.setDate(today.getDate() - 1);
+  const yesterdayStr = yesterday.toISOString().slice(0, 10);
+  const twoDaysAgo = new Date(today); twoDaysAgo.setDate(today.getDate() - 2);
+
+  await prisma.visit.create({
+    data: {
+      regionCode: "RJ",
+      visitDate: yesterdayStr,
+      purpose: "SALES_PITCH",
+      status: "COMPLETED",
+      fieldRepId: fieldRep1.id,
+      customerId: customer1.id,
+      checkinTime: new Date(yesterday.getFullYear(), yesterday.getMonth(), yesterday.getDate(), 10, 0),
+      checkoutTime: new Date(yesterday.getFullYear(), yesterday.getMonth(), yesterday.getDate(), 11, 30),
+      durationMinutes: 90,
+      checkinLat: 26.9125,
+      checkinLng: 75.7874,
+      checkinAccuracy: 8,
+      checkoutLat: 26.9125,
+      checkoutLng: 75.7873,
+      checkoutAccuracy: 10,
+      geofenceDistance: 12,
+      geofenceValid: true,
+      summary: "Showed premium Italian marble samples. Client interested in Statuario for lobby project.",
+      actionItems: "Send detailed quotation for 200 sqft Statuario. Follow up in 3 days.",
+      orderValueINR: 500000,
+    },
+  });
+
+  await prisma.visit.create({
+    data: {
+      regionCode: "MH",
+      visitDate: todayStr,
+      purpose: "ORDER_FOLLOWUP",
+      status: "PLANNED",
+      fieldRepId: admin.id,
+      customerId: customer2.id,
+    },
+  });
+
+  await prisma.visit.create({
+    data: {
+      regionCode: "KA",
+      visitDate: twoDaysAgo.toISOString().slice(0, 10),
+      purpose: "SAMPLE_DELIVERY",
+      status: "COMPLETED",
+      fieldRepId: fieldRep1.id,
+      customerId: customer3.id,
+      checkinTime: new Date(twoDaysAgo.getFullYear(), twoDaysAgo.getMonth(), twoDaysAgo.getDate(), 14, 0),
+      checkoutTime: new Date(twoDaysAgo.getFullYear(), twoDaysAgo.getMonth(), twoDaysAgo.getDate(), 15, 0),
+      durationMinutes: 60,
+      checkinLat: 12.9717,
+      checkinLng: 77.5947,
+      checkinAccuracy: 5,
+      geofenceDistance: 15,
+      geofenceValid: true,
+      summary: "Delivered 3 marble samples. Architect reviewing for a villa project.",
+      orderValueINR: 300000,
+    },
+  });
+
+  await prisma.visit.create({
+    data: {
+      regionCode: "DL",
+      visitDate: yesterdayStr,
+      purpose: "SALES_PITCH",
+      status: "FLAGGED_FAKE",
+      fieldRepId: admin.id,
+      customerId: customer5.id,
+      checkinTime: new Date(yesterday.getFullYear(), yesterday.getMonth(), yesterday.getDate(), 16, 0),
+      checkinLat: 28.6300,
+      checkinLng: 77.2100,
+      checkinAccuracy: 45,
+      geofenceDistance: 2500,
+      geofenceValid: false,
+    },
+  });
+
+  console.log("Field CRM visits created");
+
+  // Field Inventory
+  const inventoryItems = [
+    { sku: "FLD-STT-001", materialType: "Italian Marble", variety: "Statuario", color: "White", finishType: "POLISHED", grade: "A", lengthCm: 300, widthCm: 150, thicknessMm: 18, quantityAvailable: 5, pricePerSqftINR: 850, landedCostPerSqftINR: 600, warehouseCode: "WH-ONG-01", rackLocation: "A-1-1", bundleNumber: "BDL-STT-01", blockReference: "BLK-2026-0001", regionCode: "AP" },
+    { sku: "FLD-BOT-001", materialType: "Italian Marble", variety: "Bottochino", color: "Beige", finishType: "POLISHED", grade: "A", lengthCm: 280, widthCm: 150, thicknessMm: 18, quantityAvailable: 8, pricePerSqftINR: 650, landedCostPerSqftINR: 420, warehouseCode: "WH-ONG-01", rackLocation: "A-2-1", bundleNumber: "BDL-BOT-01", regionCode: "AP" },
+    { sku: "FLD-EMP-001", materialType: "Turkish Marble", variety: "Emperador", color: "Brown", finishType: "POLISHED", grade: "B", lengthCm: 300, widthCm: 170, thicknessMm: 20, quantityAvailable: 3, pricePerSqftINR: 550, landedCostPerSqftINR: 380, warehouseCode: "WH-ONG-01", rackLocation: "B-1-1", regionCode: "AP" },
+    { sku: "FLD-MKR-001", materialType: "Indian Marble", variety: "Makrana", color: "White", finishType: "HONED", grade: "A", lengthCm: 260, widthCm: 150, thicknessMm: 18, quantityAvailable: 12, pricePerSqftINR: 350, landedCostPerSqftINR: 200, warehouseCode: "WH-JPR-01", rackLocation: "C-1-1", bundleNumber: "BDL-MKR-01", regionCode: "RJ" },
+    { sku: "FLD-BLK-GRN-001", materialType: "Granite", variety: "Black Galaxy", color: "Black", finishType: "POLISHED", grade: "A", lengthCm: 280, widthCm: 160, thicknessMm: 20, quantityAvailable: 6, pricePerSqftINR: 450, landedCostPerSqftINR: 280, warehouseCode: "WH-ONG-01", rackLocation: "D-1-1", regionCode: "AP" },
+    { sku: "FLD-CLC-001", materialType: "Italian Marble", variety: "Calacatta", color: "White", finishType: "POLISHED", grade: "A", lengthCm: 310, widthCm: 160, thicknessMm: 18, quantityAvailable: 2, pricePerSqftINR: 1200, landedCostPerSqftINR: 900, warehouseCode: "WH-ONG-01", rackLocation: "A-3-1", bundleNumber: "BDL-CLC-01", regionCode: "AP" },
+    { sku: "FLD-ONX-001", materialType: "Onyx", variety: "Honey Onyx", color: "Gold", finishType: "POLISHED", grade: "A", lengthCm: 240, widthCm: 120, thicknessMm: 18, quantityAvailable: 4, pricePerSqftINR: 1500, landedCostPerSqftINR: 1100, warehouseCode: "WH-JPR-01", rackLocation: "E-1-1", regionCode: "RJ" },
+    { sku: "FLD-TRV-001", materialType: "Travertine", variety: "Classic Travertine", color: "Cream", finishType: "HONED", grade: "B", lengthCm: 300, widthCm: 150, thicknessMm: 20, quantityAvailable: 10, pricePerSqftINR: 400, landedCostPerSqftINR: 250, warehouseCode: "WH-ONG-01", rackLocation: "F-1-1", regionCode: "AP" },
+  ];
+
+  for (const item of inventoryItems) {
+    await prisma.fieldInventory.create({ data: item });
+  }
+
+  console.log("Field inventory created");
+
   console.log("\nSeeding completed!");
   console.log("\nLogin Credentials:");
-  console.log("  Admin:    admin@eaglestone.in / admin123");
-  console.log("  Manager:  manager@eaglestone.in / manager123");
-  console.log("  Operator: operator@eaglestone.in / operator123");
+  console.log("  Admin:      admin@eaglestone.in / admin123");
+  console.log("  Manager:    manager@eaglestone.in / manager123");
+  console.log("  Operator:   operator@eaglestone.in / operator123");
+  console.log("  Field Rep:  fieldrep@eaglestone.in / fieldrep123");
 }
 
 main()

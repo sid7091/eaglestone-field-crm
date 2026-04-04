@@ -45,7 +45,7 @@ export class NetworkError extends Error {
 // Internal helpers
 // ---------------------------------------------------------------------------
 
-const API_PREFIX = "/api/v1";
+const API_PREFIX = "/api";
 
 /** Extract the `auth-token` value from `document.cookie`, if available. */
 function getTokenFromCookie(): string | null {

@@ -18,6 +18,7 @@ model User {
   department String  @default("PRODUCTION") // PRODUCTION, SALES, PURCHASE, ACCOUNTS, HR, ADMIN
   phone     String?
   isActive  Boolean  @default(true)
+  regionCode String  @default("RJ")
   createdAt DateTime @default(now())
   updatedAt DateTime @updatedAt
 
@@ -25,6 +26,7 @@ model User {
   gangSawEntries    GangSawEntry[]
   epoxyEntries      EpoxyEntry[]
   polishingEntries  PolishingEntry[]
+  visits            Visit[]
 }
 
 // ==================== RAW BLOCKS ====================
@@ -254,4 +256,110 @@ model Warehouse {
 
   // Relations
   items     InventoryItem[]
+}
+
+// ==================== FIELD CRM: CUSTOMERS ====================
+
+model Customer {
+  id              String   @id @default(cuid())
+  businessName    String
+  contactPerson   String?
+  phone           String
+  altPhone        String?
+  email           String?
+  gstin           String?  @unique
+  pan             String?
+  customerType    String   @default("DEALER") // DEALER, ARCHITECT, BUILDER, CONTRACTOR, DIRECT_CLIENT, QUARRY_OWNER
+  tier            String   @default("BRONZE") // PLATINUM, GOLD, SILVER, BRONZE
+  leadStatus      String   @default("NEW") // NEW, CONTACTED, QUALIFIED, PROPOSAL_SENT, NEGOTIATION, WON, LOST, DORMANT
+  regionCode      String   // AP, RJ, KA, MH, etc.
+  district        String
+  city            String?
+  address         String
+  pincode         String?
+  locationLat     Float?
+  locationLng     Float?
+  locationAccuracy Float?
+  preferredMaterials String? // JSON string array
+  annualPotentialINR Float  @default(0)
+  lifetimeValueINR   Float  @default(0)
+  notes           String?
+  erpMetadata     String?  // JSON string
+  createdAt       DateTime @default(now())
+  updatedAt       DateTime @updatedAt
+
+  // Relations
+  visits          Visit[]
+  fieldInventoryReservations FieldInventory[]
+}
+
+// ==================== FIELD CRM: VISITS ====================
+
+model Visit {
+  id              String   @id @default(cuid())
+  regionCode      String
+  visitDate       String   // YYYY-MM-DD
+  purpose         String   // SALES_PITCH, SAMPLE_DELIVERY, ORDER_FOLLOWUP, etc.
+  status          String   @default("PLANNED") // PLANNED, CHECKED_IN, IN_PROGRESS, CHECKED_OUT, COMPLETED, CANCELLED, FLAGGED_FAKE
+  checkinTime     DateTime?
+  checkoutTime    DateTime?
+  durationMinutes Int?
+  checkinLat      Float?
+  checkinLng      Float?
+  checkinAccuracy Float?
+  checkoutLat     Float?
+  checkoutLng     Float?
+  checkoutAccuracy Float?
+  geofenceDistance Float?   // meters from customer
+  geofenceValid   Boolean?
+  summary         String?
+  actionItems     String?
+  nextSteps       String?
+  followUpDate    String?  // YYYY-MM-DD
+  orderValueINR   Float?
+  photoUrls       String?  // JSON string array
+  createdOffline  Boolean  @default(false)
+  offlineId       String?  @unique
+  erpMetadata     String?  // JSON string
+  createdAt       DateTime @default(now())
+  updatedAt       DateTime @updatedAt
+
+  // Relations
+  fieldRepId      String
+  fieldRep        User     @relation(fields: [fieldRepId], references: [id])
+  customerId      String
+  customer        Customer @relation(fields: [customerId], references: [id])
+}
+
+// ==================== FIELD CRM: FIELD INVENTORY ====================
+
+model FieldInventory {
+  id              String   @id @default(cuid())
+  regionCode      String
+  sku             String   @unique
+  materialType    String
+  variety         String
+  color           String
+  finishType      String
+  grade           String   @default("A")
+  lengthCm        Float
+  widthCm         Float
+  thicknessMm     Float
+  quantityAvailable Int    @default(1)
+  quantityReserved  Int    @default(0)
+  pricePerSqftINR Float
+  landedCostPerSqftINR Float?
+  warehouseCode   String
+  rackLocation    String?
+  bundleNumber    String?
+  blockReference  String?
+  status          String   @default("IN_STOCK") // IN_STOCK, RESERVED, IN_TRANSIT, DELIVERED, RETURNED, DAMAGED
+  reservedForId   String?
+  reservedFor     Customer? @relation(fields: [reservedForId], references: [id])
+  reservedDate    DateTime?
+  soldDate        DateTime?
+  notes           String?
+  erpMetadata     String?
+  createdAt       DateTime @default(now())
+  updatedAt       DateTime @updatedAt
 }
