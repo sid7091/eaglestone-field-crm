@@ -1,6 +1,6 @@
 "use client";
 
-import { useEffect, useState, useCallback, useRef } from "react";
+import { Suspense, useEffect, useState, useCallback, useRef } from "react";
 import { useRouter, useSearchParams } from "next/navigation";
 import { Card } from "@/components/ui/Card";
 import StatusBadge from "@/components/ui/StatusBadge";
@@ -33,7 +33,19 @@ interface GeofenceResult {
 
 type Phase = "locate" | "confirming" | "checkedin" | "inprogress" | "checkout" | "done";
 
-export default function CheckinPage() {
+export default function CheckinPageWrapper() {
+  return (
+    <Suspense fallback={
+      <div className="flex h-64 items-center justify-center">
+        <div className="h-8 w-8 animate-spin rounded-full border-4 border-brand-accent border-t-transparent" />
+      </div>
+    }>
+      <CheckinPage />
+    </Suspense>
+  );
+}
+
+function CheckinPage() {
   const router = useRouter();
   const searchParams = useSearchParams();
   const visitId = searchParams.get("visitId");
