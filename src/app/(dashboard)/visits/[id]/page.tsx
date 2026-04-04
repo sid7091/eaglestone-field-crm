@@ -5,6 +5,7 @@ import { useParams, useRouter } from "next/navigation";
 import Link from "next/link";
 import { Card, CardHeader, CardContent } from "@/components/ui/Card";
 import StatusBadge from "@/components/ui/StatusBadge";
+import GeofenceMap from "@/components/ui/GeofenceMap";
 import { api, ApiError } from "@/lib/api-client";
 import { formatDate, formatDateTime, formatCurrency } from "@/lib/utils";
 
@@ -435,24 +436,42 @@ export default function VisitDetailPage() {
               </p>
             )}
 
-            {/* Map placeholder */}
+            {/* Geofence Map */}
             <div className="mt-4">
-              <div className="flex h-40 w-full flex-col items-center justify-center rounded-lg border-2 border-dashed border-stone-200 bg-stone-50 text-center">
-                <svg className="mb-2 h-8 w-8 text-stone-300" fill="none" viewBox="0 0 24 24" strokeWidth={1.5} stroke="currentColor">
-                  <path strokeLinecap="round" strokeLinejoin="round" d="M15 10.5a3 3 0 11-6 0 3 3 0 016 0z" />
-                  <path strokeLinecap="round" strokeLinejoin="round" d="M19.5 10.5c0 7.142-7.5 11.25-7.5 11.25S4.5 17.642 4.5 10.5a7.5 7.5 0 1115 0z" />
-                </svg>
-                <p className="text-xs text-stone-400">
-                  {visit.checkinLocation
-                    ? `Check-in: ${visit.checkinLocation.latitude.toFixed(4)}, ${visit.checkinLocation.longitude.toFixed(4)}`
-                    : "Map will show check-in / check-out pins"}
-                </p>
-                {visit.checkoutLocation && (
-                  <p className="mt-0.5 text-xs text-stone-400">
-                    Check-out: {visit.checkoutLocation.latitude.toFixed(4)}, {visit.checkoutLocation.longitude.toFixed(4)}
-                  </p>
-                )}
-              </div>
+              {visit.geofenceValidation ? (
+                <GeofenceMap
+                  center={visit.geofenceValidation.customerLocation}
+                  radiusMeters={visit.geofenceValidation.geofenceRadiusMeters}
+                  showGeofence
+                  height="240px"
+                  markers={[
+                    ...(visit.checkinLocation
+                      ? [{
+                          latitude: visit.checkinLocation.latitude,
+                          longitude: visit.checkinLocation.longitude,
+                          label: "Check-in",
+                          color: "green" as const,
+                        }]
+                      : []),
+                    ...(visit.checkoutLocation
+                      ? [{
+                          latitude: visit.checkoutLocation.latitude,
+                          longitude: visit.checkoutLocation.longitude,
+                          label: "Check-out",
+                          color: "orange" as const,
+                        }]
+                      : []),
+                  ]}
+                />
+              ) : (
+                <div className="flex h-40 w-full flex-col items-center justify-center rounded-lg border-2 border-dashed border-stone-200 bg-stone-50 text-center">
+                  <svg className="mb-2 h-8 w-8 text-stone-300" fill="none" viewBox="0 0 24 24" strokeWidth={1.5} stroke="currentColor">
+                    <path strokeLinecap="round" strokeLinejoin="round" d="M15 10.5a3 3 0 11-6 0 3 3 0 016 0z" />
+                    <path strokeLinecap="round" strokeLinejoin="round" d="M19.5 10.5c0 7.142-7.5 11.25-7.5 11.25S4.5 17.642 4.5 10.5a7.5 7.5 0 1115 0z" />
+                  </svg>
+                  <p className="text-xs text-stone-400">Map will show once check-in is recorded</p>
+                </div>
+              )}
             </div>
           </CardContent>
         </Card>
