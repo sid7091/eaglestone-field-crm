@@ -168,6 +168,22 @@ export function getStatusColor(status: string): string {
     PASS: "bg-green-100 text-green-800",
     FAIL: "bg-red-100 text-red-800",
     PENDING: "bg-yellow-100 text-yellow-800",
+    // Field CRM statuses
+    NEW: "bg-blue-100 text-blue-800",
+    CONTACTED: "bg-cyan-100 text-cyan-800",
+    QUALIFIED: "bg-teal-100 text-teal-800",
+    PROPOSAL_SENT: "bg-indigo-100 text-indigo-800",
+    NEGOTIATION: "bg-violet-100 text-violet-800",
+    WON: "bg-green-100 text-green-800",
+    LOST: "bg-red-100 text-red-800",
+    DORMANT: "bg-stone-200 text-stone-600",
+    PLANNED: "bg-blue-100 text-blue-800",
+    CHECKED_IN: "bg-cyan-100 text-cyan-800",
+    CHECKED_OUT: "bg-teal-100 text-teal-800",
+    FLAGGED_FAKE: "bg-red-200 text-red-900",
+    IN_TRANSIT: "bg-blue-100 text-blue-800",
+    DELIVERED: "bg-green-100 text-green-800",
+    RETURNED: "bg-orange-100 text-orange-800",
   };
   return colors[status] || "bg-stone-100 text-stone-800";
 }
