@@ -4,6 +4,7 @@ import { useEffect, useState, useCallback, useRef } from "react";
 import { useRouter, useSearchParams } from "next/navigation";
 import { Card } from "@/components/ui/Card";
 import StatusBadge from "@/components/ui/StatusBadge";
+import PhotoCapture from "@/components/ui/PhotoCapture";
 import { api, NetworkError } from "@/lib/api-client";
 import { addToPendingQueue } from "@/lib/offline-store";
 import { requestBackgroundSync } from "@/lib/sync-manager";
@@ -373,6 +374,15 @@ export default function CheckinPage() {
                   placeholder="0"
                   className="mt-1 w-full rounded-lg border border-stone-300 px-3 py-2 text-sm"
                 />
+              </div>
+              {/* Photo capture */}
+              <div>
+                <label className="mb-2 block text-xs font-medium uppercase text-stone-500">
+                  Site Photos
+                </label>
+                {visitId && (
+                  <PhotoCapture visitId={visitId} />
+                )}
               </div>
               <div className="flex gap-3">
                 <button

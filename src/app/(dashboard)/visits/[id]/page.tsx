@@ -575,6 +575,11 @@ export default function VisitDetailPage() {
         </CardContent>
       </Card>
 
+      {/* Photos */}
+      {visit.photoUrls.length > 0 && (
+        <PhotosCard photoUrls={visit.photoUrls} />
+      )}
+
       {/* Meta footer */}
       <p className="text-center text-xs text-stone-400">
         Created {formatDateTime(visit.createdAt)} · Last updated {formatDateTime(visit.updatedAt)}
@@ -583,7 +588,7 @@ export default function VisitDetailPage() {
   );
 }
 
-// ─── Helper component ─────────────────────────────────────────────────────────
+// ─── Helper components ────────────────────────────────────────────────────────
 
 function InfoRow({
   label,
@@ -599,5 +604,102 @@ function InfoRow({
       </span>
       <span className="text-right text-sm text-stone-800">{children}</span>
     </div>
+  );
+}
+
+function PhotosCard({ photoUrls }: { photoUrls: string[] }) {
+  const [lightboxUrl, setLightboxUrl] = useState<string | null>(null);
+
+  return (
+    <>
+      <Card>
+        <CardHeader>
+          <div className="flex items-center justify-between">
+            <h2 className="text-base font-semibold text-stone-800">Photos</h2>
+            <span className="inline-flex items-center rounded-full bg-stone-100 px-2.5 py-1 text-xs font-semibold text-stone-600">
+              {photoUrls.length} {photoUrls.length === 1 ? "photo" : "photos"}
+            </span>
+          </div>
+        </CardHeader>
+        <CardContent>
+          <div className="grid grid-cols-3 gap-2 sm:grid-cols-4 md:grid-cols-5">
+            {photoUrls.map((url, idx) => (
+              <button
+                key={url}
+                type="button"
+                onClick={() => setLightboxUrl(url)}
+                className="group relative aspect-square overflow-hidden rounded-lg bg-stone-100 ring-1 ring-stone-200 hover:ring-2 hover:ring-amber-400 focus:outline-none focus:ring-2 focus:ring-amber-500 transition-all"
+              >
+                {/* eslint-disable-next-line @next/next/no-img-element */}
+                <img
+                  src={url}
+                  alt={`Visit photo ${idx + 1}`}
+                  className="h-full w-full object-cover transition-transform group-hover:scale-105"
+                />
+                {/* Index badge */}
+                <span className="absolute bottom-1 right-1 rounded bg-black/50 px-1 py-0.5 text-[10px] font-bold text-white leading-none">
+                  {idx + 1}
+                </span>
+                {/* Expand icon overlay on hover */}
+                <div className="absolute inset-0 flex items-center justify-center bg-black/0 transition-colors group-hover:bg-black/20">
+                  <svg
+                    className="h-6 w-6 text-white opacity-0 drop-shadow transition-opacity group-hover:opacity-100"
+                    fill="none"
+                    viewBox="0 0 24 24"
+                    strokeWidth={2}
+                    stroke="currentColor"
+                  >
+                    <path strokeLinecap="round" strokeLinejoin="round" d="M3.75 3.75v4.5m0-4.5h4.5m-4.5 0L9 9M3.75 20.25v-4.5m0 4.5h4.5m-4.5 0L9 15M20.25 3.75h-4.5m4.5 0v4.5m0-4.5L15 9m5.25 11.25h-4.5m4.5 0v-4.5m0 4.5L15 15" />
+                  </svg>
+                </div>
+              </button>
+            ))}
+          </div>
+        </CardContent>
+      </Card>
+
+      {/* Lightbox modal */}
+      {lightboxUrl && (
+        <div
+          className="fixed inset-0 z-50 flex items-center justify-center bg-black/80 p-4"
+          onClick={() => setLightboxUrl(null)}
+        >
+          <div
+            className="relative max-h-full max-w-full"
+            onClick={(e) => e.stopPropagation()}
+          >
+            {/* eslint-disable-next-line @next/next/no-img-element */}
+            <img
+              src={lightboxUrl}
+              alt="Visit photo full size"
+              className="max-h-[85vh] max-w-[90vw] rounded-lg object-contain shadow-2xl"
+            />
+            {/* Close button */}
+            <button
+              type="button"
+              onClick={() => setLightboxUrl(null)}
+              className="absolute -right-3 -top-3 flex h-8 w-8 items-center justify-center rounded-full bg-white text-stone-700 shadow-lg hover:bg-stone-100"
+            >
+              <svg className="h-4 w-4" fill="none" viewBox="0 0 24 24" strokeWidth={2} stroke="currentColor">
+                <path strokeLinecap="round" strokeLinejoin="round" d="M6 18L18 6M6 6l12 12" />
+              </svg>
+            </button>
+            {/* Open in new tab */}
+            <a
+              href={lightboxUrl}
+              target="_blank"
+              rel="noopener noreferrer"
+              className="absolute -bottom-10 left-1/2 -translate-x-1/2 flex items-center gap-1.5 rounded-full bg-white px-3 py-1.5 text-xs font-medium text-stone-700 shadow-lg hover:bg-stone-100 whitespace-nowrap"
+              onClick={(e) => e.stopPropagation()}
+            >
+              <svg className="h-3.5 w-3.5" fill="none" viewBox="0 0 24 24" strokeWidth={2} stroke="currentColor">
+                <path strokeLinecap="round" strokeLinejoin="round" d="M13.5 6H5.25A2.25 2.25 0 003 8.25v10.5A2.25 2.25 0 005.25 21h10.5A2.25 2.25 0 0018 18.75V10.5m-10.5 6L21 3m0 0h-5.25M21 3v5.25" />
+              </svg>
+              Open full size
+            </a>
+          </div>
+        </div>
+      )}
+    </>
   );
 }

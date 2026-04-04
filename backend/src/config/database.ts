@@ -15,9 +15,9 @@ export const dataSourceOptions: DataSourceOptions = {
   username: process.env.DB_USER || "eaglestone",
   password: process.env.DB_PASSWORD || "eaglestone_secret",
   entities: [User, Customer, Visit, Inventory, SyncQueue],
-  synchronize: !isProduction, // Auto-sync schema in dev only
+  synchronize: false, // Schema is managed exclusively via migrations
   logging: isProduction ? ["error"] : ["query", "error"],
-  migrations: ["dist/migrations/*.js"],
+  migrations: ["src/migrations/*.ts", "dist/migrations/*.js"],
   subscribers: [],
   extra: {
     // Connection pool tuning for field CRM workloads
