@@ -810,7 +810,7 @@ export default function NewCustomerPage() {
         </Card>
 
         {/* ── Actions ──────────────────────────────────────────────────────── */}
-        <div className="mt-6 flex justify-end gap-3">
+        <div className="mt-6 flex justify-end gap-3 pb-24">
           <button
             type="button"
             onClick={() => router.push("/customers")}
