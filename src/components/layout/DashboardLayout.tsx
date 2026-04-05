@@ -4,6 +4,7 @@ import { useState } from "react";
 import Sidebar from "./Sidebar";
 import Header from "./Header";
 import ConnectivityBanner from "../ui/ConnectivityBanner";
+import FloatingActionButton from "../ui/FloatingActionButton";
 
 export default function DashboardLayout({
   children,
@@ -20,6 +21,7 @@ export default function DashboardLayout({
         <ConnectivityBanner />
       </div>
       <main className="mt-16 p-4 sm:p-6 lg:ml-64">{children}</main>
+      <FloatingActionButton />
     </div>
   );
 }

@@ -281,6 +281,7 @@ model Customer {
   locationLng     Float?
   locationAccuracy Float?
   preferredMaterials String? // JSON string array
+  currentRequirements String? // JSON array [{colorName, materialType}]
   annualPotentialINR Float  @default(0)
   lifetimeValueINR   Float  @default(0)
   notes           String?

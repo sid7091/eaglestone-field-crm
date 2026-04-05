@@ -1,6 +1,6 @@
 "use client";
 
-import { useState } from "react";
+import { useState, useRef, useEffect, useCallback } from "react";
 import { useRouter } from "next/navigation";
 import Link from "next/link";
 import { Card, CardHeader, CardContent } from "@/components/ui/Card";
@@ -68,22 +68,23 @@ const REGION_CODES = [
   { value: "JK", label: "Jammu & Kashmir" },
 ];
 
-const MATERIAL_OPTIONS = [
-  "Italian Marble",
-  "Indian Marble",
-  "Turkish Marble",
-  "Spanish Marble",
-  "Greek Marble",
+const MATERIAL_TYPES = [
   "Granite",
-  "Onyx",
-  "Travertine",
+  "Marble",
+  "Quartz",
+  "Tile",
   "Quartzite",
-  "Sandstone",
-  "Slate",
-  "Limestone",
+  "Nano White",
+  "Nano Statuario",
 ];
 
 // ─── Form state type ──────────────────────────────────────────────────────────
+
+interface Requirement {
+  colorName: string;
+  materialType: string;
+  quantitySqft: number;
+}
 
 interface FormState {
   businessName: string;
@@ -101,8 +102,7 @@ interface FormState {
   city: string;
   address: string;
   pincode: string;
-  preferredMaterials: string[];
-  annualPotentialINR: string;
+  currentRequirements: Requirement[];
   notes: string;
   locationLatitude: string;
   locationLongitude: string;
@@ -125,8 +125,7 @@ const INITIAL_STATE: FormState = {
   city: "",
   address: "",
   pincode: "",
-  preferredMaterials: [],
-  annualPotentialINR: "0",
+  currentRequirements: [],
   notes: "",
   locationLatitude: "",
   locationLongitude: "",
@@ -139,6 +138,13 @@ const INPUT_CLS =
   "w-full rounded-lg border border-stone-300 px-3 py-2 text-sm focus:border-amber-500 focus:outline-none focus:ring-1 focus:ring-amber-500";
 const LABEL_CLS = "mb-1 block text-sm font-medium text-stone-700";
 
+// ─── Google Places autocomplete types ─────────────────────────────────────────
+
+interface PlacePrediction {
+  place_id: string;
+  description: string;
+}
+
 // ─── Component ────────────────────────────────────────────────────────────────
 
 export default function NewCustomerPage() {
@@ -149,18 +155,46 @@ export default function NewCustomerPage() {
   const [gpsLoading, setGpsLoading] = useState(false);
   const [gpsError, setGpsError] = useState("");
 
+  // Address autocomplete state
+  const [addressQuery, setAddressQuery] = useState("");
+  const [suggestions, setSuggestions] = useState<PlacePrediction[]>([]);
+  const [showSuggestions, setShowSuggestions] = useState(false);
+  const [autocompleteLoading, setAutocompleteLoading] = useState(false);
+  const addressRef = useRef<HTMLDivElement>(null);
+  const debounceRef = useRef<ReturnType<typeof setTimeout>>(null);
+
+  // Current requirements state
+  const [newReqColor, setNewReqColor] = useState("");
+  const [newReqMaterial, setNewReqMaterial] = useState("");
+  const [newReqQty, setNewReqQty] = useState("");
+
   // ── Field helpers ──────────────────────────────────────────────────────────
 
   const setField = (field: keyof FormState) => (
     e: React.ChangeEvent<HTMLInputElement | HTMLSelectElement | HTMLTextAreaElement>
   ) => setForm((prev) => ({ ...prev, [field]: e.target.value }));
 
-  const toggleMaterial = (mat: string) => {
+  // ── Requirements helpers ───────────────────────────────────────────────────
+
+  const addRequirement = () => {
+    if (!newReqColor.trim() || !newReqMaterial) return;
+    const qty = parseFloat(newReqQty) || 0;
     setForm((prev) => ({
       ...prev,
-      preferredMaterials: prev.preferredMaterials.includes(mat)
-        ? prev.preferredMaterials.filter((m) => m !== mat)
-        : [...prev.preferredMaterials, mat],
+      currentRequirements: [
+        ...prev.currentRequirements,
+        { colorName: newReqColor.trim(), materialType: newReqMaterial, quantitySqft: qty },
+      ],
+    }));
+    setNewReqColor("");
+    setNewReqMaterial("");
+    setNewReqQty("");
+  };
+
+  const removeRequirement = (index: number) => {
+    setForm((prev) => ({
+      ...prev,
+      currentRequirements: prev.currentRequirements.filter((_, i) => i !== index),
     }));
   };
 
@@ -191,14 +225,112 @@ export default function NewCustomerPage() {
     );
   };
 
+  // ── Google Places Autocomplete ─────────────────────────────────────────────
+
+  const fetchSuggestions = useCallback(async (input: string) => {
+    if (input.length < 3) {
+      setSuggestions([]);
+      return;
+    }
+    setAutocompleteLoading(true);
+    try {
+      const res = await fetch(
+        `/api/places/autocomplete?input=${encodeURIComponent(input)}`
+      );
+      if (res.ok) {
+        const data = await res.json();
+        setSuggestions(data.predictions || []);
+        setShowSuggestions(true);
+      }
+    } catch {
+      // silently fail — user can type manually
+    } finally {
+      setAutocompleteLoading(false);
+    }
+  }, []);
+
+  const handleAddressInput = (e: React.ChangeEvent<HTMLInputElement>) => {
+    const value = e.target.value;
+    setAddressQuery(value);
+    setForm((prev) => ({ ...prev, address: value }));
+
+    if (debounceRef.current) clearTimeout(debounceRef.current);
+    debounceRef.current = setTimeout(() => fetchSuggestions(value), 300);
+  };
+
+  const selectPlace = async (placeId: string, description: string) => {
+    setShowSuggestions(false);
+    setAddressQuery(description);
+    setSuggestions([]);
+
+    try {
+      const res = await fetch(`/api/places/details?place_id=${encodeURIComponent(placeId)}`);
+      if (res.ok) {
+        const data = await res.json();
+        const result = data.result;
+        if (result) {
+          const components = result.address_components || [];
+          let city = "";
+          let district = "";
+          let regionCode = "";
+          let pincode = "";
+
+          for (const comp of components) {
+            const types: string[] = comp.types || [];
+            if (types.includes("locality")) city = comp.long_name;
+            if (types.includes("administrative_area_level_2")) district = comp.long_name;
+            if (types.includes("administrative_area_level_1")) {
+              // Try to match to our region codes
+              const stateName = comp.long_name;
+              const match = REGION_CODES.find(
+                (r) => r.label.toLowerCase() === stateName.toLowerCase()
+              );
+              if (match) regionCode = match.value;
+            }
+            if (types.includes("postal_code")) pincode = comp.long_name;
+          }
+
+          const lat = result.geometry?.location?.lat;
+          const lng = result.geometry?.location?.lng;
+
+          setForm((prev) => ({
+            ...prev,
+            address: result.formatted_address || description,
+            city: city || prev.city,
+            district: district || prev.district,
+            regionCode: regionCode || prev.regionCode,
+            pincode: pincode || prev.pincode,
+            locationLatitude: lat ? String(lat) : prev.locationLatitude,
+            locationLongitude: lng ? String(lng) : prev.locationLongitude,
+          }));
+          setAddressQuery(result.formatted_address || description);
+        }
+      }
+    } catch {
+      // Fall back to just setting the address text
+      setForm((prev) => ({ ...prev, address: description }));
+    }
+  };
+
+  // Close suggestions on outside click
+  useEffect(() => {
+    const handleClick = (e: MouseEvent) => {
+      if (addressRef.current && !addressRef.current.contains(e.target as Node)) {
+        setShowSuggestions(false);
+      }
+    };
+    document.addEventListener("mousedown", handleClick);
+    return () => document.removeEventListener("mousedown", handleClick);
+  }, []);
+
   // ── Submit ─────────────────────────────────────────────────────────────────
 
   const handleSubmit = async (e: React.FormEvent) => {
     e.preventDefault();
     setError("");
 
-    // Basic client-side validation
-    if (!form.businessName.trim()) { setError("Business name is required."); return; }
+    // Validation — businessName is now "Customer Name" and is mandatory
+    if (!form.businessName.trim()) { setError("Customer name is required."); return; }
     if (!form.phone.trim()) { setError("Phone is required."); return; }
     if (!form.customerType) { setError("Customer type is required."); return; }
     if (!form.regionCode) { setError("Region is required."); return; }
@@ -233,8 +365,7 @@ export default function NewCustomerPage() {
       city: form.city.trim() || null,
       address: form.address.trim(),
       pincode: form.pincode.trim() || null,
-      preferredMaterials: form.preferredMaterials,
-      annualPotentialINR: parseFloat(form.annualPotentialINR) || 0,
+      currentRequirements: form.currentRequirements,
       notes: form.notes.trim() || null,
       location,
     };
@@ -277,12 +408,12 @@ export default function NewCustomerPage() {
           {/* ── Business Identity ──────────────────────────────────────────── */}
           <Card>
             <CardHeader>
-              <h2 className="font-semibold text-stone-900">Business Identity</h2>
+              <h2 className="font-semibold text-stone-900">Customer Identity</h2>
             </CardHeader>
             <CardContent>
               <div className="space-y-4">
                 <div>
-                  <label className={LABEL_CLS}>Business Name *</label>
+                  <label className={LABEL_CLS}>Customer Name *</label>
                   <input
                     type="text"
                     value={form.businessName}
@@ -405,18 +536,6 @@ export default function NewCustomerPage() {
                   </select>
                 </div>
                 <div>
-                  <label className={LABEL_CLS}>Annual Potential (INR)</label>
-                  <input
-                    type="number"
-                    min="0"
-                    step="1000"
-                    value={form.annualPotentialINR}
-                    onChange={setField("annualPotentialINR")}
-                    className={INPUT_CLS}
-                    placeholder="0"
-                  />
-                </div>
-                <div>
                   <label className={LABEL_CLS}>Notes</label>
                   <textarea
                     rows={3}
@@ -437,6 +556,49 @@ export default function NewCustomerPage() {
             </CardHeader>
             <CardContent>
               <div className="space-y-4">
+                {/* Address autocomplete */}
+                <div ref={addressRef} className="relative">
+                  <label className={LABEL_CLS}>Address *</label>
+                  <div className="relative">
+                    <input
+                      type="text"
+                      value={addressQuery || form.address}
+                      onChange={handleAddressInput}
+                      className={INPUT_CLS}
+                      placeholder="Start typing to search Google Maps..."
+                      autoComplete="off"
+                    />
+                    {autocompleteLoading && (
+                      <div className="absolute right-3 top-1/2 -translate-y-1/2">
+                        <div className="h-4 w-4 animate-spin rounded-full border-2 border-amber-500 border-t-transparent" />
+                      </div>
+                    )}
+                  </div>
+                  {showSuggestions && suggestions.length > 0 && (
+                    <div className="absolute z-50 mt-1 w-full rounded-lg border border-stone-200 bg-white shadow-lg">
+                      {suggestions.map((s) => (
+                        <button
+                          key={s.place_id}
+                          type="button"
+                          onClick={() => selectPlace(s.place_id, s.description)}
+                          className="w-full px-3 py-2.5 text-left text-sm text-stone-700 hover:bg-amber-50 first:rounded-t-lg last:rounded-b-lg"
+                        >
+                          <span className="mr-2 text-stone-400">
+                            <svg className="inline h-4 w-4" fill="none" viewBox="0 0 24 24" strokeWidth={1.5} stroke="currentColor">
+                              <path strokeLinecap="round" strokeLinejoin="round" d="M15 10.5a3 3 0 11-6 0 3 3 0 016 0z" />
+                              <path strokeLinecap="round" strokeLinejoin="round" d="M19.5 10.5c0 7.142-7.5 11.25-7.5 11.25S4.5 17.642 4.5 10.5a7.5 7.5 0 1115 0z" />
+                            </svg>
+                          </span>
+                          {s.description}
+                        </button>
+                      ))}
+                      <div className="border-t border-stone-100 px-3 py-1.5 text-right">
+                        <span className="text-[10px] text-stone-400">Powered by Google</span>
+                      </div>
+                    </div>
+                  )}
+                </div>
+
                 <div>
                   <label className={LABEL_CLS}>Region *</label>
                   <select
@@ -473,16 +635,6 @@ export default function NewCustomerPage() {
                       placeholder="e.g. Jaipur"
                     />
                   </div>
-                </div>
-                <div>
-                  <label className={LABEL_CLS}>Address *</label>
-                  <textarea
-                    rows={2}
-                    value={form.address}
-                    onChange={setField("address")}
-                    className={INPUT_CLS}
-                    placeholder="Street address, landmark..."
-                  />
                 </div>
                 <div>
                   <label className={LABEL_CLS}>Pincode</label>
@@ -532,7 +684,7 @@ export default function NewCustomerPage() {
                     {parseFloat(form.locationLatitude).toFixed(6)}, {parseFloat(form.locationLongitude).toFixed(6)}
                   </p>
                   {form.locationAccuracy && (
-                    <p className="text-xs text-green-600">Accuracy: ±{form.locationAccuracy}m</p>
+                    <p className="text-xs text-green-600">Accuracy: +/-{form.locationAccuracy}m</p>
                   )}
                 </div>
               )}
@@ -569,33 +721,84 @@ export default function NewCustomerPage() {
 
         </div>
 
-        {/* ── Preferred Materials ─────────────────────────────────────────── */}
+        {/* ── Current Requirements ────────────────────────────────────────── */}
         <Card className="mt-6">
           <CardHeader>
-            <h2 className="font-semibold text-stone-900">Preferred Materials</h2>
+            <h2 className="font-semibold text-stone-900">Current Requirements</h2>
           </CardHeader>
           <CardContent>
             <p className="mb-3 text-xs text-stone-500">
-              Select all material types this customer regularly purchases.
+              Add the materials this customer currently needs.
             </p>
-            <div className="flex flex-wrap gap-2">
-              {MATERIAL_OPTIONS.map((mat) => {
-                const selected = form.preferredMaterials.includes(mat);
-                return (
-                  <button
-                    key={mat}
-                    type="button"
-                    onClick={() => toggleMaterial(mat)}
-                    className={`rounded-full border px-3 py-1 text-sm font-medium transition-colors ${
-                      selected
-                        ? "border-amber-500 bg-amber-500 text-white"
-                        : "border-stone-300 bg-white text-stone-700 hover:border-amber-300 hover:bg-amber-50"
-                    }`}
+
+            {/* Existing requirements */}
+            {form.currentRequirements.length > 0 && (
+              <div className="mb-4 flex flex-wrap gap-2">
+                {form.currentRequirements.map((req, i) => (
+                  <span
+                    key={i}
+                    className="inline-flex items-center gap-1.5 rounded-full border border-amber-200 bg-amber-50 px-3 py-1 text-sm font-medium text-amber-800"
                   >
-                    {mat}
-                  </button>
-                );
-              })}
+                    {req.colorName} - {req.materialType}{req.quantitySqft ? ` (${req.quantitySqft} sqft)` : ""}
+                    <button
+                      type="button"
+                      onClick={() => removeRequirement(i)}
+                      className="ml-1 text-amber-600 hover:text-red-600"
+                    >
+                      <svg className="h-3.5 w-3.5" viewBox="0 0 20 20" fill="currentColor">
+                        <path d="M6.28 5.22a.75.75 0 00-1.06 1.06L8.94 10l-3.72 3.72a.75.75 0 101.06 1.06L10 11.06l3.72 3.72a.75.75 0 101.06-1.06L11.06 10l3.72-3.72a.75.75 0 00-1.06-1.06L10 8.94 6.28 5.22z" />
+                      </svg>
+                    </button>
+                  </span>
+                ))}
+              </div>
+            )}
+
+            {/* Add new requirement */}
+            <div className="flex flex-wrap items-end gap-3">
+              <div className="min-w-[160px] flex-1">
+                <label className={LABEL_CLS}>Color Name</label>
+                <input
+                  type="text"
+                  value={newReqColor}
+                  onChange={(e) => setNewReqColor(e.target.value)}
+                  className={INPUT_CLS}
+                  placeholder="e.g. Statuario White"
+                />
+              </div>
+              <div className="min-w-[160px] flex-1">
+                <label className={LABEL_CLS}>Material Type</label>
+                <select
+                  value={newReqMaterial}
+                  onChange={(e) => setNewReqMaterial(e.target.value)}
+                  className={INPUT_CLS}
+                >
+                  <option value="">Select material</option>
+                  {MATERIAL_TYPES.map((m) => (
+                    <option key={m} value={m}>{m}</option>
+                  ))}
+                </select>
+              </div>
+              <div className="min-w-[100px] w-28">
+                <label className={LABEL_CLS}>Qty (sqft)</label>
+                <input
+                  type="number"
+                  min="0"
+                  step="1"
+                  value={newReqQty}
+                  onChange={(e) => setNewReqQty(e.target.value)}
+                  className={INPUT_CLS}
+                  placeholder="0"
+                />
+              </div>
+              <button
+                type="button"
+                onClick={addRequirement}
+                disabled={!newReqColor.trim() || !newReqMaterial}
+                className="rounded-lg bg-amber-500 px-4 py-2 text-sm font-medium text-white hover:bg-amber-600 disabled:opacity-40 transition-colors"
+              >
+                + Add
+              </button>
             </div>
           </CardContent>
         </Card>
