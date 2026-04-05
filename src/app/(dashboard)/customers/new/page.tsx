@@ -138,7 +138,18 @@ const INPUT_CLS =
   "w-full rounded-lg border border-stone-300 px-3 py-2 text-sm focus:border-amber-500 focus:outline-none focus:ring-1 focus:ring-amber-500";
 const LABEL_CLS = "mb-1 block text-sm font-medium text-stone-700";
 
-// (Google Maps API key is fetched at runtime from /api/places/config)
+// ─── Address suggestion type ──────────────────────────────────────────────────
+
+interface AddressSuggestion {
+  place_id: string;
+  description: string;
+  lat: string;
+  lng: string;
+  city: string;
+  district: string;
+  state: string;
+  pincode: string;
+}
 
 // ─── Component ────────────────────────────────────────────────────────────────
 
@@ -150,14 +161,11 @@ export default function NewCustomerPage() {
   const [gpsLoading, setGpsLoading] = useState(false);
   const [gpsError, setGpsError] = useState("");
 
-  // Google Places autocomplete (using AutocompleteService — no input hijacking)
-  const acServiceRef = useRef<google.maps.places.AutocompleteService | null>(null);
-  const placesServiceRef = useRef<google.maps.places.PlacesService | null>(null);
-  const attrRef = useRef<HTMLDivElement>(null);
+  // Address autocomplete
   const debounceRef = useRef<ReturnType<typeof setTimeout>>(null);
-  const [suggestions, setSuggestions] = useState<google.maps.places.AutocompletePrediction[]>([]);
+  const [suggestions, setSuggestions] = useState<AddressSuggestion[]>([]);
   const [showSuggestions, setShowSuggestions] = useState(false);
-  const suggestionsRef = useRef<HTMLDivElement>(null);
+  const wrapperRef = useRef<HTMLDivElement>(null);
 
   // Current requirements state
   const [newReqColor, setNewReqColor] = useState("");
@@ -223,119 +231,70 @@ export default function NewCustomerPage() {
     );
   };
 
-  // ── Google Places: load SDK and init services ───────────────────────────────
+  // ── Address autocomplete (server-side, no SDK) ──────────────────────────────
 
   useEffect(() => {
-    if (acServiceRef.current) return;
-
-    fetch("/api/places/config")
-      .then((r) => r.json())
-      .then((data) => {
-        const apiKey = data.key;
-        if (!apiKey) return;
-
-        if (window.google?.maps?.places) {
-          initServices();
-          return;
-        }
-
-        const script = document.createElement("script");
-        script.src = `https://maps.googleapis.com/maps/api/js?key=${apiKey}&libraries=places`;
-        script.async = true;
-        script.onload = () => initServices();
-        script.onerror = () => {}; // fail silently — input stays normal
-        document.head.appendChild(script);
-      })
-      .catch(() => {});
-
-    function initServices() {
-      if (!window.google?.maps?.places) return;
-      acServiceRef.current = new google.maps.places.AutocompleteService();
-      if (attrRef.current) {
-        placesServiceRef.current = new google.maps.places.PlacesService(attrRef.current);
-      }
-    }
-  }, []);
-
-  // Close dropdown on outside tap
-  useEffect(() => {
-    const handler = (e: MouseEvent) => {
-      if (suggestionsRef.current && !suggestionsRef.current.contains(e.target as Node)) {
+    const handler = (e: MouseEvent | TouchEvent) => {
+      if (wrapperRef.current && !wrapperRef.current.contains(e.target as Node)) {
         setShowSuggestions(false);
       }
     };
     document.addEventListener("mousedown", handler);
-    return () => document.removeEventListener("mousedown", handler);
+    document.addEventListener("touchstart", handler);
+    return () => {
+      document.removeEventListener("mousedown", handler);
+      document.removeEventListener("touchstart", handler);
+    };
   }, []);
 
-  // ── Address input + suggestion selection ───────────────────────────────────
-
-  const fetchPredictions = useCallback((input: string) => {
-    if (!acServiceRef.current || input.length < 3) {
+  const fetchSuggestions = useCallback(async (input: string) => {
+    if (input.length < 3) {
       setSuggestions([]);
       setShowSuggestions(false);
       return;
     }
-    acServiceRef.current.getPlacePredictions(
-      { input, componentRestrictions: { country: "in" } },
-      (results) => {
-        setSuggestions(results || []);
-        setShowSuggestions((results || []).length > 0);
-      }
-    );
+    try {
+      const res = await fetch(`/api/places/autocomplete?input=${encodeURIComponent(input)}`);
+      const data = await res.json();
+      const preds: AddressSuggestion[] = data.predictions || [];
+      setSuggestions(preds);
+      setShowSuggestions(preds.length > 0);
+    } catch {
+      setSuggestions([]);
+      setShowSuggestions(false);
+    }
   }, []);
 
   const handleAddressInput = (e: React.ChangeEvent<HTMLInputElement>) => {
     const value = e.target.value;
     setForm((prev) => ({ ...prev, address: value }));
     if (debounceRef.current) clearTimeout(debounceRef.current);
-    debounceRef.current = setTimeout(() => fetchPredictions(value), 300);
+    debounceRef.current = setTimeout(() => fetchSuggestions(value), 400);
   };
 
-  const selectPlace = (placeId: string, description: string) => {
+  const selectSuggestion = (s: AddressSuggestion) => {
     setShowSuggestions(false);
     setSuggestions([]);
-    setForm((prev) => ({ ...prev, address: description }));
 
-    if (!placesServiceRef.current) return;
-    placesServiceRef.current.getDetails(
-      { placeId, fields: ["formatted_address", "address_components", "geometry"] },
-      (result) => {
-        if (!result) return;
+    // Match state name to region code
+    let regionCode = "";
+    if (s.state) {
+      const match = REGION_CODES.find(
+        (r) => r.label.toLowerCase() === s.state.toLowerCase()
+      );
+      if (match) regionCode = match.value;
+    }
 
-        let city = "";
-        let district = "";
-        let regionCode = "";
-        let pincode = "";
-
-        for (const comp of result.address_components || []) {
-          const types = comp.types || [];
-          if (types.includes("locality")) city = comp.long_name;
-          if (types.includes("administrative_area_level_2")) district = comp.long_name;
-          if (types.includes("administrative_area_level_1")) {
-            const match = REGION_CODES.find(
-              (r) => r.label.toLowerCase() === comp.long_name.toLowerCase()
-            );
-            if (match) regionCode = match.value;
-          }
-          if (types.includes("postal_code")) pincode = comp.long_name;
-        }
-
-        const lat = result.geometry?.location?.lat();
-        const lng = result.geometry?.location?.lng();
-
-        setForm((prev) => ({
-          ...prev,
-          address: result.formatted_address || description,
-          city: city || prev.city,
-          district: district || prev.district,
-          regionCode: regionCode || prev.regionCode,
-          pincode: pincode || prev.pincode,
-          locationLatitude: lat ? String(lat) : prev.locationLatitude,
-          locationLongitude: lng ? String(lng) : prev.locationLongitude,
-        }));
-      }
-    );
+    setForm((prev) => ({
+      ...prev,
+      address: s.description,
+      city: s.city || prev.city,
+      district: s.district || prev.district,
+      regionCode: regionCode || prev.regionCode,
+      pincode: s.pincode || prev.pincode,
+      locationLatitude: s.lat || prev.locationLatitude,
+      locationLongitude: s.lng || prev.locationLongitude,
+    }));
   };
 
   // ── Submit ─────────────────────────────────────────────────────────────────
@@ -565,13 +524,13 @@ export default function NewCustomerPage() {
           </Card>
 
           {/* ── Location & Region ──────────────────────────────────────────── */}
-          <Card className="overflow-visible">
+          <Card>
             <CardHeader>
               <h2 className="font-semibold text-stone-900">Location & Region</h2>
             </CardHeader>
-            <CardContent className="overflow-visible">
+            <CardContent>
               <div className="space-y-4">
-                <div ref={suggestionsRef} className="relative">
+                <div ref={wrapperRef}>
                   <label className={LABEL_CLS}>Address *</label>
                   <input
                     type="text"
@@ -582,29 +541,40 @@ export default function NewCustomerPage() {
                     placeholder="Start typing to search..."
                     autoComplete="off"
                   />
+
+                  {/* Floating suggestions menu */}
                   {showSuggestions && suggestions.length > 0 && (
-                    <div className="absolute left-0 right-0 z-50 mt-1 rounded-lg border border-stone-200 bg-white shadow-xl">
-                      {suggestions.slice(0, 5).map((s) => (
+                    <div
+                      className="fixed inset-x-0 bottom-0 z-[9999] max-h-[50vh] overflow-y-auto rounded-t-2xl border-t border-stone-200 bg-white shadow-2xl sm:absolute sm:inset-x-auto sm:bottom-auto sm:left-0 sm:right-0 sm:top-full sm:mt-1 sm:rounded-lg sm:rounded-t-lg sm:border sm:shadow-xl"
+                    >
+                      <div className="sticky top-0 flex items-center justify-between border-b border-stone-100 bg-stone-50 px-4 py-2 sm:hidden">
+                        <span className="text-xs font-medium text-stone-500">Select an address</span>
+                        <button
+                          type="button"
+                          onClick={() => setShowSuggestions(false)}
+                          className="text-stone-400"
+                        >
+                          <svg className="h-5 w-5" viewBox="0 0 20 20" fill="currentColor">
+                            <path d="M6.28 5.22a.75.75 0 00-1.06 1.06L8.94 10l-3.72 3.72a.75.75 0 101.06 1.06L10 11.06l3.72 3.72a.75.75 0 101.06-1.06L11.06 10l3.72-3.72a.75.75 0 00-1.06-1.06L10 8.94 6.28 5.22z" />
+                          </svg>
+                        </button>
+                      </div>
+                      {suggestions.map((s) => (
                         <button
                           key={s.place_id}
                           type="button"
-                          onClick={() => selectPlace(s.place_id, s.description)}
-                          className="flex w-full items-start gap-2 border-b border-stone-50 px-3 py-3 text-left text-sm text-stone-700 active:bg-amber-50 last:border-b-0"
+                          onClick={() => selectSuggestion(s)}
+                          className="flex w-full items-start gap-3 border-b border-stone-50 px-4 py-3.5 text-left active:bg-amber-50 last:border-b-0"
                         >
-                          <svg className="mt-0.5 h-4 w-4 shrink-0 text-amber-500" fill="none" viewBox="0 0 24 24" strokeWidth={1.5} stroke="currentColor">
+                          <svg className="mt-0.5 h-5 w-5 shrink-0 text-amber-500" fill="none" viewBox="0 0 24 24" strokeWidth={1.5} stroke="currentColor">
                             <path strokeLinecap="round" strokeLinejoin="round" d="M15 10.5a3 3 0 11-6 0 3 3 0 016 0z" />
                             <path strokeLinecap="round" strokeLinejoin="round" d="M19.5 10.5c0 7.142-7.5 11.25-7.5 11.25S4.5 17.642 4.5 10.5a7.5 7.5 0 1115 0z" />
                           </svg>
-                          <div>
-                            <p className="font-medium">{s.structured_formatting.main_text}</p>
-                            <p className="text-xs text-stone-500">{s.structured_formatting.secondary_text}</p>
-                          </div>
+                          <span className="text-sm leading-snug text-stone-800">{s.description}</span>
                         </button>
                       ))}
                     </div>
                   )}
-                  {/* Required by Google Places TOS */}
-                  <div ref={attrRef} className="hidden" />
                 </div>
 
                 <div>
