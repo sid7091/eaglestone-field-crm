@@ -20,7 +20,7 @@ export default function DashboardLayout({
       <div className="lg:ml-64">
         <ConnectivityBanner />
       </div>
-      <main className="mt-16 p-4 sm:p-6 lg:ml-64">{children}</main>
+      <main className="mt-16 p-4 pb-24 sm:p-6 sm:pb-24 lg:ml-64">{children}</main>
       <FloatingActionButton />
     </div>
   );
