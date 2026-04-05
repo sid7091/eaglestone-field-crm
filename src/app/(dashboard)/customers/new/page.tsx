@@ -233,19 +233,18 @@ export default function NewCustomerPage() {
 
   // ── Address autocomplete (server-side, no SDK) ──────────────────────────────
 
+  // Close dropdown only when tapping outside both the wrapper and the dropdown
   useEffect(() => {
-    const handler = (e: MouseEvent | TouchEvent) => {
+    const handler = (e: MouseEvent) => {
       if (wrapperRef.current && !wrapperRef.current.contains(e.target as Node)) {
         setShowSuggestions(false);
       }
     };
-    document.addEventListener("mousedown", handler);
-    document.addEventListener("touchstart", handler);
-    return () => {
-      document.removeEventListener("mousedown", handler);
-      document.removeEventListener("touchstart", handler);
-    };
+    document.addEventListener("click", handler);
+    return () => document.removeEventListener("click", handler);
   }, []);
+
+  const [addressSearching, setAddressSearching] = useState(false);
 
   const fetchSuggestions = useCallback(async (input: string) => {
     if (input.length < 3) {
@@ -253,15 +252,17 @@ export default function NewCustomerPage() {
       setShowSuggestions(false);
       return;
     }
+    setAddressSearching(true);
     try {
       const res = await fetch(`/api/places/autocomplete?input=${encodeURIComponent(input)}`);
       const data = await res.json();
       const preds: AddressSuggestion[] = data.predictions || [];
       setSuggestions(preds);
-      setShowSuggestions(preds.length > 0);
+      if (preds.length > 0) setShowSuggestions(true);
     } catch {
       setSuggestions([]);
-      setShowSuggestions(false);
+    } finally {
+      setAddressSearching(false);
     }
   }, []);
 
@@ -532,15 +533,22 @@ export default function NewCustomerPage() {
               <div className="space-y-4">
                 <div ref={wrapperRef}>
                   <label className={LABEL_CLS}>Address *</label>
-                  <input
-                    type="text"
-                    value={form.address}
-                    onChange={handleAddressInput}
-                    onFocus={() => { if (suggestions.length > 0) setShowSuggestions(true); }}
-                    className={INPUT_CLS}
-                    placeholder="Start typing to search..."
-                    autoComplete="off"
-                  />
+                  <div className="relative">
+                    <input
+                      type="text"
+                      value={form.address}
+                      onChange={handleAddressInput}
+                      onFocus={() => { if (suggestions.length > 0) setShowSuggestions(true); }}
+                      className={INPUT_CLS}
+                      placeholder="Type 3+ characters to search..."
+                      autoComplete="off"
+                    />
+                    {addressSearching && (
+                      <div className="absolute right-3 top-1/2 -translate-y-1/2">
+                        <div className="h-4 w-4 animate-spin rounded-full border-2 border-amber-500 border-t-transparent" />
+                      </div>
+                    )}
+                  </div>
 
                   {/* Floating suggestions menu */}
                   {showSuggestions && suggestions.length > 0 && (
