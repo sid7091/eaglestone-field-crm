@@ -1,6 +1,6 @@
 "use client";
 
-import { useState, useRef, useEffect, useCallback } from "react";
+import { useState, useRef, useEffect } from "react";
 import { useRouter } from "next/navigation";
 import Link from "next/link";
 import { Card, CardHeader, CardContent } from "@/components/ui/Card";
@@ -138,12 +138,9 @@ const INPUT_CLS =
   "w-full rounded-lg border border-stone-300 px-3 py-2 text-sm focus:border-amber-500 focus:outline-none focus:ring-1 focus:ring-amber-500";
 const LABEL_CLS = "mb-1 block text-sm font-medium text-stone-700";
 
-// ─── Google Places autocomplete types ─────────────────────────────────────────
+// ─── Google Maps API key (client-side, referer-restricted) ────────────────────
 
-interface PlacePrediction {
-  place_id: string;
-  description: string;
-}
+const GOOGLE_API_KEY = process.env.NEXT_PUBLIC_GOOGLE_PLACES_API_KEY || "";
 
 // ─── Component ────────────────────────────────────────────────────────────────
 
@@ -155,14 +152,9 @@ export default function NewCustomerPage() {
   const [gpsLoading, setGpsLoading] = useState(false);
   const [gpsError, setGpsError] = useState("");
 
-  // Address autocomplete state
-  const [addressQuery, setAddressQuery] = useState("");
-  const [suggestions, setSuggestions] = useState<PlacePrediction[]>([]);
-  const [showSuggestions, setShowSuggestions] = useState(false);
-  const [autocompleteLoading, setAutocompleteLoading] = useState(false);
-  const [placesError, setPlacesError] = useState("");
-  const addressRef = useRef<HTMLDivElement>(null);
-  const debounceRef = useRef<ReturnType<typeof setTimeout>>(null);
+  // Google Places autocomplete
+  const addressInputRef = useRef<HTMLInputElement>(null);
+  const autocompleteRef = useRef<google.maps.places.Autocomplete | null>(null);
 
   // Current requirements state
   const [newReqColor, setNewReqColor] = useState("");
@@ -228,110 +220,71 @@ export default function NewCustomerPage() {
     );
   };
 
-  // ── Google Places Autocomplete ─────────────────────────────────────────────
+  // ── Google Places Autocomplete (client-side JS API) ─────────────────────────
 
-  const fetchSuggestions = useCallback(async (input: string) => {
-    if (input.length < 3) {
-      setSuggestions([]);
-      setShowSuggestions(false);
+  useEffect(() => {
+    if (!GOOGLE_API_KEY || autocompleteRef.current) return;
+
+    // Load Google Maps JS API script
+    const existing = document.querySelector('script[src*="maps.googleapis.com/maps/api/js"]');
+    if (existing) {
+      initAutocomplete();
       return;
     }
-    setAutocompleteLoading(true);
-    setPlacesError("");
-    try {
-      const res = await fetch(
-        `/api/places/autocomplete?input=${encodeURIComponent(input)}`
-      );
-      const data = await res.json();
-      if (data.error) {
-        setPlacesError(data.error);
-        setSuggestions([]);
-        setShowSuggestions(false);
-      } else {
-        const preds = data.predictions || [];
-        setSuggestions(preds);
-        setShowSuggestions(preds.length > 0);
-      }
-    } catch {
-      setSuggestions([]);
-      setShowSuggestions(false);
-    } finally {
-      setAutocompleteLoading(false);
-    }
-  }, []);
 
-  const handleAddressInput = (e: React.ChangeEvent<HTMLInputElement>) => {
-    const value = e.target.value;
-    setAddressQuery(value);
-    setForm((prev) => ({ ...prev, address: value }));
+    const script = document.createElement("script");
+    script.src = `https://maps.googleapis.com/maps/api/js?key=${GOOGLE_API_KEY}&libraries=places`;
+    script.async = true;
+    script.onload = () => initAutocomplete();
+    document.head.appendChild(script);
 
-    if (debounceRef.current) clearTimeout(debounceRef.current);
-    debounceRef.current = setTimeout(() => fetchSuggestions(value), 300);
-  };
+    function initAutocomplete() {
+      if (!addressInputRef.current || !window.google?.maps?.places) return;
 
-  const selectPlace = async (placeId: string, description: string) => {
-    setShowSuggestions(false);
-    setAddressQuery(description);
-    setSuggestions([]);
+      const ac = new google.maps.places.Autocomplete(addressInputRef.current, {
+        componentRestrictions: { country: "in" },
+        fields: ["formatted_address", "address_components", "geometry"],
+      });
 
-    try {
-      const res = await fetch(`/api/places/details?place_id=${encodeURIComponent(placeId)}`);
-      if (res.ok) {
-        const data = await res.json();
-        const result = data.result;
-        if (result) {
-          const components = result.address_components || [];
-          let city = "";
-          let district = "";
-          let regionCode = "";
-          let pincode = "";
+      ac.addListener("place_changed", () => {
+        const place = ac.getPlace();
+        if (!place.formatted_address) return;
 
-          for (const comp of components) {
-            const types: string[] = comp.types || [];
-            if (types.includes("locality")) city = comp.long_name;
-            if (types.includes("administrative_area_level_2")) district = comp.long_name;
-            if (types.includes("administrative_area_level_1")) {
-              // Try to match to our region codes
-              const stateName = comp.long_name;
-              const match = REGION_CODES.find(
-                (r) => r.label.toLowerCase() === stateName.toLowerCase()
-              );
-              if (match) regionCode = match.value;
-            }
-            if (types.includes("postal_code")) pincode = comp.long_name;
+        let city = "";
+        let district = "";
+        let regionCode = "";
+        let pincode = "";
+
+        for (const comp of place.address_components || []) {
+          const types = comp.types || [];
+          if (types.includes("locality")) city = comp.long_name;
+          if (types.includes("administrative_area_level_2")) district = comp.long_name;
+          if (types.includes("administrative_area_level_1")) {
+            const match = REGION_CODES.find(
+              (r) => r.label.toLowerCase() === comp.long_name.toLowerCase()
+            );
+            if (match) regionCode = match.value;
           }
-
-          const lat = result.geometry?.location?.lat;
-          const lng = result.geometry?.location?.lng;
-
-          setForm((prev) => ({
-            ...prev,
-            address: result.formatted_address || description,
-            city: city || prev.city,
-            district: district || prev.district,
-            regionCode: regionCode || prev.regionCode,
-            pincode: pincode || prev.pincode,
-            locationLatitude: lat ? String(lat) : prev.locationLatitude,
-            locationLongitude: lng ? String(lng) : prev.locationLongitude,
-          }));
-          setAddressQuery(result.formatted_address || description);
+          if (types.includes("postal_code")) pincode = comp.long_name;
         }
-      }
-    } catch {
-      // Fall back to just setting the address text
-      setForm((prev) => ({ ...prev, address: description }));
-    }
-  };
 
-  // Close suggestions on outside click
-  useEffect(() => {
-    const handleClick = (e: MouseEvent) => {
-      if (addressRef.current && !addressRef.current.contains(e.target as Node)) {
-        setShowSuggestions(false);
-      }
-    };
-    document.addEventListener("mousedown", handleClick);
-    return () => document.removeEventListener("mousedown", handleClick);
+        const lat = place.geometry?.location?.lat();
+        const lng = place.geometry?.location?.lng();
+
+        setForm((prev) => ({
+          ...prev,
+          address: place.formatted_address || prev.address,
+          city: city || prev.city,
+          district: district || prev.district,
+          regionCode: regionCode || prev.regionCode,
+          pincode: pincode || prev.pincode,
+          locationLatitude: lat ? String(lat) : prev.locationLatitude,
+          locationLongitude: lng ? String(lng) : prev.locationLongitude,
+        }));
+      });
+
+      autocompleteRef.current = ac;
+    }
   }, []);
 
   // ── Submit ─────────────────────────────────────────────────────────────────
@@ -561,56 +514,24 @@ export default function NewCustomerPage() {
           </Card>
 
           {/* ── Location & Region ──────────────────────────────────────────── */}
-          <Card className="overflow-visible">
+          <Card>
             <CardHeader>
               <h2 className="font-semibold text-stone-900">Location & Region</h2>
             </CardHeader>
-            <CardContent className="overflow-visible">
+            <CardContent>
               <div className="space-y-4">
-                {/* Address autocomplete */}
-                <div ref={addressRef} className={`relative ${showSuggestions ? "z-40" : ""}`}>
+                <div>
                   <label className={LABEL_CLS}>Address *</label>
-                  <div className="relative">
-                    <input
-                      type="text"
-                      value={addressQuery}
-                      onChange={handleAddressInput}
-                      onFocus={() => { if (suggestions.length > 0) setShowSuggestions(true); }}
-                      className={INPUT_CLS}
-                      placeholder="Start typing to search Google Maps..."
-                      autoComplete="off"
-                    />
-                    {autocompleteLoading && (
-                      <div className="absolute right-3 top-1/2 -translate-y-1/2">
-                        <div className="h-4 w-4 animate-spin rounded-full border-2 border-amber-500 border-t-transparent" />
-                      </div>
-                    )}
-                  </div>
-                  {showSuggestions && suggestions.length > 0 && (
-                    <div className="absolute left-0 right-0 z-50 mt-1 max-h-60 overflow-y-auto rounded-lg border border-stone-200 bg-white shadow-xl">
-                      {suggestions.slice(0, 5).map((s) => (
-                        <button
-                          key={s.place_id}
-                          type="button"
-                          onClick={() => selectPlace(s.place_id, s.description)}
-                          className="flex w-full items-start gap-2.5 border-b border-stone-50 px-3 py-3 text-left text-sm text-stone-700 hover:bg-amber-50 last:border-b-0"
-                        >
-                          <svg className="mt-0.5 h-4 w-4 shrink-0 text-stone-400" fill="none" viewBox="0 0 24 24" strokeWidth={1.5} stroke="currentColor">
-                            <path strokeLinecap="round" strokeLinejoin="round" d="M15 10.5a3 3 0 11-6 0 3 3 0 016 0z" />
-                            <path strokeLinecap="round" strokeLinejoin="round" d="M19.5 10.5c0 7.142-7.5 11.25-7.5 11.25S4.5 17.642 4.5 10.5a7.5 7.5 0 1115 0z" />
-                          </svg>
-                          <span className="leading-snug">{s.description}</span>
-                        </button>
-                      ))}
-                      <div className="border-t border-stone-100 px-3 py-1.5 text-right">
-                        <span className="text-[10px] text-stone-400">Powered by Google</span>
-                      </div>
-                    </div>
-                  )}
-                  {placesError && (
-                    <p className="mt-1 text-xs text-red-500">
-                      Address lookup unavailable: {placesError}
-                    </p>
+                  <input
+                    ref={addressInputRef}
+                    type="text"
+                    defaultValue={form.address}
+                    onChange={(e) => setForm((prev) => ({ ...prev, address: e.target.value }))}
+                    className={INPUT_CLS}
+                    placeholder="Start typing to search Google Maps..."
+                  />
+                  {!GOOGLE_API_KEY && (
+                    <p className="mt-1 text-xs text-stone-400">Google Maps autocomplete not configured</p>
                   )}
                 </div>
 
