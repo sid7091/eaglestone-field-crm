@@ -2,6 +2,17 @@ import { NextRequest, NextResponse } from "next/server";
 import { prisma } from "@/lib/prisma";
 import { getCurrentUser } from "@/lib/auth";
 
+// Transform flat locationLat/Lng to nested location object for frontend
+function mapCustomer(c: Record<string, unknown>) {
+  const { locationLat, locationLng, ...rest } = c;
+  return {
+    ...rest,
+    location: locationLat != null && locationLng != null
+      ? { latitude: locationLat, longitude: locationLng }
+      : null,
+  };
+}
+
 export async function GET(request: NextRequest) {
   const user = await getCurrentUser();
   if (!user) return NextResponse.json({ error: "Unauthorized" }, { status: 401 });
@@ -39,7 +50,7 @@ export async function GET(request: NextRequest) {
   ]);
 
   return NextResponse.json({
-    data,
+    data: data.map((c) => mapCustomer(c as unknown as Record<string, unknown>)),
     meta: { total, page, limit, totalPages: Math.ceil(total / limit) },
   });
 }
@@ -49,6 +60,14 @@ export async function POST(request: NextRequest) {
   if (!user) return NextResponse.json({ error: "Unauthorized" }, { status: 401 });
 
   const body = await request.json();
+
+  // Map frontend location object to flat Prisma fields
+  if (body.location) {
+    body.locationLat = body.location.latitude ?? null;
+    body.locationLng = body.location.longitude ?? null;
+    delete body.location;
+  }
+
   const customer = await prisma.customer.create({ data: body });
-  return NextResponse.json(customer, { status: 201 });
+  return NextResponse.json(mapCustomer(customer as unknown as Record<string, unknown>), { status: 201 });
 }
