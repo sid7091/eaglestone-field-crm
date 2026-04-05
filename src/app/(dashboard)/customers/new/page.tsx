@@ -83,6 +83,7 @@ const MATERIAL_TYPES = [
 interface Requirement {
   colorName: string;
   materialType: string;
+  quantitySqft: number;
 }
 
 interface FormState {
@@ -165,6 +166,7 @@ export default function NewCustomerPage() {
   // Current requirements state
   const [newReqColor, setNewReqColor] = useState("");
   const [newReqMaterial, setNewReqMaterial] = useState("");
+  const [newReqQty, setNewReqQty] = useState("");
 
   // ── Field helpers ──────────────────────────────────────────────────────────
 
@@ -176,15 +178,17 @@ export default function NewCustomerPage() {
 
   const addRequirement = () => {
     if (!newReqColor.trim() || !newReqMaterial) return;
+    const qty = parseFloat(newReqQty) || 0;
     setForm((prev) => ({
       ...prev,
       currentRequirements: [
         ...prev.currentRequirements,
-        { colorName: newReqColor.trim(), materialType: newReqMaterial },
+        { colorName: newReqColor.trim(), materialType: newReqMaterial, quantitySqft: qty },
       ],
     }));
     setNewReqColor("");
     setNewReqMaterial("");
+    setNewReqQty("");
   };
 
   const removeRequirement = (index: number) => {
@@ -735,7 +739,7 @@ export default function NewCustomerPage() {
                     key={i}
                     className="inline-flex items-center gap-1.5 rounded-full border border-amber-200 bg-amber-50 px-3 py-1 text-sm font-medium text-amber-800"
                   >
-                    {req.colorName} - {req.materialType}
+                    {req.colorName} - {req.materialType}{req.quantitySqft ? ` (${req.quantitySqft} sqft)` : ""}
                     <button
                       type="button"
                       onClick={() => removeRequirement(i)}
@@ -774,6 +778,18 @@ export default function NewCustomerPage() {
                     <option key={m} value={m}>{m}</option>
                   ))}
                 </select>
+              </div>
+              <div className="min-w-[100px] w-28">
+                <label className={LABEL_CLS}>Qty (sqft)</label>
+                <input
+                  type="number"
+                  min="0"
+                  step="1"
+                  value={newReqQty}
+                  onChange={(e) => setNewReqQty(e.target.value)}
+                  className={INPUT_CLS}
+                  placeholder="0"
+                />
               </div>
               <button
                 type="button"
