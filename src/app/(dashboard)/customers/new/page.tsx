@@ -198,6 +198,15 @@ export default function NewCustomerPage() {
     }));
   };
 
+  const updateRequirement = (index: number, field: keyof Requirement, value: string | number) => {
+    setForm((prev) => ({
+      ...prev,
+      currentRequirements: prev.currentRequirements.map((req, i) =>
+        i === index ? { ...req, [field]: value } : req
+      ),
+    }));
+  };
+
   // ── GPS capture ────────────────────────────────────────────────────────────
 
   const captureLocation = () => {
@@ -230,6 +239,7 @@ export default function NewCustomerPage() {
   const fetchSuggestions = useCallback(async (input: string) => {
     if (input.length < 3) {
       setSuggestions([]);
+      setShowSuggestions(false);
       return;
     }
     setAutocompleteLoading(true);
@@ -237,13 +247,14 @@ export default function NewCustomerPage() {
       const res = await fetch(
         `/api/places/autocomplete?input=${encodeURIComponent(input)}`
       );
-      if (res.ok) {
-        const data = await res.json();
-        setSuggestions(data.predictions || []);
-        setShowSuggestions(true);
-      }
+      const data = await res.json();
+      const preds = data.predictions || [];
+      setSuggestions(preds);
+      setShowSuggestions(preds.length > 0);
     } catch {
       // silently fail — user can type manually
+      setSuggestions([]);
+      setShowSuggestions(false);
     } finally {
       setAutocompleteLoading(false);
     }
@@ -730,75 +741,118 @@ export default function NewCustomerPage() {
               Add the materials this customer currently needs.
             </p>
 
-            {/* Existing requirements */}
-            {form.currentRequirements.length > 0 && (
-              <div className="mb-4 flex flex-wrap gap-2">
-                {form.currentRequirements.map((req, i) => (
-                  <span
-                    key={i}
-                    className="inline-flex items-center gap-1.5 rounded-full border border-amber-200 bg-amber-50 px-3 py-1 text-sm font-medium text-amber-800"
-                  >
-                    {req.colorName} - {req.materialType}{req.quantitySqft ? ` (${req.quantitySqft} sqft)` : ""}
-                    <button
-                      type="button"
-                      onClick={() => removeRequirement(i)}
-                      className="ml-1 text-amber-600 hover:text-red-600"
-                    >
-                      <svg className="h-3.5 w-3.5" viewBox="0 0 20 20" fill="currentColor">
-                        <path d="M6.28 5.22a.75.75 0 00-1.06 1.06L8.94 10l-3.72 3.72a.75.75 0 101.06 1.06L10 11.06l3.72 3.72a.75.75 0 101.06-1.06L11.06 10l3.72-3.72a.75.75 0 00-1.06-1.06L10 8.94 6.28 5.22z" />
-                      </svg>
-                    </button>
-                  </span>
-                ))}
-              </div>
-            )}
-
-            {/* Add new requirement */}
-            <div className="flex flex-wrap items-end gap-3">
-              <div className="min-w-[160px] flex-1">
-                <label className={LABEL_CLS}>Color Name</label>
-                <input
-                  type="text"
-                  value={newReqColor}
-                  onChange={(e) => setNewReqColor(e.target.value)}
-                  className={INPUT_CLS}
-                  placeholder="e.g. Statuario White"
-                />
-              </div>
-              <div className="min-w-[160px] flex-1">
-                <label className={LABEL_CLS}>Material Type</label>
-                <select
-                  value={newReqMaterial}
-                  onChange={(e) => setNewReqMaterial(e.target.value)}
-                  className={INPUT_CLS}
-                >
-                  <option value="">Select material</option>
-                  {MATERIAL_TYPES.map((m) => (
-                    <option key={m} value={m}>{m}</option>
+            {/* Requirements table */}
+            <div className="overflow-x-auto rounded-lg border border-stone-200">
+              <table className="w-full text-sm">
+                <thead>
+                  <tr className="bg-stone-50 text-left">
+                    <th className="px-3 py-2 font-medium text-stone-600">Color Name</th>
+                    <th className="px-3 py-2 font-medium text-stone-600">Material Type</th>
+                    <th className="px-3 py-2 font-medium text-stone-600 w-28">Qty (sqft)</th>
+                    <th className="px-3 py-2 w-10"></th>
+                  </tr>
+                </thead>
+                <tbody className="divide-y divide-stone-100">
+                  {form.currentRequirements.map((req, i) => (
+                    <tr key={i} className="hover:bg-stone-50">
+                      <td className="px-3 py-1.5">
+                        <input
+                          type="text"
+                          value={req.colorName}
+                          onChange={(e) => updateRequirement(i, "colorName", e.target.value)}
+                          className="w-full rounded border border-stone-200 px-2 py-1 text-sm focus:border-amber-500 focus:outline-none"
+                        />
+                      </td>
+                      <td className="px-3 py-1.5">
+                        <select
+                          value={req.materialType}
+                          onChange={(e) => updateRequirement(i, "materialType", e.target.value)}
+                          className="w-full rounded border border-stone-200 px-2 py-1 text-sm focus:border-amber-500 focus:outline-none"
+                        >
+                          {MATERIAL_TYPES.map((m) => (
+                            <option key={m} value={m}>{m}</option>
+                          ))}
+                        </select>
+                      </td>
+                      <td className="px-3 py-1.5">
+                        <input
+                          type="number"
+                          min="0"
+                          step="1"
+                          value={req.quantitySqft || ""}
+                          onChange={(e) => updateRequirement(i, "quantitySqft", parseFloat(e.target.value) || 0)}
+                          className="w-full rounded border border-stone-200 px-2 py-1 text-sm focus:border-amber-500 focus:outline-none"
+                          placeholder="0"
+                        />
+                      </td>
+                      <td className="px-3 py-1.5 text-center">
+                        <button
+                          type="button"
+                          onClick={() => removeRequirement(i)}
+                          className="text-stone-400 hover:text-red-500 transition-colors"
+                        >
+                          <svg className="h-4 w-4" viewBox="0 0 20 20" fill="currentColor">
+                            <path d="M6.28 5.22a.75.75 0 00-1.06 1.06L8.94 10l-3.72 3.72a.75.75 0 101.06 1.06L10 11.06l3.72 3.72a.75.75 0 101.06-1.06L11.06 10l3.72-3.72a.75.75 0 00-1.06-1.06L10 8.94 6.28 5.22z" />
+                          </svg>
+                        </button>
+                      </td>
+                    </tr>
                   ))}
-                </select>
-              </div>
-              <div className="min-w-[100px] w-28">
-                <label className={LABEL_CLS}>Qty (sqft)</label>
-                <input
-                  type="number"
-                  min="0"
-                  step="1"
-                  value={newReqQty}
-                  onChange={(e) => setNewReqQty(e.target.value)}
-                  className={INPUT_CLS}
-                  placeholder="0"
-                />
-              </div>
-              <button
-                type="button"
-                onClick={addRequirement}
-                disabled={!newReqColor.trim() || !newReqMaterial}
-                className="rounded-lg bg-amber-500 px-4 py-2 text-sm font-medium text-white hover:bg-amber-600 disabled:opacity-40 transition-colors"
-              >
-                + Add
-              </button>
+
+                  {/* Add new row */}
+                  <tr className="bg-stone-50/50">
+                    <td className="px-3 py-1.5">
+                      <input
+                        type="text"
+                        value={newReqColor}
+                        onChange={(e) => setNewReqColor(e.target.value)}
+                        className="w-full rounded border border-dashed border-stone-300 px-2 py-1 text-sm focus:border-amber-500 focus:outline-none"
+                        placeholder="e.g. Statuario White"
+                      />
+                    </td>
+                    <td className="px-3 py-1.5">
+                      <select
+                        value={newReqMaterial}
+                        onChange={(e) => setNewReqMaterial(e.target.value)}
+                        className="w-full rounded border border-dashed border-stone-300 px-2 py-1 text-sm focus:border-amber-500 focus:outline-none"
+                      >
+                        <option value="">Select material</option>
+                        {MATERIAL_TYPES.map((m) => (
+                          <option key={m} value={m}>{m}</option>
+                        ))}
+                      </select>
+                    </td>
+                    <td className="px-3 py-1.5">
+                      <input
+                        type="number"
+                        min="0"
+                        step="1"
+                        value={newReqQty}
+                        onChange={(e) => setNewReqQty(e.target.value)}
+                        className="w-full rounded border border-dashed border-stone-300 px-2 py-1 text-sm focus:border-amber-500 focus:outline-none"
+                        placeholder="0"
+                      />
+                    </td>
+                    <td className="px-3 py-1.5 text-center">
+                      <button
+                        type="button"
+                        onClick={addRequirement}
+                        disabled={!newReqColor.trim() || !newReqMaterial}
+                        className="rounded bg-amber-500 px-2 py-1 text-xs font-medium text-white hover:bg-amber-600 disabled:opacity-40 transition-colors"
+                      >
+                        + Add
+                      </button>
+                    </td>
+                  </tr>
+                </tbody>
+              </table>
             </div>
+
+            {form.currentRequirements.length === 0 && (
+              <p className="mt-2 text-center text-xs text-stone-400">
+                No requirements added yet. Use the row above to add one.
+              </p>
+            )}
           </CardContent>
         </Card>
 
