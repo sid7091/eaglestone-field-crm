@@ -138,9 +138,7 @@ const INPUT_CLS =
   "w-full rounded-lg border border-stone-300 px-3 py-2 text-sm focus:border-amber-500 focus:outline-none focus:ring-1 focus:ring-amber-500";
 const LABEL_CLS = "mb-1 block text-sm font-medium text-stone-700";
 
-// ─── Google Maps API key (client-side, referer-restricted) ────────────────────
-
-const GOOGLE_API_KEY = process.env.NEXT_PUBLIC_GOOGLE_PLACES_API_KEY || "";
+// (Google Maps API key is fetched at runtime from /api/places/config)
 
 // ─── Component ────────────────────────────────────────────────────────────────
 
@@ -155,6 +153,7 @@ export default function NewCustomerPage() {
   // Google Places autocomplete
   const addressInputRef = useRef<HTMLInputElement>(null);
   const autocompleteRef = useRef<google.maps.places.Autocomplete | null>(null);
+  const [placesReady, setPlacesReady] = useState(false);
 
   // Current requirements state
   const [newReqColor, setNewReqColor] = useState("");
@@ -223,20 +222,28 @@ export default function NewCustomerPage() {
   // ── Google Places Autocomplete (client-side JS API) ─────────────────────────
 
   useEffect(() => {
-    if (!GOOGLE_API_KEY || autocompleteRef.current) return;
+    if (autocompleteRef.current) return;
 
-    // Load Google Maps JS API script
-    const existing = document.querySelector('script[src*="maps.googleapis.com/maps/api/js"]');
-    if (existing) {
-      initAutocomplete();
-      return;
-    }
+    // Fetch API key from server (works with any Vercel env var name)
+    fetch("/api/places/config")
+      .then((r) => r.json())
+      .then((data) => {
+        const apiKey = data.key;
+        if (!apiKey) return;
 
-    const script = document.createElement("script");
-    script.src = `https://maps.googleapis.com/maps/api/js?key=${GOOGLE_API_KEY}&libraries=places`;
-    script.async = true;
-    script.onload = () => initAutocomplete();
-    document.head.appendChild(script);
+        // Load Google Maps JS API script if not already loaded
+        if (window.google?.maps?.places) {
+          initAutocomplete();
+          return;
+        }
+
+        const script = document.createElement("script");
+        script.src = `https://maps.googleapis.com/maps/api/js?key=${apiKey}&libraries=places`;
+        script.async = true;
+        script.onload = () => initAutocomplete();
+        document.head.appendChild(script);
+      })
+      .catch(() => {});
 
     function initAutocomplete() {
       if (!addressInputRef.current || !window.google?.maps?.places) return;
@@ -284,6 +291,7 @@ export default function NewCustomerPage() {
       });
 
       autocompleteRef.current = ac;
+      setPlacesReady(true);
     }
   }, []);
 
@@ -528,11 +536,8 @@ export default function NewCustomerPage() {
                     defaultValue={form.address}
                     onChange={(e) => setForm((prev) => ({ ...prev, address: e.target.value }))}
                     className={INPUT_CLS}
-                    placeholder="Start typing to search Google Maps..."
+                    placeholder={placesReady ? "Start typing to search Google Maps..." : "Enter address"}
                   />
-                  {!GOOGLE_API_KEY && (
-                    <p className="mt-1 text-xs text-stone-400">Google Maps autocomplete not configured</p>
-                  )}
                 </div>
 
                 <div>
@@ -668,49 +673,51 @@ export default function NewCustomerPage() {
             </p>
 
             {/* Add new requirement inputs */}
-            <div className="flex flex-wrap items-end gap-3">
-              <div className="min-w-[140px] flex-1">
-                <label className={LABEL_CLS}>Color Name</label>
-                <input
-                  type="text"
-                  value={newReqColor}
-                  onChange={(e) => setNewReqColor(e.target.value)}
-                  className={INPUT_CLS}
-                  placeholder="e.g. Statuario White"
-                />
-              </div>
-              <div className="min-w-[140px] flex-1">
-                <label className={LABEL_CLS}>Material Type</label>
-                <select
-                  value={newReqMaterial}
-                  onChange={(e) => setNewReqMaterial(e.target.value)}
-                  className={INPUT_CLS}
-                >
-                  <option value="">Select material</option>
-                  {MATERIAL_TYPES.map((m) => (
-                    <option key={m} value={m}>{m}</option>
-                  ))}
-                </select>
-              </div>
-              <div className="w-28">
-                <label className={LABEL_CLS}>Qty (sqft)</label>
-                <input
-                  type="number"
-                  min="0"
-                  step="1"
-                  value={newReqQty}
-                  onChange={(e) => setNewReqQty(e.target.value)}
-                  className={INPUT_CLS}
-                  placeholder="0"
-                />
+            <div className="space-y-3">
+              <div className="grid grid-cols-1 gap-3 sm:grid-cols-3">
+                <div>
+                  <label className={LABEL_CLS}>Color Name</label>
+                  <input
+                    type="text"
+                    value={newReqColor}
+                    onChange={(e) => setNewReqColor(e.target.value)}
+                    className={INPUT_CLS}
+                    placeholder="e.g. Statuario White"
+                  />
+                </div>
+                <div>
+                  <label className={LABEL_CLS}>Material Type</label>
+                  <select
+                    value={newReqMaterial}
+                    onChange={(e) => setNewReqMaterial(e.target.value)}
+                    className={INPUT_CLS}
+                  >
+                    <option value="">Select material</option>
+                    {MATERIAL_TYPES.map((m) => (
+                      <option key={m} value={m}>{m}</option>
+                    ))}
+                  </select>
+                </div>
+                <div>
+                  <label className={LABEL_CLS}>Qty (sqft)</label>
+                  <input
+                    type="number"
+                    min="0"
+                    step="1"
+                    value={newReqQty}
+                    onChange={(e) => setNewReqQty(e.target.value)}
+                    className={INPUT_CLS}
+                    placeholder="0"
+                  />
+                </div>
               </div>
               <button
                 type="button"
                 onClick={addRequirement}
                 disabled={!newReqColor.trim() || !newReqMaterial}
-                className="rounded-lg bg-amber-500 px-4 py-2 text-sm font-medium text-white hover:bg-amber-600 disabled:opacity-40 transition-colors"
+                className="w-full rounded-lg bg-amber-500 px-4 py-2.5 text-sm font-medium text-white hover:bg-amber-600 disabled:opacity-40 transition-colors sm:w-auto"
               >
-                + Add
+                + Add Requirement
               </button>
             </div>
 
