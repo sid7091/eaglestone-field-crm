@@ -229,6 +229,7 @@ const schema = [
     "locationLng" REAL,
     "locationAccuracy" REAL,
     "preferredMaterials" TEXT,
+    "currentRequirements" TEXT,
     "annualPotentialINR" REAL NOT NULL DEFAULT 0,
     "lifetimeValueINR" REAL NOT NULL DEFAULT 0,
     "notes" TEXT,
@@ -237,6 +238,9 @@ const schema = [
     "updatedAt" DATETIME NOT NULL DEFAULT CURRENT_TIMESTAMP
   )`,
   `CREATE UNIQUE INDEX IF NOT EXISTS "Customer_gstin_key" ON "Customer"("gstin")`,
+
+  // Migration: add currentRequirements column if missing (for existing deployments)
+  `ALTER TABLE "Customer" ADD COLUMN "currentRequirements" TEXT`,
 
   `CREATE TABLE IF NOT EXISTS "Visit" (
     "id" TEXT NOT NULL PRIMARY KEY,
