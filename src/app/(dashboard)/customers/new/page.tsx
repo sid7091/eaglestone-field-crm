@@ -550,20 +550,21 @@ export default function NewCustomerPage() {
           </Card>
 
           {/* ── Location & Region ──────────────────────────────────────────── */}
-          <Card>
+          <Card className="overflow-visible">
             <CardHeader>
               <h2 className="font-semibold text-stone-900">Location & Region</h2>
             </CardHeader>
-            <CardContent>
+            <CardContent className="overflow-visible">
               <div className="space-y-4">
                 {/* Address autocomplete */}
-                <div ref={addressRef} className="relative">
+                <div ref={addressRef} className="relative z-40">
                   <label className={LABEL_CLS}>Address *</label>
                   <div className="relative">
                     <input
                       type="text"
-                      value={addressQuery || form.address}
+                      value={addressQuery}
                       onChange={handleAddressInput}
+                      onFocus={() => { if (suggestions.length > 0) setShowSuggestions(true); }}
                       className={INPUT_CLS}
                       placeholder="Start typing to search Google Maps..."
                       autoComplete="off"
@@ -575,21 +576,19 @@ export default function NewCustomerPage() {
                     )}
                   </div>
                   {showSuggestions && suggestions.length > 0 && (
-                    <div className="absolute z-50 mt-1 w-full rounded-lg border border-stone-200 bg-white shadow-lg">
-                      {suggestions.map((s) => (
+                    <div className="absolute left-0 right-0 z-50 mt-1 max-h-60 overflow-y-auto rounded-lg border border-stone-200 bg-white shadow-xl">
+                      {suggestions.slice(0, 5).map((s) => (
                         <button
                           key={s.place_id}
                           type="button"
                           onClick={() => selectPlace(s.place_id, s.description)}
-                          className="w-full px-3 py-2.5 text-left text-sm text-stone-700 hover:bg-amber-50 first:rounded-t-lg last:rounded-b-lg"
+                          className="flex w-full items-start gap-2.5 border-b border-stone-50 px-3 py-3 text-left text-sm text-stone-700 hover:bg-amber-50 last:border-b-0"
                         >
-                          <span className="mr-2 text-stone-400">
-                            <svg className="inline h-4 w-4" fill="none" viewBox="0 0 24 24" strokeWidth={1.5} stroke="currentColor">
-                              <path strokeLinecap="round" strokeLinejoin="round" d="M15 10.5a3 3 0 11-6 0 3 3 0 016 0z" />
-                              <path strokeLinecap="round" strokeLinejoin="round" d="M19.5 10.5c0 7.142-7.5 11.25-7.5 11.25S4.5 17.642 4.5 10.5a7.5 7.5 0 1115 0z" />
-                            </svg>
-                          </span>
-                          {s.description}
+                          <svg className="mt-0.5 h-4 w-4 shrink-0 text-stone-400" fill="none" viewBox="0 0 24 24" strokeWidth={1.5} stroke="currentColor">
+                            <path strokeLinecap="round" strokeLinejoin="round" d="M15 10.5a3 3 0 11-6 0 3 3 0 016 0z" />
+                            <path strokeLinecap="round" strokeLinejoin="round" d="M19.5 10.5c0 7.142-7.5 11.25-7.5 11.25S4.5 17.642 4.5 10.5a7.5 7.5 0 1115 0z" />
+                          </svg>
+                          <span className="leading-snug">{s.description}</span>
                         </button>
                       ))}
                       <div className="border-t border-stone-100 px-3 py-1.5 text-right">
