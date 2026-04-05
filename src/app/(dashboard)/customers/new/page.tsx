@@ -160,6 +160,7 @@ export default function NewCustomerPage() {
   const [suggestions, setSuggestions] = useState<PlacePrediction[]>([]);
   const [showSuggestions, setShowSuggestions] = useState(false);
   const [autocompleteLoading, setAutocompleteLoading] = useState(false);
+  const [placesError, setPlacesError] = useState("");
   const addressRef = useRef<HTMLDivElement>(null);
   const debounceRef = useRef<ReturnType<typeof setTimeout>>(null);
 
@@ -236,16 +237,22 @@ export default function NewCustomerPage() {
       return;
     }
     setAutocompleteLoading(true);
+    setPlacesError("");
     try {
       const res = await fetch(
         `/api/places/autocomplete?input=${encodeURIComponent(input)}`
       );
       const data = await res.json();
-      const preds = data.predictions || [];
-      setSuggestions(preds);
-      setShowSuggestions(preds.length > 0);
+      if (data.error) {
+        setPlacesError(data.error);
+        setSuggestions([]);
+        setShowSuggestions(false);
+      } else {
+        const preds = data.predictions || [];
+        setSuggestions(preds);
+        setShowSuggestions(preds.length > 0);
+      }
     } catch {
-      // silently fail — user can type manually
       setSuggestions([]);
       setShowSuggestions(false);
     } finally {
@@ -561,7 +568,7 @@ export default function NewCustomerPage() {
             <CardContent className="overflow-visible">
               <div className="space-y-4">
                 {/* Address autocomplete */}
-                <div ref={addressRef} className="relative z-40">
+                <div ref={addressRef} className={`relative ${showSuggestions ? "z-40" : ""}`}>
                   <label className={LABEL_CLS}>Address *</label>
                   <div className="relative">
                     <input
@@ -599,6 +606,11 @@ export default function NewCustomerPage() {
                         <span className="text-[10px] text-stone-400">Powered by Google</span>
                       </div>
                     </div>
+                  )}
+                  {placesError && (
+                    <p className="mt-1 text-xs text-red-500">
+                      Address lookup unavailable: {placesError}
+                    </p>
                   )}
                 </div>
 
