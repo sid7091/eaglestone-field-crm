@@ -16,6 +16,7 @@ interface PlanVisitModalProps {
   onClose: () => void;
   onCreated?: () => void;
   preselectedCustomer?: CustomerOption | null;
+  defaultPurpose?: string;
 }
 
 const VISIT_PURPOSES = [
@@ -30,7 +31,7 @@ const VISIT_PURPOSES = [
 
 const INPUT_CLS = "w-full rounded-lg border border-stone-300 px-3 py-2 text-sm focus:border-amber-500 focus:outline-none focus:ring-1 focus:ring-amber-500";
 
-export default function PlanVisitModal({ open, onClose, onCreated, preselectedCustomer }: PlanVisitModalProps) {
+export default function PlanVisitModal({ open, onClose, onCreated, preselectedCustomer, defaultPurpose }: PlanVisitModalProps) {
   const [customerQuery, setCustomerQuery] = useState(preselectedCustomer?.businessName || "");
   const [customerOptions, setCustomerOptions] = useState<CustomerOption[]>([]);
   const [selectedCustomer, setSelectedCustomer] = useState<CustomerOption | null>(preselectedCustomer || null);
@@ -39,7 +40,7 @@ export default function PlanVisitModal({ open, onClose, onCreated, preselectedCu
   const dropdownRef = useRef<HTMLDivElement>(null);
 
   const [visitDate, setVisitDate] = useState(new Date().toISOString().slice(0, 10));
-  const [purpose, setPurpose] = useState("SALES_PITCH");
+  const [purpose, setPurpose] = useState(defaultPurpose || "SALES_PITCH");
   const [notes, setNotes] = useState("");
   const [submitting, setSubmitting] = useState(false);
   const [error, setError] = useState("");
@@ -48,7 +49,7 @@ export default function PlanVisitModal({ open, onClose, onCreated, preselectedCu
   useEffect(() => {
     if (open) {
       setVisitDate(new Date().toISOString().slice(0, 10));
-      setPurpose("SALES_PITCH");
+      setPurpose(defaultPurpose || "SALES_PITCH");
       setNotes("");
       setError("");
       if (preselectedCustomer) {

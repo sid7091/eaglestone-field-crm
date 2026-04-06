@@ -63,6 +63,8 @@ const PIPELINE_CONFIG: Record<string, { label: string; color: string }> = {
   DORMANT: { label: "Dormant", color: "bg-stone-400" },
 };
 
+const NEW_CLIENT_PURPOSES = new Set(["SALES_PITCH", "SITE_SURVEY"]);
+
 const TIER_CONFIG: Record<string, { label: string; color: string; bg: string }> = {
   PLATINUM: { label: "Platinum", color: "text-purple-700", bg: "bg-purple-50 border-purple-200" },
   GOLD: { label: "Gold", color: "text-amber-700", bg: "bg-amber-50 border-amber-200" },
@@ -84,6 +86,7 @@ export default function FieldDashboardPage() {
     const now = new Date();
     return { year: now.getFullYear(), month: now.getMonth() };
   });
+  const [selectedDate, setSelectedDate] = useState<string | null>(null);
 
   useEffect(() => {
     async function fetchAll() {
@@ -91,12 +94,11 @@ export default function FieldDashboardPage() {
         setLoading(true);
         setError(null);
 
-        const today = new Date().toISOString().slice(0, 10);
         const [summaryRes, trendsRes, pipelineRes, visitsRes] = await Promise.all([
           api.get<{ data: FieldSummary }>("/analytics/field-summary"),
           api.get<{ data: VisitTrend[] }>("/analytics/visit-trends"),
           api.get<{ data: PipelineItem[] }>("/analytics/pipeline"),
-          api.get<{ data: UpcomingVisit[] }>(`/visits?status=PLANNED&dateFrom=${today}&limit=20`),
+          api.get<{ data: UpcomingVisit[] }>("/visits?limit=50"),
         ]);
 
         setSummary(summaryRes.data);
@@ -230,15 +232,21 @@ export default function FieldDashboardPage() {
               const daysInMonth = new Date(year, month + 1, 0).getDate();
               const today = new Date();
               const todayStr = today.toISOString().slice(0, 10);
+              const monthPrefix = `${year}-${String(month + 1).padStart(2, "0")}`;
 
-              // Visit dates in this month
-              const visitDates = new Set(
-                upcomingVisits
-                  .map((v) => v.visitDate)
-                  .filter((d) => d.startsWith(`${year}-${String(month + 1).padStart(2, "0")}`))
-              );
+              // Build per-date visit type sets
+              const dateHasNew = new Set<string>();
+              const dateHasFollowUp = new Set<string>();
+              for (const v of upcomingVisits) {
+                if (!v.visitDate.startsWith(monthPrefix)) continue;
+                if (NEW_CLIENT_PURPOSES.has(v.purpose)) {
+                  dateHasNew.add(v.visitDate);
+                } else {
+                  dateHasFollowUp.add(v.visitDate);
+                }
+              }
 
-              const days = [];
+              const days: (number | null)[] = [];
               for (let i = 0; i < firstDay; i++) days.push(null);
               for (let d = 1; d <= daysInMonth; d++) days.push(d);
 
@@ -252,24 +260,86 @@ export default function FieldDashboardPage() {
                   <div className="grid grid-cols-7 gap-0.5 text-center text-sm">
                     {days.map((day, i) => {
                       if (day === null) return <div key={`empty-${i}`} />;
-                      const dateStr = `${year}-${String(month + 1).padStart(2, "0")}-${String(day).padStart(2, "0")}`;
+                      const dateStr = `${monthPrefix}-${String(day).padStart(2, "0")}`;
                       const isToday = dateStr === todayStr;
-                      const hasVisit = visitDates.has(dateStr);
+                      const isSelected = dateStr === selectedDate;
+                      const hasNew = dateHasNew.has(dateStr);
+                      const hasFollowUp = dateHasFollowUp.has(dateStr);
+                      const hasAny = hasNew || hasFollowUp;
                       return (
-                        <div
+                        <button
                           key={day}
-                          className={`relative rounded-lg py-1.5 ${
-                            isToday ? "bg-amber-500 font-bold text-white" : hasVisit ? "bg-amber-50 font-medium text-amber-800" : "text-stone-700"
+                          type="button"
+                          onClick={() => setSelectedDate(isSelected ? null : dateStr)}
+                          className={`relative rounded-lg py-1.5 transition-colors ${
+                            isToday
+                              ? "bg-amber-500 font-bold text-white"
+                              : isSelected
+                              ? "bg-stone-200 font-medium text-stone-900"
+                              : hasAny
+                              ? "bg-stone-50 font-medium text-stone-800"
+                              : "text-stone-700 hover:bg-stone-50"
                           }`}
                         >
                           {day}
-                          {hasVisit && !isToday && (
-                            <span className="absolute bottom-0.5 left-1/2 -translate-x-1/2 h-1 w-1 rounded-full bg-amber-500" />
+                          {(hasNew || hasFollowUp) && (
+                            <span className="absolute bottom-0.5 left-1/2 -translate-x-1/2 flex gap-0.5">
+                              {hasNew && <span className="h-1.5 w-1.5 rounded-full bg-emerald-500" />}
+                              {hasFollowUp && <span className="h-1.5 w-1.5 rounded-full bg-amber-400" />}
+                            </span>
                           )}
-                        </div>
+                        </button>
                       );
                     })}
                   </div>
+
+                  {/* Legend */}
+                  <div className="mt-3 flex items-center gap-4 border-t border-stone-100 pt-3">
+                    <span className="flex items-center gap-1.5 text-xs text-stone-600">
+                      <span className="h-2.5 w-2.5 rounded-full bg-emerald-500" />
+                      New Client
+                    </span>
+                    <span className="flex items-center gap-1.5 text-xs text-stone-600">
+                      <span className="h-2.5 w-2.5 rounded-full bg-amber-400" />
+                      Follow Up
+                    </span>
+                  </div>
+
+                  {/* Selected date popup */}
+                  {selectedDate && (() => {
+                    const dayVisits = upcomingVisits.filter((v) => v.visitDate === selectedDate);
+                    const dateLabel = new Date(selectedDate + "T00:00:00").toLocaleDateString("en-IN", { weekday: "long", day: "numeric", month: "long" });
+                    return (
+                      <div className="mt-3 rounded-lg border border-stone-200 bg-stone-50 p-3">
+                        <div className="flex items-center justify-between mb-2">
+                          <h3 className="text-sm font-semibold text-stone-800">{dateLabel}</h3>
+                          <button onClick={() => setSelectedDate(null)} className="text-stone-400 hover:text-stone-600">
+                            <svg className="h-4 w-4" viewBox="0 0 20 20" fill="currentColor"><path d="M6.28 5.22a.75.75 0 00-1.06 1.06L8.94 10l-3.72 3.72a.75.75 0 101.06 1.06L10 11.06l3.72 3.72a.75.75 0 101.06-1.06L11.06 10l3.72-3.72a.75.75 0 00-1.06-1.06L10 8.94 6.28 5.22z" /></svg>
+                          </button>
+                        </div>
+                        {dayVisits.length === 0 ? (
+                          <p className="text-xs text-stone-400">No visits scheduled</p>
+                        ) : (
+                          <div className="space-y-2">
+                            {dayVisits.map((v) => (
+                              <button
+                                key={v.id}
+                                onClick={() => router.push(`/visits/${v.id}`)}
+                                className="flex w-full items-center gap-2 rounded-lg bg-white p-2 text-left active:bg-stone-100 border border-stone-100"
+                              >
+                                <span className={`h-2 w-2 rounded-full shrink-0 ${NEW_CLIENT_PURPOSES.has(v.purpose) ? "bg-emerald-500" : "bg-amber-400"}`} />
+                                <div className="min-w-0 flex-1">
+                                  <p className="text-sm font-medium text-stone-900 truncate">{v.customer.businessName}</p>
+                                  <p className="text-xs text-stone-500">{v.purpose.replace(/_/g, " ")}</p>
+                                </div>
+                                <StatusBadge status={v.status} />
+                              </button>
+                            ))}
+                          </div>
+                        )}
+                      </div>
+                    );
+                  })()}
                 </div>
               );
             })()}
