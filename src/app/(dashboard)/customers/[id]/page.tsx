@@ -4,6 +4,8 @@ import { useEffect, useState, useCallback } from "react";
 import { useParams, useRouter } from "next/navigation";
 import { Card } from "@/components/ui/Card";
 import StatusBadge from "@/components/ui/StatusBadge";
+import PlanVisitModal from "@/components/ui/PlanVisitModal";
+import SitePhotos from "@/components/ui/SitePhotos";
 import { api } from "@/lib/api-client";
 import { formatCurrency, formatDate } from "@/lib/utils";
 
@@ -66,6 +68,8 @@ export default function CustomerDetailPage() {
   const [loading, setLoading] = useState(true);
   const [saving, setSaving] = useState(false);
   const [form, setForm] = useState<Partial<Customer>>({});
+  const [planVisitOpen, setPlanVisitOpen] = useState(false);
+  const [sitePhotos, setSitePhotos] = useState<string[]>([]);
 
   const fetchCustomer = useCallback(async () => {
     try {
@@ -319,6 +323,16 @@ export default function CustomerDetailPage() {
               </div>
             </div>
           </Card>
+
+          {/* Site Photos */}
+          <Card>
+            <div className="border-b border-stone-200 px-6 py-4">
+              <h2 className="text-lg font-semibold text-stone-900">Site Photos</h2>
+            </div>
+            <div className="p-6">
+              <SitePhotos photos={sitePhotos} onPhotosChange={setSitePhotos} />
+            </div>
+          </Card>
         </div>
       </div>
 
@@ -327,11 +341,17 @@ export default function CustomerDetailPage() {
         <div className="border-b border-stone-200 px-6 py-4 flex items-center justify-between">
           <h2 className="text-lg font-semibold text-stone-900">Recent Visits</h2>
           <button
-            onClick={() => router.push(`/visits/new?customerId=${id}`)}
+            onClick={() => setPlanVisitOpen(true)}
             className="rounded-lg bg-brand-accent px-3 py-1.5 text-xs font-medium text-white hover:bg-brand-accent/90"
           >
             Plan Visit
           </button>
+          <PlanVisitModal
+            open={planVisitOpen}
+            onClose={() => setPlanVisitOpen(false)}
+            onCreated={() => fetchVisits()}
+            preselectedCustomer={customer ? { id: customer.id, businessName: customer.businessName, regionCode: customer.regionCode, city: customer.city, district: customer.district } : null}
+          />
         </div>
         <div className="overflow-x-auto">
           <table className="w-full">
