@@ -4,6 +4,7 @@ import { useState, useRef, useEffect, useCallback } from "react";
 import { useRouter } from "next/navigation";
 import Link from "next/link";
 import { Card, CardHeader, CardContent } from "@/components/ui/Card";
+import SitePhotos from "@/components/ui/SitePhotos";
 import { api } from "@/lib/api-client";
 
 // ─── Enum options ─────────────────────────────────────────────────────────────
@@ -160,6 +161,7 @@ export default function NewCustomerPage() {
   const [error, setError] = useState("");
   const [gpsLoading, setGpsLoading] = useState(false);
   const [gpsError, setGpsError] = useState("");
+  const [sitePhotos, setSitePhotos] = useState<string[]>([]);
 
   // Address autocomplete
   const debounceRef = useRef<ReturnType<typeof setTimeout>>(null);
@@ -383,7 +385,7 @@ export default function NewCustomerPage() {
           {/* ── Business Identity ──────────────────────────────────────────── */}
           <Card>
             <CardHeader>
-              <h2 className="font-semibold text-stone-900">Customer Identity</h2>
+              <h2 className="font-semibold text-stone-900">Customer Information</h2>
             </CardHeader>
             <CardContent>
               <div className="space-y-4">
@@ -806,6 +808,17 @@ export default function NewCustomerPage() {
                 </table>
               </div>
             )}
+          </CardContent>
+        </Card>
+
+        {/* ── Site Photos ──────────────────────────────────────────────────── */}
+        <Card className="mt-6">
+          <CardHeader>
+            <h2 className="font-semibold text-stone-900">Site Photos</h2>
+          </CardHeader>
+          <CardContent>
+            <p className="mb-3 text-xs text-stone-500">Capture photos of the client site.</p>
+            <SitePhotos photos={sitePhotos} onPhotosChange={setSitePhotos} />
           </CardContent>
         </Card>
 
