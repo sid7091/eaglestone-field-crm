@@ -3,11 +3,14 @@
 import { useEffect, useState, useCallback } from "react";
 import Link from "next/link";
 import { useRouter } from "next/navigation";
-import { Card } from "@/components/ui/Card";
+import { Card, CardHeader, CardContent } from "@/components/ui/Card";
 import DataTable from "@/components/ui/DataTable";
 import StatusBadge from "@/components/ui/StatusBadge";
+import PlanVisitModal from "@/components/ui/PlanVisitModal";
 import { api } from "@/lib/api-client";
 import { formatDate } from "@/lib/utils";
+
+const NEW_CLIENT_PURPOSES = new Set(["SALES_PITCH", "SITE_SURVEY"]);
 
 // ─── Types ────────────────────────────────────────────────────────────────────
 
@@ -75,6 +78,12 @@ export default function VisitsPage() {
   const [customTo, setCustomTo] = useState("");
   const [statusTab, setStatusTab] = useState<StatusTab>("");
   const [page, setPage] = useState(1);
+  const [planModalOpen, setPlanModalOpen] = useState(false);
+  const [calMonth, setCalMonth] = useState(() => {
+    const now = new Date();
+    return { year: now.getFullYear(), month: now.getMonth() };
+  });
+  const [selDate, setSelDate] = useState<string | null>(null);
 
   const effectiveDates = useCallback((): { dateFrom: string; dateTo: string } => {
     if (datePreset === "today") {
@@ -264,13 +273,111 @@ export default function VisitsPage() {
             {meta.total > 0 ? `${meta.total} visits found` : "Schedule and track field visits"}
           </p>
         </div>
-        <Link
-          href="/visits/new"
+        <button
+          onClick={() => setPlanModalOpen(true)}
           className="w-fit rounded-lg bg-amber-500 px-4 py-2 font-medium text-white transition-colors hover:bg-amber-600"
         >
           + Plan Visit
-        </Link>
+        </button>
       </div>
+
+      <PlanVisitModal open={planModalOpen} onClose={() => setPlanModalOpen(false)} onCreated={() => fetchVisits()} />
+
+      {/* ── Mini Calendar ──────────────────────────────────────────────── */}
+      <Card className="mb-6">
+        <CardHeader>
+          <div className="flex items-center justify-between">
+            <h2 className="text-base font-semibold text-stone-800">Schedule</h2>
+            <div className="flex items-center gap-2">
+              <button onClick={() => setCalMonth((p) => { const d = new Date(p.year, p.month - 1); return { year: d.getFullYear(), month: d.getMonth() }; })} className="rounded p-1 text-stone-400 hover:bg-stone-100">
+                <svg className="h-4 w-4" fill="none" viewBox="0 0 24 24" strokeWidth={2} stroke="currentColor"><path strokeLinecap="round" strokeLinejoin="round" d="M15.75 19.5L8.25 12l7.5-7.5" /></svg>
+              </button>
+              <span className="text-sm font-medium text-stone-700">
+                {new Date(calMonth.year, calMonth.month).toLocaleDateString("en-IN", { month: "long", year: "numeric" })}
+              </span>
+              <button onClick={() => setCalMonth((p) => { const d = new Date(p.year, p.month + 1); return { year: d.getFullYear(), month: d.getMonth() }; })} className="rounded p-1 text-stone-400 hover:bg-stone-100">
+                <svg className="h-4 w-4" fill="none" viewBox="0 0 24 24" strokeWidth={2} stroke="currentColor"><path strokeLinecap="round" strokeLinejoin="round" d="M8.25 4.5l7.5 7.5-7.5 7.5" /></svg>
+              </button>
+            </div>
+          </div>
+        </CardHeader>
+        <CardContent>
+          {(() => {
+            const { year, month } = calMonth;
+            const firstDay = new Date(year, month, 1).getDay();
+            const daysInMonth = new Date(year, month + 1, 0).getDate();
+            const todayStr = new Date().toISOString().slice(0, 10);
+            const monthPrefix = `${year}-${String(month + 1).padStart(2, "0")}`;
+            const dateHasNew = new Set<string>();
+            const dateHasFollowUp = new Set<string>();
+            for (const v of visits) {
+              if (!v.visitDate.startsWith(monthPrefix)) continue;
+              if (NEW_CLIENT_PURPOSES.has(v.purpose)) dateHasNew.add(v.visitDate);
+              else dateHasFollowUp.add(v.visitDate);
+            }
+            const days: (number | null)[] = [];
+            for (let i = 0; i < firstDay; i++) days.push(null);
+            for (let d = 1; d <= daysInMonth; d++) days.push(d);
+            return (
+              <div>
+                <div className="grid grid-cols-7 gap-0.5 text-center text-xs font-medium text-stone-400 mb-1">
+                  {["Su","Mo","Tu","We","Th","Fr","Sa"].map((d) => <div key={d} className="py-1">{d}</div>)}
+                </div>
+                <div className="grid grid-cols-7 gap-0.5 text-center text-sm">
+                  {days.map((day, i) => {
+                    if (day === null) return <div key={`e-${i}`} />;
+                    const ds = `${monthPrefix}-${String(day).padStart(2, "0")}`;
+                    const isToday = ds === todayStr;
+                    const isSel = ds === selDate;
+                    const hasN = dateHasNew.has(ds);
+                    const hasF = dateHasFollowUp.has(ds);
+                    return (
+                      <button key={day} type="button" onClick={() => setSelDate(isSel ? null : ds)}
+                        className={`relative rounded-lg py-1.5 transition-colors ${isToday ? "bg-amber-500 font-bold text-white" : isSel ? "bg-stone-200 font-medium text-stone-900" : (hasN||hasF) ? "bg-stone-50 font-medium text-stone-800" : "text-stone-700 hover:bg-stone-50"}`}>
+                        {day}
+                        {(hasN || hasF) && <span className="absolute bottom-0.5 left-1/2 -translate-x-1/2 flex gap-0.5">
+                          {hasN && <span className="h-1.5 w-1.5 rounded-full bg-emerald-500" />}
+                          {hasF && <span className="h-1.5 w-1.5 rounded-full bg-amber-400" />}
+                        </span>}
+                      </button>
+                    );
+                  })}
+                </div>
+                <div className="mt-3 flex items-center gap-4 border-t border-stone-100 pt-3">
+                  <span className="flex items-center gap-1.5 text-xs text-stone-600"><span className="h-2.5 w-2.5 rounded-full bg-emerald-500" />New Client</span>
+                  <span className="flex items-center gap-1.5 text-xs text-stone-600"><span className="h-2.5 w-2.5 rounded-full bg-amber-400" />Follow Up</span>
+                </div>
+                {selDate && (() => {
+                  const dayVisits = visits.filter((v) => v.visitDate === selDate);
+                  const dateLabel = new Date(selDate + "T00:00:00").toLocaleDateString("en-IN", { weekday: "long", day: "numeric", month: "long" });
+                  return (
+                    <div className="mt-3 rounded-lg border border-stone-200 bg-stone-50 p-3">
+                      <div className="flex items-center justify-between mb-2">
+                        <h3 className="text-sm font-semibold text-stone-800">{dateLabel}</h3>
+                        <button onClick={() => setSelDate(null)} className="text-stone-400"><svg className="h-4 w-4" viewBox="0 0 20 20" fill="currentColor"><path d="M6.28 5.22a.75.75 0 00-1.06 1.06L8.94 10l-3.72 3.72a.75.75 0 101.06 1.06L10 11.06l3.72 3.72a.75.75 0 101.06-1.06L11.06 10l3.72-3.72a.75.75 0 00-1.06-1.06L10 8.94 6.28 5.22z" /></svg></button>
+                      </div>
+                      {dayVisits.length === 0 ? <p className="text-xs text-stone-400">No visits</p> : (
+                        <div className="space-y-2">
+                          {dayVisits.map((v) => (
+                            <button key={v.id} onClick={() => router.push(`/visits/${v.id}`)} className="flex w-full items-center gap-2 rounded-lg bg-white p-2 text-left active:bg-stone-100 border border-stone-100">
+                              <span className={`h-2 w-2 rounded-full shrink-0 ${NEW_CLIENT_PURPOSES.has(v.purpose) ? "bg-emerald-500" : "bg-amber-400"}`} />
+                              <div className="min-w-0 flex-1">
+                                <p className="text-sm font-medium text-stone-900 truncate">{v.customer?.businessName || "—"}</p>
+                                <p className="text-xs text-stone-500">{v.purpose.replace(/_/g, " ")}</p>
+                              </div>
+                              <StatusBadge status={v.status} />
+                            </button>
+                          ))}
+                        </div>
+                      )}
+                    </div>
+                  );
+                })()}
+              </div>
+            );
+          })()}
+        </CardContent>
+      </Card>
 
       {/* Date preset buttons + custom range */}
       <div className="mb-4 flex flex-wrap items-center gap-2">
