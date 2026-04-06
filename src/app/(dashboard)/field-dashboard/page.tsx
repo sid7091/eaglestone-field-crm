@@ -1,10 +1,12 @@
 "use client";
 
 import { useEffect, useState } from "react";
+import { useRouter } from "next/navigation";
 import { api } from "@/lib/api-client";
 import StatCard from "@/components/ui/StatCard";
 import { Card, CardHeader, CardContent } from "@/components/ui/Card";
-import { formatCurrency } from "@/lib/utils";
+import StatusBadge from "@/components/ui/StatusBadge";
+import { formatCurrency, formatDate } from "@/lib/utils";
 
 // ─── API Response Types ───────────────────────────────────────────────────────
 
@@ -40,6 +42,14 @@ interface PipelineItem {
   totalPotentialINR: number;
 }
 
+interface UpcomingVisit {
+  id: string;
+  visitDate: string;
+  purpose: string;
+  status: string;
+  customer: { id: string; businessName: string };
+}
+
 // ─── Pipeline status display config ──────────────────────────────────────────
 
 const PIPELINE_CONFIG: Record<string, { label: string; color: string }> = {
@@ -63,11 +73,17 @@ const TIER_CONFIG: Record<string, { label: string; color: string; bg: string }> 
 // ─── Component ────────────────────────────────────────────────────────────────
 
 export default function FieldDashboardPage() {
+  const router = useRouter();
   const [summary, setSummary] = useState<FieldSummary | null>(null);
   const [trends, setTrends] = useState<VisitTrend[]>([]);
   const [pipeline, setPipeline] = useState<PipelineItem[]>([]);
+  const [upcomingVisits, setUpcomingVisits] = useState<UpcomingVisit[]>([]);
   const [loading, setLoading] = useState(true);
   const [error, setError] = useState<string | null>(null);
+  const [calendarMonth, setCalendarMonth] = useState(() => {
+    const now = new Date();
+    return { year: now.getFullYear(), month: now.getMonth() };
+  });
 
   useEffect(() => {
     async function fetchAll() {
@@ -75,15 +91,18 @@ export default function FieldDashboardPage() {
         setLoading(true);
         setError(null);
 
-        const [summaryRes, trendsRes, pipelineRes] = await Promise.all([
+        const today = new Date().toISOString().slice(0, 10);
+        const [summaryRes, trendsRes, pipelineRes, visitsRes] = await Promise.all([
           api.get<{ data: FieldSummary }>("/analytics/field-summary"),
           api.get<{ data: VisitTrend[] }>("/analytics/visit-trends"),
           api.get<{ data: PipelineItem[] }>("/analytics/pipeline"),
+          api.get<{ data: UpcomingVisit[] }>(`/visits?status=PLANNED&dateFrom=${today}&limit=20`),
         ]);
 
         setSummary(summaryRes.data);
         setTrends(trendsRes.data);
         setPipeline(pipelineRes.data);
+        setUpcomingVisits(visitsRes.data);
       } catch (err) {
         setError(err instanceof Error ? err.message : "Failed to load analytics data");
       } finally {
@@ -172,7 +191,137 @@ export default function FieldDashboardPage() {
         />
       </div>
 
-      {/* ── Row 2: Lead Pipeline ──────────────────────────────────────────── */}
+      {/* ── Row 2: Calendar + Upcoming Visits ────────────────────────────── */}
+      <div className="grid grid-cols-1 gap-6 lg:grid-cols-2">
+        {/* Mini Calendar */}
+        <Card>
+          <CardHeader>
+            <div className="flex items-center justify-between">
+              <h2 className="text-base font-semibold text-stone-800">Schedule</h2>
+              <div className="flex items-center gap-2">
+                <button
+                  onClick={() => setCalendarMonth((prev) => {
+                    const d = new Date(prev.year, prev.month - 1);
+                    return { year: d.getFullYear(), month: d.getMonth() };
+                  })}
+                  className="rounded p-1 text-stone-400 hover:bg-stone-100"
+                >
+                  <svg className="h-4 w-4" fill="none" viewBox="0 0 24 24" strokeWidth={2} stroke="currentColor"><path strokeLinecap="round" strokeLinejoin="round" d="M15.75 19.5L8.25 12l7.5-7.5" /></svg>
+                </button>
+                <span className="text-sm font-medium text-stone-700">
+                  {new Date(calendarMonth.year, calendarMonth.month).toLocaleDateString("en-IN", { month: "long", year: "numeric" })}
+                </span>
+                <button
+                  onClick={() => setCalendarMonth((prev) => {
+                    const d = new Date(prev.year, prev.month + 1);
+                    return { year: d.getFullYear(), month: d.getMonth() };
+                  })}
+                  className="rounded p-1 text-stone-400 hover:bg-stone-100"
+                >
+                  <svg className="h-4 w-4" fill="none" viewBox="0 0 24 24" strokeWidth={2} stroke="currentColor"><path strokeLinecap="round" strokeLinejoin="round" d="M8.25 4.5l7.5 7.5-7.5 7.5" /></svg>
+                </button>
+              </div>
+            </div>
+          </CardHeader>
+          <CardContent>
+            {(() => {
+              const { year, month } = calendarMonth;
+              const firstDay = new Date(year, month, 1).getDay();
+              const daysInMonth = new Date(year, month + 1, 0).getDate();
+              const today = new Date();
+              const todayStr = today.toISOString().slice(0, 10);
+
+              // Visit dates in this month
+              const visitDates = new Set(
+                upcomingVisits
+                  .map((v) => v.visitDate)
+                  .filter((d) => d.startsWith(`${year}-${String(month + 1).padStart(2, "0")}`))
+              );
+
+              const days = [];
+              for (let i = 0; i < firstDay; i++) days.push(null);
+              for (let d = 1; d <= daysInMonth; d++) days.push(d);
+
+              return (
+                <div>
+                  <div className="grid grid-cols-7 gap-0.5 text-center text-xs font-medium text-stone-400 mb-1">
+                    {["Su", "Mo", "Tu", "We", "Th", "Fr", "Sa"].map((d) => (
+                      <div key={d} className="py-1">{d}</div>
+                    ))}
+                  </div>
+                  <div className="grid grid-cols-7 gap-0.5 text-center text-sm">
+                    {days.map((day, i) => {
+                      if (day === null) return <div key={`empty-${i}`} />;
+                      const dateStr = `${year}-${String(month + 1).padStart(2, "0")}-${String(day).padStart(2, "0")}`;
+                      const isToday = dateStr === todayStr;
+                      const hasVisit = visitDates.has(dateStr);
+                      return (
+                        <div
+                          key={day}
+                          className={`relative rounded-lg py-1.5 ${
+                            isToday ? "bg-amber-500 font-bold text-white" : hasVisit ? "bg-amber-50 font-medium text-amber-800" : "text-stone-700"
+                          }`}
+                        >
+                          {day}
+                          {hasVisit && !isToday && (
+                            <span className="absolute bottom-0.5 left-1/2 -translate-x-1/2 h-1 w-1 rounded-full bg-amber-500" />
+                          )}
+                        </div>
+                      );
+                    })}
+                  </div>
+                </div>
+              );
+            })()}
+          </CardContent>
+        </Card>
+
+        {/* Upcoming Visits */}
+        <Card>
+          <CardHeader>
+            <div className="flex items-center justify-between">
+              <h2 className="text-base font-semibold text-stone-800">Upcoming Visits</h2>
+              <button
+                onClick={() => router.push("/visits")}
+                className="text-xs text-amber-600 font-medium hover:underline"
+              >
+                View all
+              </button>
+            </div>
+          </CardHeader>
+          <CardContent className="px-0 py-0">
+            {upcomingVisits.length === 0 ? (
+              <p className="px-6 py-8 text-center text-sm text-stone-400">No upcoming visits scheduled</p>
+            ) : (
+              <div className="max-h-72 divide-y divide-stone-100 overflow-y-auto">
+                {upcomingVisits.map((v) => (
+                  <button
+                    key={v.id}
+                    onClick={() => router.push(`/visits/${v.id}`)}
+                    className="flex w-full items-center gap-3 px-5 py-3 text-left active:bg-stone-50"
+                  >
+                    <div className="flex h-10 w-10 shrink-0 flex-col items-center justify-center rounded-lg bg-amber-50 text-amber-700">
+                      <span className="text-xs font-bold leading-none">
+                        {new Date(v.visitDate + "T00:00:00").toLocaleDateString("en-IN", { day: "numeric" })}
+                      </span>
+                      <span className="text-[9px] uppercase leading-none">
+                        {new Date(v.visitDate + "T00:00:00").toLocaleDateString("en-IN", { month: "short" })}
+                      </span>
+                    </div>
+                    <div className="min-w-0 flex-1">
+                      <p className="truncate text-sm font-medium text-stone-900">{v.customer.businessName}</p>
+                      <p className="text-xs text-stone-500">{v.purpose.replace(/_/g, " ")}</p>
+                    </div>
+                    <StatusBadge status={v.status} />
+                  </button>
+                ))}
+              </div>
+            )}
+          </CardContent>
+        </Card>
+      </div>
+
+      {/* ── Row 3: Lead Pipeline ──────────────────────────────────────────── */}
       <Card>
         <CardHeader>
           <h2 className="text-base font-semibold text-stone-800">Lead Pipeline</h2>

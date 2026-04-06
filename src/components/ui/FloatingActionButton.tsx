@@ -2,42 +2,11 @@
 
 import { useState, useEffect, useRef } from "react";
 import { useRouter } from "next/navigation";
-
-const actions = [
-  {
-    label: "Create Fresh Order",
-    href: "/visits/new?purpose=ORDER_FOLLOWUP",
-    icon: (
-      <svg className="h-5 w-5" fill="none" viewBox="0 0 24 24" strokeWidth={1.5} stroke="currentColor">
-        <path strokeLinecap="round" strokeLinejoin="round" d="M15.75 10.5V6a3.75 3.75 0 10-7.5 0v4.5m11.356-1.993l1.263 12c.07.665-.45 1.243-1.119 1.243H4.25a1.125 1.125 0 01-1.12-1.243l1.264-12A1.125 1.125 0 015.513 7.5h12.974c.576 0 1.059.435 1.119 1.007zM8.625 10.5a.375.375 0 11-.75 0 .375.375 0 01.75 0zm7.5 0a.375.375 0 11-.75 0 .375.375 0 01.75 0z" />
-      </svg>
-    ),
-    bg: "bg-purple-500",
-  },
-  {
-    label: "Post Follow Up",
-    href: "/visits/new",
-    icon: (
-      <svg className="h-5 w-5" fill="none" viewBox="0 0 24 24" strokeWidth={1.5} stroke="currentColor">
-        <path strokeLinecap="round" strokeLinejoin="round" d="M8.625 12a.375.375 0 11-.75 0 .375.375 0 01.75 0zm0 0H8.25m4.125 0a.375.375 0 11-.75 0 .375.375 0 01.75 0zm0 0H12m4.125 0a.375.375 0 11-.75 0 .375.375 0 01.75 0zm0 0h-.375M21 12c0 4.556-4.03 8.25-9 8.25a9.764 9.764 0 01-2.555-.337A5.972 5.972 0 015.41 20.97a5.969 5.969 0 01-.474-.065 4.48 4.48 0 00.978-2.025c.09-.457-.133-.901-.467-1.226C3.93 16.178 3 14.189 3 12c0-4.556 4.03-8.25 9-8.25s9 3.694 9 8.25z" />
-      </svg>
-    ),
-    bg: "bg-green-500",
-  },
-  {
-    label: "Add Customer",
-    href: "/customers/new",
-    icon: (
-      <svg className="h-5 w-5" fill="none" viewBox="0 0 24 24" strokeWidth={1.5} stroke="currentColor">
-        <path strokeLinecap="round" strokeLinejoin="round" d="M18 7.5v3m0 0v3m0-3h3m-3 0h-3m-2.25-4.125a3.375 3.375 0 11-6.75 0 3.375 3.375 0 016.75 0zM3 19.235v-.11a6.375 6.375 0 0112.75 0v.109A12.318 12.318 0 019.374 21c-2.331 0-4.512-.645-6.374-1.766z" />
-      </svg>
-    ),
-    bg: "bg-blue-500",
-  },
-];
+import PlanVisitModal from "./PlanVisitModal";
 
 export default function FloatingActionButton() {
   const [open, setOpen] = useState(false);
+  const [visitModalOpen, setVisitModalOpen] = useState(false);
   const router = useRouter();
   const containerRef = useRef<HTMLDivElement>(null);
 
@@ -61,6 +30,29 @@ export default function FloatingActionButton() {
     return () => document.removeEventListener("keydown", handler);
   }, [open]);
 
+  const actions = [
+    {
+      label: "Post Follow Up",
+      onClick: () => { setOpen(false); setVisitModalOpen(true); },
+      icon: (
+        <svg className="h-5 w-5" fill="none" viewBox="0 0 24 24" strokeWidth={1.5} stroke="currentColor">
+          <path strokeLinecap="round" strokeLinejoin="round" d="M8.625 12a.375.375 0 11-.75 0 .375.375 0 01.75 0zm0 0H8.25m4.125 0a.375.375 0 11-.75 0 .375.375 0 01.75 0zm0 0H12m4.125 0a.375.375 0 11-.75 0 .375.375 0 01.75 0zm0 0h-.375M21 12c0 4.556-4.03 8.25-9 8.25a9.764 9.764 0 01-2.555-.337A5.972 5.972 0 015.41 20.97a5.969 5.969 0 01-.474-.065 4.48 4.48 0 00.978-2.025c.09-.457-.133-.901-.467-1.226C3.93 16.178 3 14.189 3 12c0-4.556 4.03-8.25 9-8.25s9 3.694 9 8.25z" />
+        </svg>
+      ),
+      bg: "bg-green-500",
+    },
+    {
+      label: "Add Customer",
+      onClick: () => { setOpen(false); router.push("/customers/new"); },
+      icon: (
+        <svg className="h-5 w-5" fill="none" viewBox="0 0 24 24" strokeWidth={1.5} stroke="currentColor">
+          <path strokeLinecap="round" strokeLinejoin="round" d="M18 7.5v3m0 0v3m0-3h3m-3 0h-3m-2.25-4.125a3.375 3.375 0 11-6.75 0 3.375 3.375 0 016.75 0zM3 19.235v-.11a6.375 6.375 0 0112.75 0v.109A12.318 12.318 0 019.374 21c-2.331 0-4.512-.645-6.374-1.766z" />
+        </svg>
+      ),
+      bg: "bg-blue-500",
+    },
+  ];
+
   return (
     <>
       {/* Backdrop overlay */}
@@ -77,10 +69,7 @@ export default function FloatingActionButton() {
           {actions.map((action, i) => (
             <button
               key={action.label}
-              onClick={() => {
-                setOpen(false);
-                router.push(action.href);
-              }}
+              onClick={action.onClick}
               className="flex items-center gap-2.5 rounded-full bg-white pl-4 pr-3 py-2 shadow-lg ring-1 ring-stone-200/60 transition-all duration-200 hover:shadow-xl"
               style={{
                 opacity: open ? 1 : 0,
@@ -120,6 +109,12 @@ export default function FloatingActionButton() {
           </svg>
         </button>
       </div>
+
+      {/* Plan Visit Modal */}
+      <PlanVisitModal
+        open={visitModalOpen}
+        onClose={() => setVisitModalOpen(false)}
+      />
     </>
   );
 }
