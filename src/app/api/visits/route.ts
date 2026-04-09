@@ -37,8 +37,17 @@ export async function GET(request: NextRequest) {
     prisma.visit.count({ where }),
   ]);
 
+  // Transform data to match frontend expectations
+  const transformed = data.map((v) => ({
+    ...v,
+    fieldRep: v.fieldRep ? { ...v.fieldRep, fullName: v.fieldRep.name } : null,
+    geofenceValidation: v.geofenceDistance != null
+      ? { isWithinGeofence: v.geofenceValid ?? false, distanceFromCustomerMeters: v.geofenceDistance }
+      : null,
+  }));
+
   return NextResponse.json({
-    data,
+    data: transformed,
     meta: { total, page, limit, totalPages: Math.ceil(total / limit) },
   });
 }
