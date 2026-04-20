@@ -16,7 +16,6 @@ export default function ConnectivityBanner() {
       setOnline(isConnected);
       if (isConnected) {
         await checkPending();
-        // Auto-sync when back online
         setSyncing(true);
         await syncPendingData();
         await checkPending();
@@ -26,7 +25,6 @@ export default function ConnectivityBanner() {
 
     checkPending();
     const interval = setInterval(checkPending, 30_000);
-
     return () => {
       unsubscribe();
       clearInterval(interval);
@@ -50,41 +48,41 @@ export default function ConnectivityBanner() {
     setSyncing(false);
   }
 
-  // Offline banner
   if (!online) {
     return (
-      <div className="bg-amber-500 text-white px-4 py-2 text-center text-sm font-medium flex items-center justify-center gap-2">
-        <div className="h-2 w-2 rounded-full bg-white animate-pulse" />
-        You&apos;re offline. Changes will sync when connected.
+      <div className="flex items-center justify-center gap-2 bg-danger/10 px-4 py-2 text-center font-display text-[11px] font-semibold tracking-wide text-danger">
+        <span className="h-1.5 w-1.5 animate-pulse rounded-full bg-danger" />
+        YOU&apos;RE OFFLINE — VISITS &amp; CUSTOMERS WILL SYNC WHEN YOU RECONNECT
         {pendingCount > 0 && (
-          <span className="rounded-full bg-amber-700 px-2 py-0.5 text-xs">
-            {pendingCount} pending
+          <span className="rounded-xs bg-danger/20 px-1.5 py-0.5 font-mono text-[10px]">
+            {pendingCount} PENDING
           </span>
         )}
       </div>
     );
   }
 
-  // Syncing banner
   if (syncing) {
     return (
-      <div className="bg-blue-500 text-white px-4 py-2 text-center text-sm font-medium flex items-center justify-center gap-2">
-        <div className="h-4 w-4 animate-spin rounded-full border-2 border-white border-t-transparent" />
-        Syncing {pendingCount} pending items...
+      <div className="flex items-center justify-center gap-2 bg-info/10 px-4 py-2 text-center font-display text-[11px] font-semibold tracking-wide text-info">
+        <svg className="h-3.5 w-3.5 animate-spin" viewBox="0 0 24 24" fill="none">
+          <circle className="opacity-25" cx="12" cy="12" r="10" stroke="currentColor" strokeWidth="4" />
+          <path className="opacity-75" fill="currentColor" d="M4 12a8 8 0 018-8v8H4z" />
+        </svg>
+        SYNCING {pendingCount} PENDING {pendingCount === 1 ? "ITEM" : "ITEMS"}…
       </div>
     );
   }
 
-  // Pending items while online
   if (pendingCount > 0) {
     return (
-      <div className="bg-stone-100 text-stone-700 px-4 py-2 text-center text-sm flex items-center justify-center gap-2">
-        {pendingCount} items pending sync.
+      <div className="flex items-center justify-center gap-2 bg-warning/10 px-4 py-2 text-center font-display text-[11px] font-semibold tracking-wide text-warning">
+        {pendingCount} {pendingCount === 1 ? "ITEM" : "ITEMS"} WAITING TO SYNC
         <button
           onClick={handleManualSync}
-          className="rounded bg-brand-accent px-2 py-0.5 text-xs font-medium text-white hover:bg-brand-accent/90"
+          className="rounded-xs bg-warning/20 px-2 py-0.5 font-display text-[10px] font-semibold tracking-wide text-warning transition-colors hover:bg-warning/30"
         >
-          Sync Now
+          SYNC NOW
         </button>
       </div>
     );
