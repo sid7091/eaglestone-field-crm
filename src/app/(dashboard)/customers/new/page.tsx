@@ -136,8 +136,9 @@ const INITIAL_STATE: FormState = {
 // ─── Shared input class ───────────────────────────────────────────────────────
 
 const INPUT_CLS =
-  "w-full rounded-lg border border-stone-300 px-3 py-2 text-sm focus:border-amber-500 focus:outline-none focus:ring-1 focus:ring-amber-500";
-const LABEL_CLS = "mb-1 block text-sm font-medium text-stone-700";
+  "w-full rounded-sm border border-brand-brown/20 bg-surface px-3 py-2 text-[13px] text-brand-brown placeholder:text-brand-olive/35 focus:border-brand-tan focus:outline-none focus:ring-2 focus:ring-brand-tan/20 transition-colors";
+const LABEL_CLS =
+  "mb-1 block font-display text-[11px] font-semibold tracking-[.12em] text-brand-olive/80 uppercase";
 
 // ─── Address suggestion type ──────────────────────────────────────────────────
 
@@ -362,21 +363,22 @@ export default function NewCustomerPage() {
   return (
     <div>
       {/* Header */}
-      <div className="mb-6 flex flex-col gap-3 sm:flex-row sm:items-center sm:justify-between">
+      <div className="mb-6 flex flex-col gap-3 sm:flex-row sm:items-end sm:justify-between">
         <div>
-          <h1 className="text-2xl font-bold text-stone-900">Add Customer</h1>
-          <p className="text-sm text-stone-500">Register a new customer account</p>
+          <p className="font-display text-[10px] font-semibold tracking-[.2em] text-brand-olive/50">OPERATIONS</p>
+          <h1 className="mt-1 font-display text-[28px] font-bold leading-tight text-brand-brown">Add Customer</h1>
+          <p className="mt-1 text-[13px] text-brand-olive/60">Register a new customer account</p>
         </div>
         <Link
           href="/customers"
-          className="w-fit rounded-lg border border-stone-300 px-4 py-2 text-sm font-medium text-stone-700 hover:bg-stone-50"
+          className="inline-flex h-9 w-fit items-center rounded-sm border border-brand-brown/20 px-4 font-display text-[13px] font-semibold text-brand-brown transition-colors hover:bg-brand-brown/5"
         >
-          Cancel
+          CANCEL
         </Link>
       </div>
 
       {error && (
-        <div className="mb-4 rounded-lg bg-red-50 p-3 text-sm text-red-600">{error}</div>
+        <div className="mb-4 rounded-sm bg-danger/5 p-3 text-[13px] text-danger">{error}</div>
       )}
 
       <form onSubmit={handleSubmit} noValidate>
@@ -385,7 +387,7 @@ export default function NewCustomerPage() {
           {/* ── Business Identity ──────────────────────────────────────────── */}
           <Card>
             <CardHeader>
-              <h2 className="font-semibold text-stone-900">Customer Information</h2>
+              <h2 className="font-display text-[15px] font-bold text-brand-brown">Customer Information</h2>
             </CardHeader>
             <CardContent>
               <div className="space-y-4">
@@ -471,7 +473,7 @@ export default function NewCustomerPage() {
           {/* ── Classification ─────────────────────────────────────────────── */}
           <Card>
             <CardHeader>
-              <h2 className="font-semibold text-stone-900">Classification</h2>
+              <h2 className="font-display text-[15px] font-bold text-brand-brown">Classification</h2>
             </CardHeader>
             <CardContent>
               <div className="space-y-4">
@@ -529,7 +531,7 @@ export default function NewCustomerPage() {
           {/* ── Location & Region ──────────────────────────────────────────── */}
           <Card>
             <CardHeader>
-              <h2 className="font-semibold text-stone-900">Location & Region</h2>
+              <h2 className="font-display text-[15px] font-bold text-brand-brown">Location & Region</h2>
             </CardHeader>
             <CardContent>
               <div className="space-y-4">
@@ -547,7 +549,7 @@ export default function NewCustomerPage() {
                     />
                     {addressSearching && (
                       <div className="absolute right-3 top-1/2 -translate-y-1/2">
-                        <div className="h-4 w-4 animate-spin rounded-full border-2 border-amber-500 border-t-transparent" />
+                        <div className="h-4 w-4 animate-spin rounded-full border-2 border-brand-tan border-t-transparent" />
                       </div>
                     )}
                   </div>
@@ -555,14 +557,14 @@ export default function NewCustomerPage() {
                   {/* Floating suggestions menu */}
                   {showSuggestions && suggestions.length > 0 && (
                     <div
-                      className="fixed inset-x-0 bottom-0 z-[9999] max-h-[50vh] overflow-y-auto rounded-t-2xl border-t border-stone-200 bg-white shadow-2xl sm:absolute sm:inset-x-auto sm:bottom-auto sm:left-0 sm:right-0 sm:top-full sm:mt-1 sm:rounded-lg sm:rounded-t-lg sm:border sm:shadow-xl"
+                      className="fixed inset-x-0 bottom-0 z-[9999] max-h-[50vh] overflow-y-auto rounded-t-xl border-t border-brand-brown/10 bg-surface shadow-4 sm:absolute sm:inset-x-auto sm:bottom-auto sm:left-0 sm:right-0 sm:top-full sm:mt-1 sm:rounded-sm sm:border sm:shadow-2"
                     >
-                      <div className="sticky top-0 flex items-center justify-between border-b border-stone-100 bg-stone-50 px-4 py-2 sm:hidden">
-                        <span className="text-xs font-medium text-stone-500">Select an address</span>
+                      <div className="sticky top-0 flex items-center justify-between border-b border-brand-brown/8 bg-surface-2 px-4 py-2 sm:hidden">
+                        <span className="font-display text-[10px] font-semibold tracking-wide text-brand-olive/50">SELECT AN ADDRESS</span>
                         <button
                           type="button"
                           onClick={() => setShowSuggestions(false)}
-                          className="text-stone-400"
+                          className="text-brand-olive/40"
                         >
                           <svg className="h-5 w-5" viewBox="0 0 20 20" fill="currentColor">
                             <path d="M6.28 5.22a.75.75 0 00-1.06 1.06L8.94 10l-3.72 3.72a.75.75 0 101.06 1.06L10 11.06l3.72 3.72a.75.75 0 101.06-1.06L11.06 10l3.72-3.72a.75.75 0 00-1.06-1.06L10 8.94 6.28 5.22z" />
@@ -574,13 +576,13 @@ export default function NewCustomerPage() {
                           key={s.place_id}
                           type="button"
                           onClick={() => selectSuggestion(s)}
-                          className="flex w-full items-start gap-3 border-b border-stone-50 px-4 py-3.5 text-left active:bg-amber-50 last:border-b-0"
+                          className="flex w-full items-start gap-3 border-b border-brand-brown/5 px-4 py-3.5 text-left last:border-b-0 active:bg-brand-tan/10"
                         >
-                          <svg className="mt-0.5 h-5 w-5 shrink-0 text-amber-500" fill="none" viewBox="0 0 24 24" strokeWidth={1.5} stroke="currentColor">
+                          <svg className="mt-0.5 h-5 w-5 shrink-0 text-brand-tan-dark" fill="none" viewBox="0 0 24 24" strokeWidth={1.5} stroke="currentColor">
                             <path strokeLinecap="round" strokeLinejoin="round" d="M15 10.5a3 3 0 11-6 0 3 3 0 016 0z" />
                             <path strokeLinecap="round" strokeLinejoin="round" d="M19.5 10.5c0 7.142-7.5 11.25-7.5 11.25S4.5 17.642 4.5 10.5a7.5 7.5 0 1115 0z" />
                           </svg>
-                          <span className="text-sm leading-snug text-stone-800">{s.description}</span>
+                          <span className="text-[13px] leading-snug text-brand-brown">{s.description}</span>
                         </button>
                       ))}
                     </div>
@@ -642,17 +644,17 @@ export default function NewCustomerPage() {
           {/* ── GPS Location ───────────────────────────────────────────────── */}
           <Card>
             <CardHeader>
-              <h2 className="font-semibold text-stone-900">GPS Location</h2>
+              <h2 className="font-display text-[15px] font-bold text-brand-brown">GPS Location</h2>
             </CardHeader>
             <CardContent>
-              <p className="mb-3 text-xs text-stone-500">
+              <p className="mb-3 text-[11px] text-brand-olive/50">
                 Capture the customer&apos;s GPS coordinates for geofence-based visit validation.
               </p>
               <button
                 type="button"
                 onClick={captureLocation}
                 disabled={gpsLoading}
-                className="flex items-center gap-2 rounded-lg bg-amber-50 border border-amber-200 px-4 py-2.5 text-sm font-medium text-amber-800 hover:bg-amber-100 disabled:opacity-50 transition-colors"
+                className="flex items-center gap-2 rounded-sm border border-brand-tan/30 bg-brand-tan/10 px-4 py-2.5 font-display text-[13px] font-semibold text-brand-tan-dark transition-colors hover:bg-brand-tan/20 disabled:opacity-50"
               >
                 <svg className="h-4 w-4" fill="none" viewBox="0 0 24 24" strokeWidth={1.5} stroke="currentColor">
                   <path strokeLinecap="round" strokeLinejoin="round" d="M15 10.5a3 3 0 11-6 0 3 3 0 016 0z" />
@@ -662,23 +664,23 @@ export default function NewCustomerPage() {
               </button>
 
               {gpsError && (
-                <p className="mt-2 text-xs text-red-600">{gpsError}</p>
+                <p className="mt-2 text-[11px] text-danger">{gpsError}</p>
               )}
 
               {form.locationLatitude && form.locationLongitude && (
-                <div className="mt-3 rounded-lg bg-green-50 border border-green-200 px-4 py-3">
-                  <p className="text-xs font-medium text-green-700">Location captured</p>
-                  <p className="mt-1 font-mono text-sm text-green-900">
+                <div className="mt-3 rounded-sm border border-success/30 bg-success/8 px-4 py-3">
+                  <p className="font-display text-[10px] font-semibold tracking-wide text-success">LOCATION CAPTURED</p>
+                  <p className="mt-1 font-mono text-[13px] text-success">
                     {parseFloat(form.locationLatitude).toFixed(6)}, {parseFloat(form.locationLongitude).toFixed(6)}
                   </p>
                   {form.locationAccuracy && (
-                    <p className="text-xs text-green-600">Accuracy: +/-{form.locationAccuracy}m</p>
+                    <p className="text-[11px] text-success/70">Accuracy: ±{form.locationAccuracy}m</p>
                   )}
                 </div>
               )}
 
               <div className="mt-4 space-y-3">
-                <p className="text-xs font-medium text-stone-500">Or enter manually:</p>
+                <p className="font-display text-[10px] font-semibold tracking-wide text-brand-olive/40">OR ENTER MANUALLY</p>
                 <div className="grid grid-cols-2 gap-3">
                   <div>
                     <label className={LABEL_CLS}>Latitude</label>
@@ -712,10 +714,10 @@ export default function NewCustomerPage() {
         {/* ── Current Requirements ────────────────────────────────────────── */}
         <Card className="mt-6">
           <CardHeader>
-            <h2 className="font-semibold text-stone-900">Current Requirements</h2>
+            <h2 className="font-display text-[15px] font-bold text-brand-brown">Current Requirements</h2>
           </CardHeader>
           <CardContent>
-            <p className="mb-3 text-xs text-stone-500">
+            <p className="mb-3 text-[11px] text-brand-olive/50">
               Add the materials this customer currently needs.
             </p>
 
@@ -762,7 +764,7 @@ export default function NewCustomerPage() {
                 type="button"
                 onClick={addRequirement}
                 disabled={!newReqColor.trim() || !newReqMaterial}
-                className="w-full rounded-lg bg-amber-500 px-4 py-2.5 text-sm font-medium text-white hover:bg-amber-600 disabled:opacity-40 transition-colors sm:w-auto"
+                className="w-full rounded-sm bg-brand-brown px-4 py-2.5 font-display text-[13px] font-semibold text-brand-cream transition-colors hover:bg-brand-brown-deep disabled:opacity-40 sm:w-auto"
               >
                 + Add Requirement
               </button>
@@ -770,31 +772,31 @@ export default function NewCustomerPage() {
 
             {/* Requirements table — read-only display */}
             {form.currentRequirements.length > 0 && (
-              <div className="mt-4 overflow-x-auto rounded-lg border border-stone-200">
-                <table className="w-full text-sm">
+              <div className="mt-4 overflow-x-auto rounded-sm border border-brand-brown/10">
+                <table className="w-full text-[13px]">
                   <thead>
-                    <tr className="bg-stone-50 text-left">
-                      <th className="px-4 py-2.5 font-semibold text-stone-600">#</th>
-                      <th className="px-4 py-2.5 font-semibold text-stone-600">Color Name</th>
-                      <th className="px-4 py-2.5 font-semibold text-stone-600">Material Type</th>
-                      <th className="px-4 py-2.5 font-semibold text-stone-600 text-right">Qty (sqft)</th>
-                      <th className="px-4 py-2.5 w-12"></th>
+                    <tr className="bg-surface-2 text-left">
+                      <th className="px-4 py-2.5 font-display text-[10px] font-semibold tracking-[.12em] text-brand-olive/60">#</th>
+                      <th className="px-4 py-2.5 font-display text-[10px] font-semibold tracking-[.12em] text-brand-olive/60">COLOR NAME</th>
+                      <th className="px-4 py-2.5 font-display text-[10px] font-semibold tracking-[.12em] text-brand-olive/60">MATERIAL TYPE</th>
+                      <th className="px-4 py-2.5 text-right font-display text-[10px] font-semibold tracking-[.12em] text-brand-olive/60">QTY (SQFT)</th>
+                      <th className="w-12 px-4 py-2.5"></th>
                     </tr>
                   </thead>
-                  <tbody className="divide-y divide-stone-100">
+                  <tbody className="divide-y divide-brand-brown/6">
                     {form.currentRequirements.map((req, i) => (
-                      <tr key={i} className="hover:bg-stone-50">
-                        <td className="px-4 py-2.5 text-stone-400">{i + 1}</td>
-                        <td className="px-4 py-2.5 text-stone-900">{req.colorName}</td>
-                        <td className="px-4 py-2.5 text-stone-700">{req.materialType}</td>
-                        <td className="px-4 py-2.5 text-stone-900 text-right font-medium">
+                      <tr key={i} className="hover:bg-brand-brown/3">
+                        <td className="px-4 py-2.5 text-brand-olive/40">{i + 1}</td>
+                        <td className="px-4 py-2.5 text-brand-brown">{req.colorName}</td>
+                        <td className="px-4 py-2.5 text-brand-olive">{req.materialType}</td>
+                        <td className="px-4 py-2.5 text-right font-mono font-medium text-brand-brown">
                           {req.quantitySqft ? req.quantitySqft.toLocaleString() : "—"}
                         </td>
                         <td className="px-4 py-2.5 text-center">
                           <button
                             type="button"
                             onClick={() => removeRequirement(i)}
-                            className="text-stone-400 hover:text-red-500 transition-colors"
+                            className="text-brand-olive/40 transition-colors hover:text-danger"
                             title="Remove"
                           >
                             <svg className="h-4 w-4" fill="none" viewBox="0 0 24 24" strokeWidth={1.5} stroke="currentColor">
@@ -814,10 +816,10 @@ export default function NewCustomerPage() {
         {/* ── Site Photos ──────────────────────────────────────────────────── */}
         <Card className="mt-6">
           <CardHeader>
-            <h2 className="font-semibold text-stone-900">Site Photos</h2>
+            <h2 className="font-display text-[15px] font-bold text-brand-brown">Site Photos</h2>
           </CardHeader>
           <CardContent>
-            <p className="mb-3 text-xs text-stone-500">Capture photos of the client site.</p>
+            <p className="mb-3 text-[11px] text-brand-olive/50">Capture photos of the client site.</p>
             <SitePhotos photos={sitePhotos} onPhotosChange={setSitePhotos} />
           </CardContent>
         </Card>
@@ -827,16 +829,16 @@ export default function NewCustomerPage() {
           <button
             type="button"
             onClick={() => router.push("/customers")}
-            className="rounded-lg border border-stone-300 px-6 py-2 text-sm font-medium text-stone-700 hover:bg-stone-50"
+            className="inline-flex h-9 items-center rounded-sm border border-brand-brown/20 px-6 font-display text-[13px] font-semibold text-brand-brown transition-colors hover:bg-brand-brown/5"
           >
-            Cancel
+            CANCEL
           </button>
           <button
             type="submit"
             disabled={loading}
-            className="rounded-lg bg-amber-500 px-6 py-2 text-sm font-medium text-white hover:bg-amber-600 disabled:opacity-50 transition-colors"
+            className="inline-flex h-9 items-center rounded-sm bg-brand-brown px-6 font-display text-[13px] font-semibold text-brand-cream transition-colors hover:bg-brand-brown-deep disabled:opacity-50"
           >
-            {loading ? "Saving..." : "Create Customer"}
+            {loading ? "SAVING…" : "CREATE CUSTOMER"}
           </button>
         </div>
       </form>

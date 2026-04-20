@@ -1,15 +1,13 @@
 "use client";
 
 import { useEffect, useState, useCallback } from "react";
-import Link from "next/link";
 import { useRouter } from "next/navigation";
 import { Card } from "@/components/ui/Card";
 import DataTable from "@/components/ui/DataTable";
 import StatusBadge from "@/components/ui/StatusBadge";
+import Button from "@/components/ui/Button";
 import { api } from "@/lib/api-client";
 import { formatCurrency } from "@/lib/utils";
-
-// ─── Types ────────────────────────────────────────────────────────────────────
 
 interface Customer {
   id: string;
@@ -37,28 +35,8 @@ interface PaginatedResponse {
   };
 }
 
-// ─── Tier badge colours (custom, not in getStatusColor) ───────────────────────
-
-const TIER_COLORS: Record<string, string> = {
-  PLATINUM: "bg-violet-100 text-violet-800",
-  GOLD: "bg-amber-100 text-amber-800",
-  SILVER: "bg-stone-100 text-stone-700",
-  BRONZE: "bg-orange-100 text-orange-800",
-};
-
-function TierBadge({ tier }: { tier: string }) {
-  return (
-    <span
-      className={`inline-flex items-center rounded-full px-2.5 py-0.5 text-xs font-medium ${
-        TIER_COLORS[tier] ?? "bg-stone-100 text-stone-700"
-      }`}
-    >
-      {tier}
-    </span>
-  );
-}
-
-// ─── Page ─────────────────────────────────────────────────────────────────────
+const INPUT_CLS =
+  "rounded-sm border border-brand-brown/20 bg-surface px-3 py-2 text-[13px] text-brand-brown placeholder:text-brand-olive/35 focus:border-brand-tan focus:outline-none focus:ring-2 focus:ring-brand-tan/20 transition-colors";
 
 export default function CustomersPage() {
   const router = useRouter();
@@ -68,7 +46,6 @@ export default function CustomersPage() {
   const [loading, setLoading] = useState(true);
   const [error, setError] = useState("");
 
-  // Filters
   const [search, setSearch] = useState("");
   const [searchInput, setSearchInput] = useState("");
   const [typeFilter, setTypeFilter] = useState("");
@@ -118,9 +95,9 @@ export default function CustomersPage() {
       header: "Business",
       accessor: (row: Customer) => (
         <div>
-          <p className="font-medium text-stone-900">{row.businessName}</p>
+          <p className="font-medium text-brand-brown">{row.businessName}</p>
           {row.contactPerson && (
-            <p className="text-xs text-stone-500">{row.contactPerson}</p>
+            <p className="text-[11px] text-brand-olive/60">{row.contactPerson}</p>
           )}
         </div>
       ),
@@ -128,20 +105,20 @@ export default function CustomersPage() {
     {
       header: "Phone",
       accessor: (row: Customer) => (
-        <span className="font-mono text-sm">{row.phone}</span>
+        <span className="font-mono text-[12px] text-brand-brown/80">{row.phone}</span>
       ),
     },
     {
       header: "Type",
       accessor: (row: Customer) => (
-        <span className="text-xs text-stone-600">
+        <span className="text-[12px] text-brand-olive">
           {row.customerType.replace(/_/g, " ")}
         </span>
       ),
     },
     {
       header: "Tier",
-      accessor: (row: Customer) => <TierBadge tier={row.tier} />,
+      accessor: (row: Customer) => <StatusBadge status={row.tier} variant="tier" />,
     },
     {
       header: "Status",
@@ -151,11 +128,11 @@ export default function CustomersPage() {
       header: "Region",
       accessor: (row: Customer) => (
         <div>
-          <span className="inline-flex items-center rounded bg-amber-50 px-1.5 py-0.5 text-xs font-semibold text-amber-700">
+          <span className="inline-flex items-center rounded-xs bg-brand-tan/15 px-1.5 py-0.5 font-mono text-[10px] font-semibold text-brand-tan-dark">
             {row.regionCode}
           </span>
           {row.city && (
-            <p className="mt-0.5 text-xs text-stone-500">{row.city}</p>
+            <p className="mt-0.5 text-[11px] text-brand-olive/50">{row.city}</p>
           )}
         </div>
       ),
@@ -163,7 +140,11 @@ export default function CustomersPage() {
     {
       header: "Annual Potential",
       accessor: (row: Customer) =>
-        row.annualPotentialINR > 0 ? formatCurrency(row.annualPotentialINR) : "-",
+        row.annualPotentialINR > 0 ? (
+          <span className="font-mono text-[12px]">{formatCurrency(row.annualPotentialINR)}</span>
+        ) : (
+          <span className="text-brand-olive/30">—</span>
+        ),
       className: "text-right",
     },
   ];
@@ -171,19 +152,21 @@ export default function CustomersPage() {
   return (
     <div>
       {/* Header */}
-      <div className="mb-6 flex flex-col gap-3 sm:flex-row sm:items-center sm:justify-between">
+      <div className="mb-6 flex flex-col gap-3 sm:flex-row sm:items-end sm:justify-between">
         <div>
-          <h1 className="text-2xl font-bold text-stone-900">Customers</h1>
-          <p className="text-sm text-stone-500">
+          <p className="font-display text-[10px] font-semibold tracking-[.2em] text-brand-olive/50">
+            OPERATIONS
+          </p>
+          <h1 className="mt-1 font-display text-[28px] font-bold leading-tight text-brand-brown">
+            Customers
+          </h1>
+          <p className="mt-1 text-[13px] text-brand-olive/60">
             {meta.total > 0 ? `${meta.total} customers` : "Manage your customer accounts"}
           </p>
         </div>
-        <Link
-          href="/customers/new"
-          className="w-fit rounded-lg bg-amber-500 px-4 py-2 font-medium text-white transition-colors hover:bg-amber-600"
-        >
-          + Add Customer
-        </Link>
+        <Button size="sm" onClick={() => router.push("/customers/new")}>
+          + ADD CUSTOMER
+        </Button>
       </div>
 
       {/* Filters */}
@@ -194,21 +177,14 @@ export default function CustomersPage() {
             placeholder="Search name, phone..."
             value={searchInput}
             onChange={(e) => setSearchInput(e.target.value)}
-            className="rounded-lg border border-stone-300 px-4 py-2 text-sm focus:border-amber-500 focus:outline-none focus:ring-1 focus:ring-amber-500"
+            className={INPUT_CLS}
           />
-          <button
-            type="submit"
-            className="rounded-lg bg-stone-100 px-4 py-2 text-sm font-medium text-stone-700 hover:bg-stone-200"
-          >
+          <Button variant="ghost" size="sm" type="submit">
             Search
-          </button>
+          </Button>
         </form>
 
-        <select
-          value={typeFilter}
-          onChange={handleFilterChange(setTypeFilter)}
-          className="rounded-lg border border-stone-300 px-3 py-2 text-sm focus:border-amber-500 focus:outline-none"
-        >
+        <select value={typeFilter} onChange={handleFilterChange(setTypeFilter)} className={INPUT_CLS}>
           <option value="">All Types</option>
           <option value="DEALER">Dealer</option>
           <option value="ARCHITECT">Architect</option>
@@ -218,11 +194,7 @@ export default function CustomersPage() {
           <option value="QUARRY_OWNER">Quarry Owner</option>
         </select>
 
-        <select
-          value={tierFilter}
-          onChange={handleFilterChange(setTierFilter)}
-          className="rounded-lg border border-stone-300 px-3 py-2 text-sm focus:border-amber-500 focus:outline-none"
-        >
+        <select value={tierFilter} onChange={handleFilterChange(setTierFilter)} className={INPUT_CLS}>
           <option value="">All Tiers</option>
           <option value="PLATINUM">Platinum</option>
           <option value="GOLD">Gold</option>
@@ -230,11 +202,7 @@ export default function CustomersPage() {
           <option value="BRONZE">Bronze</option>
         </select>
 
-        <select
-          value={statusFilter}
-          onChange={handleFilterChange(setStatusFilter)}
-          className="rounded-lg border border-stone-300 px-3 py-2 text-sm focus:border-amber-500 focus:outline-none"
-        >
+        <select value={statusFilter} onChange={handleFilterChange(setStatusFilter)} className={INPUT_CLS}>
           <option value="">All Statuses</option>
           <option value="NEW">New</option>
           <option value="CONTACTED">Contacted</option>
@@ -247,18 +215,15 @@ export default function CustomersPage() {
         </select>
       </div>
 
-      {/* Error */}
       {error && (
-        <div className="mb-4 rounded-lg bg-red-50 p-3 text-sm text-red-600">
-          {error}
-        </div>
+        <div className="mb-4 rounded-sm bg-danger/5 p-3 text-[13px] text-danger">{error}</div>
       )}
 
       {/* Table */}
       <Card>
         {loading ? (
           <div className="flex h-64 items-center justify-center">
-            <div className="h-8 w-8 animate-spin rounded-full border-4 border-amber-500 border-t-transparent" />
+            <div className="h-8 w-8 animate-spin rounded-full border-4 border-brand-tan/30 border-t-brand-tan" />
           </div>
         ) : (
           <DataTable
@@ -273,24 +238,26 @@ export default function CustomersPage() {
       {/* Pagination */}
       {meta.totalPages > 1 && (
         <div className="mt-4 flex items-center justify-between">
-          <p className="text-sm text-stone-500">
+          <p className="text-[12px] text-brand-olive/50">
             Page {meta.page} of {meta.totalPages}
           </p>
           <div className="flex gap-2">
-            <button
+            <Button
+              variant="ghost"
+              size="sm"
               onClick={() => setPage((p) => Math.max(1, p - 1))}
               disabled={page === 1}
-              className="rounded-lg border border-stone-300 px-3 py-1.5 text-sm font-medium text-stone-700 hover:bg-stone-50 disabled:opacity-40"
             >
               Previous
-            </button>
-            <button
+            </Button>
+            <Button
+              variant="ghost"
+              size="sm"
               onClick={() => setPage((p) => Math.min(meta.totalPages, p + 1))}
               disabled={page === meta.totalPages}
-              className="rounded-lg border border-stone-300 px-3 py-1.5 text-sm font-medium text-stone-700 hover:bg-stone-50 disabled:opacity-40"
             >
               Next
-            </button>
+            </Button>
           </div>
         </div>
       )}
