@@ -172,10 +172,10 @@ export default function VisitDetailPage() {
   if (error) {
     return (
       <div className="mx-auto max-w-2xl">
-        <div className="rounded-lg bg-red-50 p-4 text-red-600">{error}</div>
+        <div className="rounded-sm bg-danger/5 p-4 text-danger">{error}</div>
         <button
           onClick={() => router.push("/visits")}
-          className="mt-4 text-sm text-stone-600 hover:underline"
+          className="mt-4 text-sm text-brand-olive hover:underline"
         >
           ← Back to Visits
         </button>
@@ -196,7 +196,7 @@ export default function VisitDetailPage() {
         <div className="flex items-start gap-3">
           <Link
             href="/visits"
-            className="mt-1 rounded-lg p-1.5 text-stone-400 hover:bg-stone-100 hover:text-stone-700"
+            className="mt-1 rounded-sm p-1.5 text-brand-olive/40 hover:bg-brand-brown/8 hover:text-brand-olive"
           >
             <svg className="h-5 w-5" fill="none" viewBox="0 0 24 24" strokeWidth={2} stroke="currentColor">
               <path strokeLinecap="round" strokeLinejoin="round" d="M15.75 19.5L8.25 12l7.5-7.5" />
@@ -204,12 +204,12 @@ export default function VisitDetailPage() {
           </Link>
           <div>
             <div className="flex flex-wrap items-center gap-2">
-              <h1 className="text-2xl font-bold text-stone-900">
+              <h1 className="font-display text-[22px] font-bold text-brand-brown">
                 Visit — {visit.customer?.businessName ?? "Unknown Customer"}
               </h1>
               <StatusBadge status={visit.status} />
             </div>
-            <p className="text-sm text-stone-500">
+            <p className="text-sm text-brand-olive/60">
               {formatDate(visit.visitDate)} ·{" "}
               {visit.purpose.replace(/_/g, " ")} ·{" "}
               {visit.fieldRep?.fullName ?? "Unknown Rep"}
@@ -221,7 +221,7 @@ export default function VisitDetailPage() {
         {!isCancelled && !isFlagged && (
           <button
             onClick={() => setEditMode((v) => !v)}
-            className="w-fit rounded-lg border border-stone-300 px-4 py-2 text-sm font-medium text-stone-700 hover:bg-stone-50"
+            className="w-fit rounded-sm border border-brand-brown/20 px-4 py-2 text-sm font-medium text-brand-olive hover:bg-surface-2"
           >
             {editMode ? "Discard" : "Edit Notes"}
           </button>
@@ -230,9 +230,9 @@ export default function VisitDetailPage() {
 
       {/* Flagged banner */}
       {isFlagged && (
-        <div className="rounded-lg border border-red-200 bg-red-50 p-4">
-          <p className="font-semibold text-red-700">This visit has been flagged as potentially fake.</p>
-          <p className="text-sm text-red-600">
+        <div className="rounded-sm border border-danger/20 bg-danger/5 p-4">
+          <p className="font-semibold text-danger">This visit has been flagged as potentially fake.</p>
+          <p className="text-sm text-danger">
             The check-in location did not pass geofence validation. Review the geofence details below.
           </p>
         </div>
@@ -242,7 +242,7 @@ export default function VisitDetailPage() {
       {!isCancelled && !isFlagged && (
         <Card>
           <CardHeader>
-            <h2 className="text-sm font-semibold uppercase tracking-wider text-stone-500">
+            <h2 className="font-display text-[10px] font-semibold tracking-[.15em] text-brand-olive/50 uppercase">
               Visit Progress
             </h2>
           </CardHeader>
@@ -260,10 +260,10 @@ export default function VisitDetailPage() {
                       <div
                         className={`flex h-8 w-8 items-center justify-center rounded-full border-2 text-xs font-bold transition-colors ${
                           isDone
-                            ? "border-amber-500 bg-amber-500 text-white"
+                            ? "border-brand-tan bg-brand-tan text-brand-brown"
                             : isCurrent
-                            ? "border-amber-500 bg-white text-amber-600"
-                            : "border-stone-300 bg-white text-stone-400"
+                            ? "border-brand-tan bg-surface text-brand-tan-dark"
+                            : "border-brand-brown/20 bg-surface text-brand-olive/40"
                         }`}
                       >
                         {isDone ? (
@@ -276,7 +276,7 @@ export default function VisitDetailPage() {
                       </div>
                       <span
                         className={`mt-1 text-center text-xs font-medium ${
-                          isDone || isCurrent ? "text-stone-700" : "text-stone-400"
+                          isDone || isCurrent ? "text-brand-olive" : "text-brand-olive/40"
                         }`}
                       >
                         {step.label}
@@ -285,7 +285,7 @@ export default function VisitDetailPage() {
                     {!isLast && (
                       <div
                         className={`h-0.5 flex-1 ${
-                          isDone ? "bg-amber-500" : "bg-stone-200"
+                          isDone ? "bg-brand-tan" : "bg-stone-200"
                         }`}
                       />
                     )}
@@ -302,13 +302,13 @@ export default function VisitDetailPage() {
         {/* Visit info */}
         <Card>
           <CardHeader>
-            <h2 className="text-base font-semibold text-stone-800">Visit Information</h2>
+            <h2 className="font-display text-[15px] font-bold text-brand-brown">Visit Information</h2>
           </CardHeader>
           <CardContent className="space-y-3">
             <InfoRow label="Customer">
               <Link
                 href={`/customers/${visit.customer?.id}`}
-                className="font-medium text-amber-600 hover:underline"
+                className="font-medium text-brand-tan-dark hover:underline"
               >
                 {visit.customer?.businessName}
               </Link>
@@ -324,7 +324,7 @@ export default function VisitDetailPage() {
             <InfoRow label="Date">{formatDate(visit.visitDate)}</InfoRow>
             <InfoRow label="Purpose">{visit.purpose.replace(/_/g, " ")}</InfoRow>
             <InfoRow label="Region">
-              <span className="inline-flex items-center rounded bg-amber-50 px-1.5 py-0.5 text-xs font-semibold text-amber-700">
+              <span className="inline-flex items-center rounded bg-brand-tan/10 px-1.5 py-0.5 text-xs font-semibold text-brand-tan-dark">
                 {visit.regionCode}
               </span>
             </InfoRow>
@@ -340,7 +340,7 @@ export default function VisitDetailPage() {
             )}
             {visit.orderValueINR != null && (
               <InfoRow label="Order Value">
-                <span className="font-semibold text-green-700">
+                <span className="font-semibold text-success">
                   {formatCurrency(visit.orderValueINR)}
                 </span>
               </InfoRow>
@@ -350,7 +350,7 @@ export default function VisitDetailPage() {
             )}
             {visit.createdOffline && (
               <InfoRow label="Created">
-                <span className="rounded bg-orange-100 px-1.5 py-0.5 text-xs font-medium text-orange-700">
+                <span className="rounded bg-warning/10 px-1.5 py-0.5 text-xs font-medium text-warning">
                   Offline Sync
                 </span>
               </InfoRow>
@@ -362,13 +362,13 @@ export default function VisitDetailPage() {
         <Card>
           <CardHeader>
             <div className="flex items-center justify-between">
-              <h2 className="text-base font-semibold text-stone-800">Geofence Validation</h2>
+              <h2 className="font-display text-[15px] font-bold text-brand-brown">Geofence Validation</h2>
               {visit.geofenceValidation && (
                 <span
                   className={`inline-flex items-center gap-1.5 rounded-full px-2.5 py-1 text-xs font-semibold ${
                     visit.geofenceValidation.isWithinGeofence
-                      ? "bg-green-100 text-green-700"
-                      : "bg-red-100 text-red-700"
+                      ? "bg-success/10 text-success"
+                      : "bg-danger/10 text-danger"
                   }`}
                 >
                   {visit.geofenceValidation.isWithinGeofence ? (
@@ -397,8 +397,8 @@ export default function VisitDetailPage() {
                   <span
                     className={`font-semibold ${
                       visit.geofenceValidation.isWithinGeofence
-                        ? "text-green-700"
-                        : "text-red-700"
+                        ? "text-success"
+                        : "text-danger"
                     }`}
                   >
                     {Math.round(visit.geofenceValidation.distanceFromCustomerMeters)} m
@@ -410,7 +410,7 @@ export default function VisitDetailPage() {
                 {visit.checkinLocation && (
                   <>
                     <InfoRow label="Check-in Coords">
-                      <span className="font-mono text-xs text-stone-600">
+                      <span className="font-mono text-xs text-brand-olive">
                         {visit.checkinLocation.latitude.toFixed(6)}, {visit.checkinLocation.longitude.toFixed(6)}
                       </span>
                     </InfoRow>
@@ -421,7 +421,7 @@ export default function VisitDetailPage() {
                 )}
                 {visit.checkoutLocation && (
                   <InfoRow label="Check-out Coords">
-                    <span className="font-mono text-xs text-stone-600">
+                    <span className="font-mono text-xs text-brand-olive">
                       {visit.checkoutLocation.latitude.toFixed(6)}, {visit.checkoutLocation.longitude.toFixed(6)}
                     </span>
                   </InfoRow>
@@ -431,7 +431,7 @@ export default function VisitDetailPage() {
                 </InfoRow>
               </div>
             ) : (
-              <p className="text-sm text-stone-500">
+              <p className="text-sm text-brand-olive/60">
                 Geofence data will be recorded when the field rep checks in.
               </p>
             )}
@@ -464,12 +464,12 @@ export default function VisitDetailPage() {
                   ]}
                 />
               ) : (
-                <div className="flex h-40 w-full flex-col items-center justify-center rounded-lg border-2 border-dashed border-stone-200 bg-stone-50 text-center">
-                  <svg className="mb-2 h-8 w-8 text-stone-300" fill="none" viewBox="0 0 24 24" strokeWidth={1.5} stroke="currentColor">
+                <div className="flex h-40 w-full flex-col items-center justify-center rounded-sm border-2 border-dashed border-brand-brown/10 bg-surface-2 text-center">
+                  <svg className="mb-2 h-8 w-8 text-brand-olive/30" fill="none" viewBox="0 0 24 24" strokeWidth={1.5} stroke="currentColor">
                     <path strokeLinecap="round" strokeLinejoin="round" d="M15 10.5a3 3 0 11-6 0 3 3 0 016 0z" />
                     <path strokeLinecap="round" strokeLinejoin="round" d="M19.5 10.5c0 7.142-7.5 11.25-7.5 11.25S4.5 17.642 4.5 10.5a7.5 7.5 0 1115 0z" />
                   </svg>
-                  <p className="text-xs text-stone-400">Map will show once check-in is recorded</p>
+                  <p className="text-xs text-brand-olive/40">Map will show once check-in is recorded</p>
                 </div>
               )}
             </div>
@@ -481,19 +481,19 @@ export default function VisitDetailPage() {
       <Card>
         <CardHeader>
           <div className="flex items-center justify-between">
-            <h2 className="text-base font-semibold text-stone-800">Notes & Outcomes</h2>
+            <h2 className="font-display text-[15px] font-bold text-brand-brown">Notes & Outcomes</h2>
             {editMode && (
               <div className="flex gap-2">
                 <button
                   onClick={handleSave}
                   disabled={saving}
-                  className="rounded-lg bg-amber-500 px-4 py-1.5 text-sm font-medium text-white hover:bg-amber-600 disabled:opacity-60"
+                  className="rounded-sm bg-brand-tan px-4 py-1.5 text-sm font-medium text-white hover:bg-brand-tan-dark disabled:opacity-60"
                 >
                   {saving ? "Saving…" : "Save"}
                 </button>
                 <button
                   onClick={handleCancel}
-                  className="rounded-lg border border-stone-300 px-4 py-1.5 text-sm font-medium text-stone-700 hover:bg-stone-50"
+                  className="rounded-sm border border-brand-brown/20 px-4 py-1.5 text-sm font-medium text-brand-olive hover:bg-surface-2"
                 >
                   Cancel
                 </button>
@@ -503,59 +503,59 @@ export default function VisitDetailPage() {
         </CardHeader>
         <CardContent className="space-y-5">
           {saveError && (
-            <div className="rounded-lg bg-red-50 p-3 text-sm text-red-600">{saveError}</div>
+            <div className="rounded-sm bg-danger/5 p-3 text-sm text-danger">{saveError}</div>
           )}
 
           {/* Summary */}
           <div>
-            <label className="mb-1.5 block text-sm font-semibold text-stone-700">Summary</label>
+            <label className="mb-1.5 block font-display text-[11px] font-semibold tracking-[.12em] text-brand-olive/80 uppercase">Summary</label>
             {editMode ? (
               <textarea
                 value={summary}
                 onChange={(e) => setSummary(e.target.value)}
                 rows={4}
                 placeholder="What happened during the visit?"
-                className="w-full resize-none rounded-lg border border-stone-300 px-4 py-2 text-sm focus:border-amber-500 focus:outline-none focus:ring-1 focus:ring-amber-500"
+                className="w-full resize-none rounded-sm border border-brand-brown/20 px-4 py-2 text-sm focus:border-brand-tan focus:outline-none focus:ring-2 focus:ring-brand-tan/20"
               />
             ) : (
-              <p className="text-sm text-stone-700 whitespace-pre-wrap">
-                {visit.summary || <span className="italic text-stone-400">No summary recorded yet.</span>}
+              <p className="text-sm text-brand-olive whitespace-pre-wrap">
+                {visit.summary || <span className="italic text-brand-olive/40">No summary recorded yet.</span>}
               </p>
             )}
           </div>
 
           {/* Action items */}
           <div>
-            <label className="mb-1.5 block text-sm font-semibold text-stone-700">Action Items</label>
+            <label className="mb-1.5 block font-display text-[11px] font-semibold tracking-[.12em] text-brand-olive/80 uppercase">Action Items</label>
             {editMode ? (
               <textarea
                 value={actionItems}
                 onChange={(e) => setActionItems(e.target.value)}
                 rows={3}
                 placeholder="List tasks to follow up on…"
-                className="w-full resize-none rounded-lg border border-stone-300 px-4 py-2 text-sm focus:border-amber-500 focus:outline-none focus:ring-1 focus:ring-amber-500"
+                className="w-full resize-none rounded-sm border border-brand-brown/20 px-4 py-2 text-sm focus:border-brand-tan focus:outline-none focus:ring-2 focus:ring-brand-tan/20"
               />
             ) : (
-              <p className="text-sm text-stone-700 whitespace-pre-wrap">
-                {visit.actionItems || <span className="italic text-stone-400">No action items recorded.</span>}
+              <p className="text-sm text-brand-olive whitespace-pre-wrap">
+                {visit.actionItems || <span className="italic text-brand-olive/40">No action items recorded.</span>}
               </p>
             )}
           </div>
 
           {/* Next steps */}
           <div>
-            <label className="mb-1.5 block text-sm font-semibold text-stone-700">Next Steps</label>
+            <label className="mb-1.5 block font-display text-[11px] font-semibold tracking-[.12em] text-brand-olive/80 uppercase">Next Steps</label>
             {editMode ? (
               <textarea
                 value={nextSteps}
                 onChange={(e) => setNextSteps(e.target.value)}
                 rows={2}
                 placeholder="Planned next steps…"
-                className="w-full resize-none rounded-lg border border-stone-300 px-4 py-2 text-sm focus:border-amber-500 focus:outline-none focus:ring-1 focus:ring-amber-500"
+                className="w-full resize-none rounded-sm border border-brand-brown/20 px-4 py-2 text-sm focus:border-brand-tan focus:outline-none focus:ring-2 focus:ring-brand-tan/20"
               />
             ) : (
-              <p className="text-sm text-stone-700 whitespace-pre-wrap">
-                {visit.nextSteps || <span className="italic text-stone-400">—</span>}
+              <p className="text-sm text-brand-olive whitespace-pre-wrap">
+                {visit.nextSteps || <span className="italic text-brand-olive/40">—</span>}
               </p>
             )}
           </div>
@@ -563,12 +563,12 @@ export default function VisitDetailPage() {
           {/* Follow-up date (edit) */}
           {editMode && (
             <div>
-              <label className="mb-1.5 block text-sm font-semibold text-stone-700">Follow-up Date</label>
+              <label className="mb-1.5 block font-display text-[11px] font-semibold tracking-[.12em] text-brand-olive/80 uppercase">Follow-up Date</label>
               <input
                 type="date"
                 value={followUpDate}
                 onChange={(e) => setFollowUpDate(e.target.value)}
-                className="rounded-lg border border-stone-300 px-4 py-2 text-sm focus:border-amber-500 focus:outline-none focus:ring-1 focus:ring-amber-500"
+                className="rounded-sm border border-brand-brown/20 px-4 py-2 text-sm focus:border-brand-tan focus:outline-none focus:ring-2 focus:ring-brand-tan/20"
               />
             </div>
           )}
@@ -581,7 +581,7 @@ export default function VisitDetailPage() {
       )}
 
       {/* Meta footer */}
-      <p className="text-center text-xs text-stone-400">
+      <p className="text-center text-xs text-brand-olive/40">
         Created {formatDateTime(visit.createdAt)} · Last updated {formatDateTime(visit.updatedAt)}
       </p>
     </div>
@@ -599,10 +599,10 @@ function InfoRow({
 }) {
   return (
     <div className="flex items-start justify-between gap-4">
-      <span className="min-w-[110px] text-xs font-medium uppercase tracking-wider text-stone-400">
+      <span className="min-w-[110px] font-display text-[10px] font-semibold tracking-[.12em] text-brand-olive/50 uppercase">
         {label}
       </span>
-      <span className="text-right text-sm text-stone-800">{children}</span>
+      <span className="text-right text-[13px] text-brand-brown">{children}</span>
     </div>
   );
 }
@@ -615,8 +615,8 @@ function PhotosCard({ photoUrls }: { photoUrls: string[] }) {
       <Card>
         <CardHeader>
           <div className="flex items-center justify-between">
-            <h2 className="text-base font-semibold text-stone-800">Photos</h2>
-            <span className="inline-flex items-center rounded-full bg-stone-100 px-2.5 py-1 text-xs font-semibold text-stone-600">
+            <h2 className="font-display text-[15px] font-bold text-brand-brown">Photos</h2>
+            <span className="inline-flex items-center rounded-full bg-brand-brown/8 px-2.5 py-1 text-xs font-semibold text-brand-olive">
               {photoUrls.length} {photoUrls.length === 1 ? "photo" : "photos"}
             </span>
           </div>
@@ -628,7 +628,7 @@ function PhotosCard({ photoUrls }: { photoUrls: string[] }) {
                 key={url}
                 type="button"
                 onClick={() => setLightboxUrl(url)}
-                className="group relative aspect-square overflow-hidden rounded-lg bg-stone-100 ring-1 ring-stone-200 hover:ring-2 hover:ring-amber-400 focus:outline-none focus:ring-2 focus:ring-amber-500 transition-all"
+                className="group relative aspect-square overflow-hidden rounded-sm bg-brand-brown/8 ring-1 ring-brand-brown/10 hover:ring-2 hover:ring-brand-tan focus:outline-none focus:ring-2 focus:ring-brand-tan transition-all"
               >
                 {/* eslint-disable-next-line @next/next/no-img-element */}
                 <img
@@ -672,13 +672,13 @@ function PhotosCard({ photoUrls }: { photoUrls: string[] }) {
             <img
               src={lightboxUrl}
               alt="Visit photo full size"
-              className="max-h-[85vh] max-w-[90vw] rounded-lg object-contain shadow-2xl"
+              className="max-h-[85vh] max-w-[90vw] rounded-sm object-contain shadow-2xl"
             />
             {/* Close button */}
             <button
               type="button"
               onClick={() => setLightboxUrl(null)}
-              className="absolute -right-3 -top-3 flex h-8 w-8 items-center justify-center rounded-full bg-white text-stone-700 shadow-lg hover:bg-stone-100"
+              className="absolute -right-3 -top-3 flex h-8 w-8 items-center justify-center rounded-full bg-white text-brand-olive shadow-lg hover:bg-brand-brown/8"
             >
               <svg className="h-4 w-4" fill="none" viewBox="0 0 24 24" strokeWidth={2} stroke="currentColor">
                 <path strokeLinecap="round" strokeLinejoin="round" d="M6 18L18 6M6 6l12 12" />
@@ -689,7 +689,7 @@ function PhotosCard({ photoUrls }: { photoUrls: string[] }) {
               href={lightboxUrl}
               target="_blank"
               rel="noopener noreferrer"
-              className="absolute -bottom-10 left-1/2 -translate-x-1/2 flex items-center gap-1.5 rounded-full bg-white px-3 py-1.5 text-xs font-medium text-stone-700 shadow-lg hover:bg-stone-100 whitespace-nowrap"
+              className="absolute -bottom-10 left-1/2 -translate-x-1/2 flex items-center gap-1.5 rounded-full bg-white px-3 py-1.5 text-xs font-medium text-brand-olive shadow-lg hover:bg-brand-brown/8 whitespace-nowrap"
               onClick={(e) => e.stopPropagation()}
             >
               <svg className="h-3.5 w-3.5" fill="none" viewBox="0 0 24 24" strokeWidth={2} stroke="currentColor">
