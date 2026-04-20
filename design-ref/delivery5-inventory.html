@@ -1,0 +1,1138 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+<meta charset="UTF-8">
+<meta name="viewport" content="width=device-width,initial-scale=1">
+<title>Eagle Stone CRM — Field Inventory · Part 5/5</title>
+<link rel="preconnect" href="https://fonts.googleapis.com">
+<link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
+<link href="https://fonts.googleapis.com/css2?family=Rajdhani:wght@500;600;700&family=Manrope:wght@400;500;600;700&family=JetBrains+Mono:wght@400;500;600;700&display=swap" rel="stylesheet">
+<style>
+/* ==========================================================
+   TOKENS
+   ========================================================== */
+:root{
+  --es-tan:#EABB87; --es-tan-soft:#F4D4AC; --es-tan-dark:#C89963;
+  --es-brown:#362418; --es-brown-deep:#1E140C;
+  --es-cream:#FFF5DC; --es-cream-2:#F7ECCE;
+  --es-olive:#5B5038; --es-olive-soft:#7A6E4F;
+
+  --bg:#FBF6E9; --surface:#FFFFFF; --surface-2:#FAF3DC; --surface-3:#F4E9C6;
+  --border:rgba(54,36,24,.12); --border-strong:rgba(54,36,24,.22);
+  --text:#2A1B10; --text-2:#5B5038; --text-3:#8A7A5E;
+
+  --success:#3D5A3D; --success-bg:#E7EEDF;
+  --warning:#9E6A1C; --warning-bg:#F8E9C9;
+  --danger:#8B3A2A;  --danger-bg:#F2DDD5;
+  --info:#3D4A58;    --info-bg:#DFE4EA;
+
+  --r-xs:2px; --r-sm:4px; --r-md:8px; --r-lg:12px; --r-xl:16px; --r-full:999px;
+
+  --sh-1:0 1px 2px rgba(54,36,24,.06), 0 1px 1px rgba(54,36,24,.04);
+  --sh-2:0 4px 12px -2px rgba(54,36,24,.08), 0 2px 4px rgba(54,36,24,.04);
+  --sh-3:0 14px 28px -8px rgba(54,36,24,.14);
+  --sh-4:0 24px 48px -12px rgba(30,20,12,.25);
+
+  --ease:cubic-bezier(.2,.7,.25,1);
+}
+
+*{box-sizing:border-box;margin:0;padding:0}
+html,body{background:var(--bg);color:var(--text);font-family:'Manrope',system-ui,sans-serif;-webkit-font-smoothing:antialiased;font-size:14px;line-height:1.5;min-height:100%}
+
+/* ==========================================================
+   DOC CHROME
+   ========================================================== */
+.doc-top{padding:16px 24px;display:flex;align-items:center;gap:16px;flex-wrap:wrap;background:rgba(251,246,233,.94);backdrop-filter:blur(12px);border-bottom:1px solid var(--border);position:sticky;top:0;z-index:200}
+.doc-top .brand{display:flex;align-items:center;gap:10px}
+.doc-top .brand .word{font-family:'Rajdhani',sans-serif;font-weight:700;font-size:15px;color:var(--es-brown);letter-spacing:.12em;line-height:1}
+.doc-top .brand .sub{font-family:'Rajdhani',sans-serif;font-size:9px;color:var(--es-tan-dark);letter-spacing:.4em;margin-top:2px}
+.doc-top .step{padding:5px 12px;background:var(--es-brown);color:var(--es-cream);border-radius:var(--r-full);font-family:'Rajdhani',sans-serif;font-weight:700;font-size:10.5px;letter-spacing:.22em;text-transform:uppercase}
+.doc-top .switcher{margin-left:auto;display:flex;gap:3px;background:var(--surface-2);padding:3px;border-radius:var(--r-sm);border:1px solid var(--border)}
+.doc-top .switcher button{padding:7px 12px;background:transparent;border:none;cursor:pointer;font-family:'Rajdhani',sans-serif;font-weight:700;font-size:10.5px;letter-spacing:.2em;text-transform:uppercase;color:var(--text-2);border-radius:var(--r-xs)}
+.doc-top .switcher button.active{background:var(--es-brown);color:var(--es-cream)}
+.doc-top .switcher button:hover:not(.active){color:var(--es-brown);background:var(--surface-3)}
+
+.doc-banner{background:linear-gradient(135deg,var(--es-brown) 0%,#2A1810 100%);color:var(--es-cream);padding:24px 28px;display:flex;align-items:center;gap:26px;position:relative;overflow:hidden}
+.doc-banner::after{content:"";position:absolute;right:-100px;top:-100px;width:420px;height:420px;opacity:.05;transform:rotate(-8deg);pointer-events:none}
+.doc-banner .eye{font-family:'Rajdhani',sans-serif;font-weight:600;font-size:10.5px;letter-spacing:.3em;color:var(--es-tan);text-transform:uppercase;margin-bottom:6px}
+.doc-banner h1{font-family:'Rajdhani',sans-serif;font-weight:700;font-size:24px;letter-spacing:-.002em;line-height:1.1;margin-bottom:6px}
+.doc-banner p{font-size:13px;color:rgba(255,245,220,.65);max-width:620px;line-height:1.5}
+
+/* ==========================================================
+   APP SHELL — MOBILE FIRST
+   Defaults: single-column, drawer sidebar hidden
+   Desktop (≥820px): two-column, static sidebar
+   ========================================================== */
+.app-shell{display:block;min-height:calc(100vh - 100px);position:relative}
+
+/* SIDEBAR — drawer on mobile, static on desktop */
+.app-sidebar{
+  background:linear-gradient(180deg,#3E2A1B 0%,var(--es-brown) 55%,var(--es-brown-deep) 100%);
+  color:var(--es-cream);padding:22px 0 80px;position:fixed;top:0;left:0;bottom:0;width:260px;z-index:190;
+  transform:translateX(-100%);transition:transform .25s var(--ease);overflow-y:auto;
+  box-shadow:0 0 0 rgba(0,0,0,0);
+}
+.app-sidebar.open{transform:translateX(0);box-shadow:0 0 40px rgba(0,0,0,.4)}
+.app-sidebar::-webkit-scrollbar{width:4px}
+.app-sidebar::-webkit-scrollbar-thumb{background:rgba(234,187,135,.2)}
+.sidebar-backdrop{
+  position:fixed;inset:0;background:rgba(30,20,12,.55);
+  backdrop-filter:blur(2px);z-index:180;
+  opacity:0;pointer-events:none;transition:opacity .2s;
+}
+.sidebar-backdrop.open{opacity:1;pointer-events:auto}
+
+.sb-brand{padding:0 20px 22px;border-bottom:1px solid rgba(255,245,220,.08);margin-bottom:18px;display:flex;align-items:center;justify-content:space-between}
+.sb-brand .lgo{display:flex;align-items:center;gap:12px}
+.sb-brand .word{font-family:'Rajdhani',sans-serif;font-weight:700;font-size:22px;letter-spacing:.12em;line-height:1}
+.sb-brand .sub{font-family:'Rajdhani',sans-serif;font-weight:500;font-size:9px;letter-spacing:.48em;color:var(--es-tan);margin-top:3px}
+.sb-close{display:grid;place-items:center;width:36px;height:36px;border-radius:var(--r-sm);background:rgba(255,245,220,.08);color:var(--es-cream);border:none;cursor:pointer}
+.sb-close svg{width:18px;height:18px}
+.sb-close:hover{background:rgba(255,245,220,.16)}
+
+.sb-group{padding:0 14px;margin-bottom:22px}
+.sb-group .nav-title{font-family:'Rajdhani',sans-serif;font-weight:600;font-size:9.5px;letter-spacing:.32em;color:rgba(255,245,220,.4);padding:0 8px 10px;text-transform:uppercase}
+.sb-a{display:flex;align-items:center;gap:12px;padding:12px;font-size:14px;color:rgba(255,245,220,.78);text-decoration:none;border-radius:var(--r-sm);margin-bottom:2px;position:relative;transition:all .15s var(--ease);min-height:44px}
+.sb-a svg{width:16px;height:16px;flex-shrink:0;opacity:.75}
+.sb-a:hover{background:rgba(255,245,220,.06);color:var(--es-cream)}
+.sb-a.active{background:rgba(234,187,135,.14);color:var(--es-tan)}
+.sb-a.active::before{content:"";position:absolute;left:-14px;top:10px;bottom:10px;width:3px;background:var(--es-tan);border-radius:0 2px 2px 0}
+.sb-a.active svg{opacity:1}
+.sb-a .chip{margin-left:auto;font-family:'JetBrains Mono',monospace;font-size:10px;background:rgba(234,187,135,.18);color:var(--es-tan);padding:2px 8px;border-radius:var(--r-full)}
+
+.sb-foot{position:absolute;bottom:0;left:0;right:0;padding:16px 20px;border-top:1px solid rgba(255,245,220,.08);display:flex;align-items:center;justify-content:space-between;gap:10px;background:rgba(30,20,12,.35);backdrop-filter:blur(4px)}
+.sb-foot .left{display:flex;align-items:center;gap:10px}
+.sb-foot .dot{width:8px;height:8px;border-radius:50%;background:var(--success);box-shadow:0 0 0 4px rgba(61,90,61,.22)}
+.sb-foot .ver{font-family:'Rajdhani',sans-serif;font-size:10px;letter-spacing:.22em;color:rgba(255,245,220,.5);text-transform:uppercase}
+
+.app-main{display:flex;flex-direction:column;min-width:0;min-height:inherit}
+
+/* HEADER — with hamburger on mobile */
+.app-header{
+  background:#fff;border-bottom:1px solid var(--border);
+  padding:10px 16px;display:flex;align-items:center;gap:10px;
+  position:sticky;top:0;z-index:40;
+}
+.hamburger{
+  display:inline-flex;width:40px;height:40px;align-items:center;justify-content:center;
+  background:transparent;border:1px solid var(--border);border-radius:var(--r-sm);
+  color:var(--text-2);cursor:pointer;flex-shrink:0;
+}
+.hamburger svg{width:18px;height:18px}
+.hamburger:hover{background:var(--surface-2);color:var(--es-brown);border-color:var(--border-strong)}
+.app-header .welcome{font-size:13px;color:var(--text-2);min-width:0;overflow:hidden;text-overflow:ellipsis;white-space:nowrap;flex:1}
+.app-header .welcome strong{color:var(--es-brown);font-weight:700}
+.app-header .welcome .time{display:none}
+.app-header .search{display:none}
+.app-header .hdr-btn{width:40px;height:40px;display:grid;place-items:center;border-radius:var(--r-sm);background:transparent;border:1px solid var(--border);color:var(--text-2);cursor:pointer;position:relative;transition:all .15s;flex-shrink:0}
+.app-header .hdr-btn:hover{background:var(--surface-2);color:var(--es-brown);border-color:var(--border-strong)}
+.app-header .hdr-btn svg{width:17px;height:17px}
+.app-header .hdr-btn .num{position:absolute;top:-3px;right:-3px;min-width:16px;height:16px;padding:0 4px;background:var(--danger);color:#fff;font-family:'Rajdhani',sans-serif;font-weight:700;font-size:10px;border-radius:var(--r-full);display:grid;place-items:center;border:2px solid #fff}
+.app-header .user-pill{display:flex;align-items:center;gap:8px;padding:4px 4px 4px 4px;border:1px solid var(--border);border-radius:var(--r-full);background:#fff;cursor:pointer;flex-shrink:0}
+.app-header .user-pill .avatar{width:32px;height:32px;border-radius:50%;background:var(--es-brown);color:var(--es-tan);font-family:'Rajdhani',sans-serif;font-weight:700;font-size:12px;display:grid;place-items:center}
+.app-header .user-pill .meta{display:none}
+
+.app-content{padding:18px 16px 80px;overflow-y:auto;flex:1;position:relative}
+
+.page-head{display:flex;flex-direction:column;gap:14px;margin-bottom:18px}
+.page-head .titles .eye{font-family:'Rajdhani',sans-serif;font-weight:600;font-size:10.5px;letter-spacing:.28em;text-transform:uppercase;color:var(--es-tan-dark);margin-bottom:5px}
+.page-head .titles h1{font-family:'Rajdhani',sans-serif;font-weight:700;font-size:26px;color:var(--es-brown);letter-spacing:-.003em;line-height:1}
+.page-head .titles .sub{color:var(--text-2);font-size:13px;margin-top:6px;line-height:1.5}
+.page-head .actions{display:flex;gap:8px;align-items:center;flex-wrap:wrap}
+
+.back-link{display:inline-flex;align-items:center;gap:6px;font-family:'Rajdhani',sans-serif;font-weight:600;font-size:11px;color:var(--text-3);text-decoration:none;margin-bottom:10px;letter-spacing:.2em;text-transform:uppercase;min-height:32px}
+.back-link:hover{color:var(--es-brown)}
+.back-link svg{width:14px;height:14px}
+
+/* BUTTONS */
+.btn{display:inline-flex;align-items:center;justify-content:center;gap:7px;border:none;cursor:pointer;user-select:none;font-family:'Rajdhani',sans-serif;font-weight:700;font-size:12px;letter-spacing:.2em;text-transform:uppercase;padding:11px 16px;border-radius:var(--r-sm);transition:all .15s var(--ease);white-space:nowrap;min-height:40px}
+.btn svg{width:13px;height:13px}
+.btn-primary{background:var(--es-brown);color:var(--es-cream);box-shadow:var(--sh-1)}
+.btn-primary:hover{background:var(--es-brown-deep);box-shadow:var(--sh-2);transform:translateY(-1px)}
+.btn-accent{background:var(--es-tan);color:var(--es-brown)}
+.btn-accent:hover{background:var(--es-tan-dark);color:var(--es-cream)}
+.btn-outline{background:transparent;color:var(--es-brown);border:1px solid var(--border-strong)}
+.btn-outline:hover{background:var(--surface-3);border-color:var(--es-brown)}
+.btn-ghost{background:transparent;color:var(--text-2)}
+.btn-ghost:hover{background:var(--surface-3);color:var(--es-brown)}
+.btn-success{background:var(--success);color:#fff}
+.btn-sm{padding:8px 12px;font-size:10.5px;letter-spacing:.18em;min-height:36px}
+.btn-lg{padding:15px 22px;font-size:13px;min-height:48px}
+.btn[disabled]{opacity:.5;cursor:not-allowed;transform:none}
+
+/* BADGES */
+.badge{display:inline-flex;align-items:center;gap:6px;font-family:'Rajdhani',sans-serif;font-weight:700;font-size:10px;letter-spacing:.18em;text-transform:uppercase;padding:3px 9px;border-radius:var(--r-full);white-space:nowrap}
+.badge::before{content:"";width:5px;height:5px;border-radius:50%;background:currentColor}
+.badge.no-dot::before{display:none}
+.badge-success{background:var(--success-bg);color:var(--success)}
+.badge-warning{background:var(--warning-bg);color:var(--warning)}
+.badge-danger{background:var(--danger-bg);color:var(--danger)}
+.badge-info{background:var(--info-bg);color:var(--info)}
+.badge-neutral{background:var(--surface-3);color:var(--text-2)}
+
+/* CARDS */
+.card{background:var(--surface);border:1px solid var(--border);border-radius:var(--r-lg);box-shadow:var(--sh-1);overflow:hidden}
+.card-h{padding:14px 18px;border-bottom:1px solid var(--border);display:flex;align-items:center;justify-content:space-between;gap:12px}
+.card-h h4{font-family:'Rajdhani',sans-serif;font-weight:700;font-size:14px;color:var(--es-brown);letter-spacing:.03em}
+.card-h .sub{font-size:11.5px;color:var(--text-3)}
+
+/* ==========================================================
+   MOBILE-FIRST FILTER STRIP
+   ========================================================== */
+.filter-strip{display:flex;gap:8px;align-items:center;margin-bottom:14px;min-width:0}
+.chip-scroll{
+  flex:1;min-width:0;
+  display:flex;gap:8px;
+  overflow-x:auto;
+  scrollbar-width:none;-webkit-overflow-scrolling:touch;
+  padding:3px 2px;
+  -webkit-mask-image:linear-gradient(90deg,#000 0,#000 calc(100% - 28px),transparent 100%);
+  mask-image:linear-gradient(90deg,#000 0,#000 calc(100% - 28px),transparent 100%);
+}
+.chip-scroll::-webkit-scrollbar{display:none}
+.chip{
+  padding:8px 14px;background:#fff;border:1px solid var(--border);border-radius:var(--r-full);
+  font-family:'Rajdhani',sans-serif;font-weight:600;font-size:11.5px;letter-spacing:.1em;
+  color:var(--text-2);cursor:pointer;transition:all .15s;white-space:nowrap;flex-shrink:0;
+  min-height:36px;display:inline-flex;align-items:center;
+}
+.chip:hover{border-color:var(--es-brown);color:var(--es-brown)}
+.chip.active{background:var(--es-brown);color:var(--es-cream);border-color:var(--es-brown)}
+.chip-pinned{flex-shrink:0;background:var(--surface);border-style:dashed;border-color:var(--border-strong);display:flex;align-items:center;gap:6px}
+.chip-pinned svg{width:12px;height:12px}
+.chip-pinned .count{font-family:'JetBrains Mono',monospace;font-weight:700;font-size:10px;background:var(--es-brown);color:var(--es-tan);padding:1px 6px;border-radius:var(--r-full);letter-spacing:0}
+
+/* Filter bar with search + multi-selects (for inventory top bar) */
+.filter-bar{
+  background:var(--surface);border:1px solid var(--border);border-radius:var(--r-md);
+  padding:10px;display:flex;gap:10px;align-items:center;margin-bottom:14px;box-shadow:var(--sh-1);
+  overflow-x:auto;scrollbar-width:none;-webkit-overflow-scrolling:touch;min-width:0;
+  -webkit-mask-image:linear-gradient(90deg,#000 0,#000 calc(100% - 24px),transparent 100%);
+  mask-image:linear-gradient(90deg,#000 0,#000 calc(100% - 24px),transparent 100%);
+}
+.filter-bar::-webkit-scrollbar{display:none}
+.filter-bar > *{flex-shrink:0}
+.filter-bar .search-f{width:220px;position:relative}
+.filter-bar .search-f svg{position:absolute;left:12px;top:50%;transform:translateY(-50%);width:14px;height:14px;color:var(--text-3)}
+.filter-bar .search-f input{width:100%;background:var(--surface-2);border:1px solid transparent;padding:10px 12px 10px 36px;font-size:13px;border-radius:var(--r-sm);color:var(--text);font-family:'Manrope',sans-serif;min-height:40px}
+.filter-bar .search-f input:focus{outline:none;background:#fff;border-color:var(--es-brown);box-shadow:0 0 0 4px rgba(234,187,135,.22)}
+.filter-bar select{
+  background:var(--surface-2);border:1px solid transparent;padding:10px 32px 10px 12px;font-size:12.5px;border-radius:var(--r-sm);color:var(--text);font-family:'Manrope',sans-serif;cursor:pointer;appearance:none;
+  background-image:url("data:image/svg+xml;utf8,<svg xmlns='http://www.w3.org/2000/svg' width='10' height='6' viewBox='0 0 10 6'><path fill='none' stroke='%235B5038' stroke-width='1.5' stroke-linecap='round' stroke-linejoin='round' d='m1 1 4 4 4-4'/></svg>");
+  background-repeat:no-repeat;background-position:right 10px center;min-width:140px;min-height:40px;
+}
+.filter-bar select:focus{outline:none;border-color:var(--es-brown);background-color:#fff}
+
+/* Toggle group (grid/list) */
+.toggle-group{display:inline-flex;background:var(--surface-2);border:1px solid var(--border);border-radius:var(--r-sm);padding:2px;flex-shrink:0}
+.toggle-group button{padding:8px 12px;background:transparent;border:none;cursor:pointer;font-family:'Rajdhani',sans-serif;font-weight:600;font-size:11px;letter-spacing:.15em;color:var(--text-2);border-radius:var(--r-xs);display:flex;align-items:center;gap:6px;min-height:36px;text-transform:uppercase}
+.toggle-group button svg{width:13px;height:13px}
+.toggle-group button.active{background:#fff;color:var(--es-brown);box-shadow:var(--sh-1)}
+
+/* ==========================================================
+   SUMMARY STRIP — mobile-first
+   ========================================================== */
+.sum-strip{
+  display:grid;grid-template-columns:repeat(2,1fr);gap:0;
+  background:var(--surface);border:1px solid var(--border);border-radius:var(--r-md);
+  margin-bottom:14px;box-shadow:var(--sh-1);overflow:hidden;
+}
+.sum-strip .c{padding:12px 16px;border-right:1px solid var(--border);border-bottom:1px solid var(--border);position:relative}
+.sum-strip .c:nth-child(2n){border-right:none}
+.sum-strip .c:nth-last-child(-n+2){border-bottom:none}
+.sum-strip .c .k{font-family:'Rajdhani',sans-serif;font-weight:600;font-size:10px;letter-spacing:.24em;color:var(--text-3);text-transform:uppercase;margin-bottom:6px}
+.sum-strip .c .v{font-family:'Rajdhani',sans-serif;font-weight:700;font-size:20px;color:var(--es-brown);line-height:1;letter-spacing:-.01em}
+.sum-strip .c .v .unit{font-size:12px;color:var(--text-3);font-weight:500;margin-left:3px}
+.sum-strip .c .sub{font-size:10.5px;color:var(--text-3);margin-top:4px}
+.sum-strip .c .sub.g{color:var(--success);font-weight:600}
+
+/* ==========================================================
+   INVENTORY GRID — 1 → 2 → 3 → 4 columns responsive
+   ========================================================== */
+.inv-grid{display:grid;grid-template-columns:1fr;gap:12px}
+.inv-card{
+  background:var(--surface);border:1px solid var(--border);border-radius:var(--r-md);
+  overflow:hidden;box-shadow:var(--sh-1);transition:all .15s var(--ease);
+  cursor:pointer;
+}
+.inv-card:hover{box-shadow:var(--sh-2);transform:translateY(-2px);border-color:var(--border-strong)}
+.inv-band{height:56px;position:relative;overflow:hidden}
+.inv-band::before{
+  content:"";position:absolute;inset:0;
+  background:url("data:image/svg+xml;utf8,<svg xmlns='http://www.w3.org/2000/svg' width='200' height='60'><filter id='n'><feTurbulence type='fractalNoise' baseFrequency='1.4' numOctaves='2'/><feColorMatrix values='0 0 0 0 0 0 0 0 0 0 0 0 0 0 0 0 0 0 .22 0'/></filter><rect width='100%' height='100%' filter='url(%23n)'/></svg>");
+}
+.inv-band::after{
+  content:attr(data-color);position:absolute;right:10px;bottom:6px;
+  font-family:'Rajdhani',sans-serif;font-weight:700;font-size:9.5px;letter-spacing:.3em;
+  color:rgba(255,255,255,.85);text-transform:uppercase;mix-blend-mode:overlay;
+}
+.band-white{background:linear-gradient(135deg,#FAF5E8,#F0E6D0)}
+.band-beige{background:linear-gradient(135deg,#E8D7B5,#CFB88A)}
+.band-grey {background:linear-gradient(135deg,#A5A195,#7D7A6F)}
+.band-black{background:linear-gradient(135deg,#3A342D,#1A1410)}
+.band-brown{background:linear-gradient(135deg,#8B5E3C,#5C3A22)}
+.band-green{background:linear-gradient(135deg,#5C7857,#3D5A3D)}
+.band-gold {background:linear-gradient(135deg,#D4A84A,#A67E2A)}
+.band-red  {background:linear-gradient(135deg,#A8553D,#6E3524)}
+.band-cream{background:linear-gradient(135deg,#F4E9C6,#E8D4A2)}
+
+.inv-body{padding:14px 16px 12px}
+.inv-var{font-family:'Rajdhani',sans-serif;font-weight:700;font-size:16px;color:var(--es-brown);letter-spacing:.02em;line-height:1.2;margin-bottom:4px}
+.inv-meta{display:flex;align-items:center;gap:8px;font-size:11.5px;color:var(--text-3);margin-bottom:10px;flex-wrap:wrap}
+.inv-meta .grade{font-family:'JetBrains Mono',monospace;font-size:10px;background:var(--surface-3);padding:2px 7px;border-radius:var(--r-xs);color:var(--text-2);font-weight:700}
+.inv-meta .dot{width:3px;height:3px;background:var(--text-3);border-radius:50%;opacity:.5}
+.inv-spec{
+  display:flex;align-items:center;justify-content:space-between;
+  font-family:'JetBrains Mono',monospace;font-size:11px;color:var(--text-3);
+  padding:8px 0;border-top:1px dashed var(--border);border-bottom:1px dashed var(--border);
+  margin-bottom:10px;
+}
+.inv-price-row{display:flex;align-items:baseline;justify-content:space-between;margin-top:4px}
+.inv-price{font-family:'Rajdhani',sans-serif;font-weight:700;font-size:20px;color:var(--es-brown);line-height:1}
+.inv-price .per{font-size:10.5px;color:var(--text-3);font-weight:500;letter-spacing:0;margin-left:4px}
+
+.inv-foot{background:var(--surface-2);padding:10px 16px;display:flex;justify-content:space-between;align-items:center;font-size:11.5px;color:var(--text-3);border-top:1px solid var(--border);gap:10px}
+.inv-foot .wh{font-family:'JetBrains Mono',monospace;display:flex;align-items:center;gap:8px;min-width:0}
+.inv-foot .wh .qty{font-weight:700;color:var(--es-brown)}
+.inv-foot .reserve{padding:7px 12px;font-size:10.5px;min-height:32px;flex-shrink:0}
+
+/* ==========================================================
+   INVENTORY LIST VIEW — horizontal scroll with sticky SKU
+   ========================================================== */
+.inv-list-wrap{
+  background:var(--surface);border:1px solid var(--border);border-radius:var(--r-lg);
+  box-shadow:var(--sh-1);overflow:hidden;
+}
+.inv-list-scroll{
+  overflow-x:auto;overflow-y:visible;
+  -webkit-overflow-scrolling:touch;
+}
+.inv-list{width:100%;min-width:900px;border-collapse:collapse;font-size:12.5px}
+.inv-list thead th{
+  text-align:left;padding:12px 14px;font-family:'Rajdhani',sans-serif;font-weight:600;font-size:10px;
+  letter-spacing:.22em;text-transform:uppercase;color:var(--text-3);background:var(--surface-2);
+  border-bottom:1px solid var(--border);white-space:nowrap;
+}
+.inv-list thead th.right{text-align:right}
+.inv-list tbody td{padding:14px;border-bottom:1px solid var(--border);vertical-align:middle;white-space:nowrap}
+.inv-list tbody tr:last-child td{border-bottom:none}
+.inv-list tbody tr{transition:background .12s;cursor:pointer}
+.inv-list tbody tr:hover{background:var(--surface-2)}
+.inv-list tbody tr:hover td.sticky{background:var(--surface-2)}
+.inv-list .mono{font-family:'JetBrains Mono',monospace}
+.inv-list .right{text-align:right}
+.inv-list .primary{font-weight:700;color:var(--es-brown)}
+.inv-list .sub{font-size:10.5px;color:var(--text-3);margin-top:2px}
+.inv-list .price{font-family:'Rajdhani',sans-serif;font-weight:700;font-size:14px;color:var(--es-brown)}
+.inv-list .col-dot{display:flex;align-items:center;gap:8px}
+.inv-list .col-dot .sw{width:14px;height:14px;border-radius:3px;flex-shrink:0;box-shadow:inset 0 0 0 1px rgba(0,0,0,.08)}
+
+/* Sticky first column */
+.inv-list td.sticky, .inv-list th.sticky{
+  position:sticky;left:0;background:var(--surface);
+  box-shadow:1px 0 0 var(--border);
+  z-index:2;
+}
+.inv-list th.sticky{background:var(--surface-2);z-index:3}
+
+/* ==========================================================
+   PAGINATION
+   ========================================================== */
+.pg{display:flex;justify-content:space-between;align-items:center;padding:14px 18px;border-top:1px solid var(--border);font-size:12px;color:var(--text-3);flex-wrap:wrap;gap:10px}
+.pg .btns{display:flex;gap:4px}
+.pg button{width:36px;height:36px;border:1px solid var(--border);background:#fff;border-radius:var(--r-sm);cursor:pointer;color:var(--text-2);display:grid;place-items:center;font-family:'Rajdhani',sans-serif;font-weight:600;font-size:12px}
+.pg button:hover{border-color:var(--es-brown);color:var(--es-brown)}
+.pg button.active{background:var(--es-brown);color:var(--es-cream);border-color:var(--es-brown)}
+.pg button[disabled]{opacity:.4;cursor:not-allowed}
+
+/* ==========================================================
+   DETAIL — HERO & LAYOUT
+   ========================================================== */
+.detail-hero{
+  background:var(--surface);border:1px solid var(--border);border-radius:var(--r-lg);
+  overflow:hidden;box-shadow:var(--sh-1);margin-bottom:14px;
+}
+.detail-hero-band{height:90px;position:relative}
+.detail-hero-band::before{content:"";position:absolute;inset:0;background:url("data:image/svg+xml;utf8,<svg xmlns='http://www.w3.org/2000/svg' width='200' height='80'><filter id='n'><feTurbulence type='fractalNoise' baseFrequency='1.2' numOctaves='2'/><feColorMatrix values='0 0 0 0 0 0 0 0 0 0 0 0 0 0 0 0 0 0 .25 0'/></filter><rect width='100%' height='100%' filter='url(%23n)'/></svg>")}
+.detail-hero-body{padding:18px 20px 20px}
+.detail-hero .eye{font-family:'Rajdhani',sans-serif;font-weight:600;font-size:10.5px;letter-spacing:.28em;text-transform:uppercase;color:var(--es-tan-dark);margin-bottom:6px;display:flex;align-items:center;gap:10px;flex-wrap:wrap}
+.detail-hero h1{font-family:'Rajdhani',sans-serif;font-weight:700;font-size:26px;color:var(--es-brown);letter-spacing:-.003em;line-height:1.1;margin-bottom:12px}
+.detail-hero .tags-row{display:flex;gap:8px;align-items:center;flex-wrap:wrap;margin-bottom:14px}
+.detail-hero .grade-tag{font-family:'JetBrains Mono',monospace;font-size:11px;background:var(--surface-3);padding:3px 8px;border-radius:var(--r-xs);color:var(--text-2);font-weight:700}
+.detail-hero .sku-tag{font-family:'JetBrains Mono',monospace;font-size:11px;color:var(--text-3)}
+.price-row{display:flex;align-items:baseline;justify-content:space-between;gap:16px;padding-top:14px;border-top:1px solid var(--border);flex-wrap:wrap}
+.price-block .lbl{font-family:'Rajdhani',sans-serif;font-weight:600;font-size:10px;letter-spacing:.22em;color:var(--text-3);text-transform:uppercase;margin-bottom:4px}
+.price-block .val{font-family:'Rajdhani',sans-serif;font-weight:700;font-size:32px;color:var(--es-brown);line-height:1;letter-spacing:-.015em}
+.price-block .val .per{font-size:13px;color:var(--text-3);font-weight:500;margin-left:4px;letter-spacing:0}
+.price-block .sub{font-size:11px;color:var(--text-3);margin-top:4px;font-family:'JetBrains Mono',monospace}
+.price-row .actions{display:flex;gap:8px;flex-wrap:wrap}
+
+/* Detail layout */
+.detail-grid{display:grid;grid-template-columns:1fr;gap:14px;margin-bottom:14px}
+.detail-col-stack{display:flex;flex-direction:column;gap:14px}
+
+.spec-grid{display:grid;grid-template-columns:1fr 1fr;gap:2px 24px;padding:6px 20px 14px}
+.spec-row{display:flex;flex-direction:column;gap:3px;padding:11px 0;border-bottom:1px dashed var(--border)}
+.spec-row.span-2{grid-column:span 2}
+.spec-row:last-child,.spec-row.last{border-bottom:none}
+.spec-row .k{font-family:'Rajdhani',sans-serif;font-weight:600;font-size:10px;letter-spacing:.22em;text-transform:uppercase;color:var(--text-3)}
+.spec-row .v{font-size:13px;color:var(--es-brown);font-weight:500}
+.spec-row .v.mono{font-family:'JetBrains Mono',monospace;font-size:12.5px}
+.spec-row .v.swatch-row{display:flex;align-items:center;gap:8px}
+.spec-row .v .sw{width:14px;height:14px;border-radius:3px;box-shadow:inset 0 0 0 1px rgba(0,0,0,.08)}
+
+/* Stock card */
+.stock-stats{padding:14px 18px}
+.stock-row{display:flex;align-items:center;justify-content:space-between;padding:12px 0;border-bottom:1px dashed var(--border)}
+.stock-row:last-child{border-bottom:none}
+.stock-row .k{font-size:12.5px;color:var(--text-2)}
+.stock-row .v{font-family:'Rajdhani',sans-serif;font-weight:700;font-size:22px;color:var(--es-brown);line-height:1;letter-spacing:-.015em}
+.stock-row .v.g{color:var(--success)}
+.stock-row .v.w{color:var(--warning)}
+.stock-row .v.mono{font-family:'JetBrains Mono',monospace;font-size:14px;font-weight:700}
+
+/* Warehouse card */
+.wh-card{padding:14px 18px}
+.wh-row{display:flex;align-items:center;gap:10px;padding:8px 0;border-bottom:1px dashed var(--border);font-size:12.5px}
+.wh-row:last-child{border-bottom:none}
+.wh-row .k{font-family:'Rajdhani',sans-serif;font-weight:600;font-size:10px;letter-spacing:.22em;text-transform:uppercase;color:var(--text-3);width:120px;flex-shrink:0}
+.wh-row .v{color:var(--es-brown);font-weight:600}
+.wh-row .v.mono{font-family:'JetBrains Mono',monospace;font-size:12px}
+
+/* Reservation card */
+.reserve-card{padding:16px 18px}
+.reserve-card .status-line{display:flex;align-items:center;gap:8px;margin-bottom:14px;font-size:12.5px;color:var(--text-2)}
+.reserve-card .status-line .dot{width:8px;height:8px;border-radius:50%;background:var(--success);box-shadow:0 0 0 3px rgba(61,90,61,.22)}
+.reserve-card .field{display:flex;flex-direction:column;gap:6px;margin-bottom:10px}
+.reserve-card .field label{font-family:'Rajdhani',sans-serif;font-weight:600;font-size:10px;letter-spacing:.22em;text-transform:uppercase;color:var(--es-olive)}
+.reserve-card .field input{width:100%;background:#fff;border:1px solid var(--border-strong);padding:10px 12px;font-size:13px;border-radius:var(--r-sm);min-height:40px;font-family:'Manrope',sans-serif}
+.reserve-card .field input:focus{outline:none;border-color:var(--es-brown);box-shadow:0 0 0 4px rgba(234,187,135,.22)}
+
+/* Notes card */
+.notes-body{padding:14px 18px 18px;font-size:13px;color:var(--text-2);line-height:1.65;white-space:pre-wrap}
+
+/* FAB */
+.fab{position:fixed;right:16px;bottom:16px;width:56px;height:56px;border-radius:50%;background:var(--es-brown);color:var(--es-tan);border:none;cursor:pointer;box-shadow:var(--sh-4);display:grid;place-items:center;transition:transform .2s var(--ease),background .2s;z-index:50}
+.fab:hover{transform:scale(1.05);background:var(--es-brown-deep)}
+.fab svg{width:22px;height:22px}
+
+/* Screen toggle */
+.screen{display:none}
+.screen.active{display:block}
+
+/* ==========================================================
+   TABLET (≥640px)
+   ========================================================== */
+@media (min-width:640px){
+  .inv-grid{grid-template-columns:repeat(2,1fr)}
+  .sum-strip{grid-template-columns:repeat(4,1fr)}
+  .sum-strip .c{border-right:1px solid var(--border);border-bottom:none}
+  .sum-strip .c:nth-child(2n){border-right:1px solid var(--border)}
+  .sum-strip .c:last-child{border-right:none}
+  .app-content{padding:22px 20px 80px}
+  .page-head{flex-direction:row;justify-content:space-between;align-items:flex-start;gap:18px;flex-wrap:wrap}
+  .page-head .actions{flex-wrap:nowrap}
+  .app-header{padding:12px 20px}
+  .app-header .welcome{font-size:13.5px}
+  .app-header .search{display:block;margin-left:8px;position:relative;width:240px;flex-shrink:0}
+  .app-header .search input{width:100%;background:var(--surface-2);border:1px solid transparent;padding:10px 12px 10px 36px;border-radius:var(--r-sm);font-size:13px;color:var(--text);font-family:'Manrope',sans-serif;min-height:40px}
+  .app-header .search input:focus{outline:none;background:#fff;border-color:var(--es-brown);box-shadow:0 0 0 4px rgba(234,187,135,.22)}
+  .app-header .search svg.s{position:absolute;left:11px;top:50%;transform:translateY(-50%);color:var(--text-3);width:14px;height:14px}
+}
+
+/* ==========================================================
+   DESKTOP (≥820px) — static sidebar, drop drawer
+   ========================================================== */
+@media (min-width:820px){
+  .app-shell{display:grid;grid-template-columns:244px 1fr}
+  .app-sidebar{position:relative;transform:none;width:auto;z-index:auto;box-shadow:none}
+  .sidebar-backdrop{display:none !important}
+  .hamburger{display:none}
+  .sb-close{display:none}
+  .inv-grid{grid-template-columns:repeat(3,1fr)}
+  .detail-grid{grid-template-columns:1.8fr 1fr}
+  .app-header .welcome .time{display:inline;font-family:'JetBrains Mono',monospace;font-size:11px;color:var(--text-3);margin-left:8px}
+  .app-header .user-pill{padding:4px 14px 4px 4px}
+  .app-header .user-pill .meta{display:flex;flex-direction:column;line-height:1.15}
+  .app-header .user-pill .meta .n{font-size:12px;font-weight:600;color:var(--es-brown)}
+  .app-header .user-pill .meta .r{font-family:'Rajdhani',sans-serif;font-size:9.5px;letter-spacing:.2em;color:var(--text-3);text-transform:uppercase}
+  .spec-grid{grid-template-columns:1fr 1fr}
+  .fab{right:28px;bottom:28px}
+}
+
+/* ==========================================================
+   WIDE DESKTOP (≥1280px)
+   ========================================================== */
+@media (min-width:1280px){
+  .inv-grid{grid-template-columns:repeat(4,1fr)}
+  .spec-grid{grid-template-columns:repeat(3,1fr)}
+  .spec-row.span-2{grid-column:span 2}
+}
+
+/* Eagle Stone logo (real brand mark) */
+.es-logo{display:inline-block;color:currentColor;vertical-align:middle;fill:currentColor}
+.es-logo svg{display:block;width:100%;height:100%;fill:currentColor}
+.es-logo-sm{width:72px;height:24px}
+.es-logo-md{width:116px;height:40px}
+.es-logo-lg{width:200px;height:69px}
+.es-logo-xl{width:320px;height:110px}
+.es-logo-xxl{width:420px;height:145px}
+
+</style>
+</head>
+<body>
+<svg aria-hidden="true" style="position:absolute;width:0;height:0;overflow:hidden" xmlns="http://www.w3.org/2000/svg"><symbol id="es-logo" viewBox="0 0 1947.991258 672.000000" preserveAspectRatio="xMidYMid meet"><g transform="translate(-68.008742,672.000000) scale(0.100000,-0.100000)" fill="currentColor" stroke="none"><path d="M19680 3360 l0-3360 240 0 240 0 0 3360 0 3360-240 0-240 0 0-3360z"/><path d="M6200 6100 c-8-16-21-20-58-20-42 0-51-4-82-40-21-24-44-40-58-40-15 0-52-30-112-90-60-60-90-97-90-112 0-14-16-37-40-58-36-31-40-40-40-82 0-37-4-50-20-58-17-9-20-21-20-80 0-59-3-71-20-80-18-10-20-21-20-120 0-99 2-110 20-120 18-9 20-21 20-100 0-79 2-91 20-100 16-8 20-21 20-60 0-39 4-52 20-60 13-7 20-21 20-40 0-19 7-33 20-40 13-7 20-21 20-40 0-19 7-33 20-40 13-7 20-21 20-40 0-19 7-33 20-40 13-7 20-21 20-40 0-19 7-33 20-40 13-7 20-21 20-40 0-19 7-33 20-40 13-7 20-21 20-40 0-19 7-33 20-40 13-7 20-21 20-40 0-19 7-33 20-40 16-8 20-21 20-58 0-42 4-51 40-82 28-25 40-43 40-62 0-17 8-31 20-38 19-10 21-19 18-83 l-3-72-52-3 c-40-2-55-8-63-23-8-15-21-19-60-19-39 0-52-4-60-20-7-13-21-20-40-20-19 0-33-7-40-20-8-16-21-20-60-20-39 0-52-4-60-20-7-13-21-20-40-20-19 0-33-7-40-20-7-13-21-20-40-20-19 0-33-7-40-20-7-13-21-20-40-20-19 0-33-7-40-20-8-16-21-20-60-20-39 0-52-4-60-20-8-16-21-20-60-20-39 0-52-4-60-20-7-13-21-20-40-20-19 0-33-7-40-20-8-16-21-20-60-20-39 0-52-4-60-20-7-13-21-20-40-20-19 0-33-7-40-20-6-12-21-20-36-20-34 0-124-90-124-124 0-15-8-30-20-36-12-7-20-21-20-38 0-19-12-37-40-62-28-25-40-43-40-62 0-17-8-31-20-38-12-7-20-21-20-38 0-19-12-37-40-62-28-25-40-43-40-62 0-17-8-31-20-38-12-7-20-21-20-38 0-19-12-37-40-62-26-23-40-44-40-60 0-16-14-37-40-60-28-25-40-43-40-62 0-17-8-31-20-38-12-7-20-21-20-38 0-19-12-37-40-62-28-25-40-43-40-62 0-17-8-31-21-38-15-9-19-19-17-43 3-31 5-32 55-35 44-3 53 0 63 17 7 14 21 21 40 21 19 0 33 7 40 20 7 13 21 20 40 20 19 0 33 7 40 20 8 16 21 20 60 20 39 0 52 4 60 20 8 16 21 20 60 20 39 0 52 4 60 20 7 13 21 20 40 20 19 0 33 7 40 20 7 13 21 20 40 20 19 0 33 7 40 20 8 16 21 20 60 20 39 0 52 4 60 20 7 13 21 20 40 20 19 0 33 7 40 20 7 13 21 20 40 20 19 0 33 7 40 20 8 16 21 20 60 20 39 0 52 4 60 20 8 16 21 20 60 20 39 0 52 4 60 20 7 13 21 20 40 20 19 0 33 7 40 20 7 13 21 20 40 20 19 0 33 7 40 20 8 16 21 20 60 20 39 0 52 4 60 20 8 16 21 20 60 20 39 0 52 4 60 20 7 13 21 20 40 20 19 0 33 7 40 20 7 13 21 20 40 20 19 0 33 7 40 20 8 16 21 20 60 20 39 0 52 4 60 20 8 16 21 20 60 20 39 0 52 4 60 20 7 13 21 20 40 20 19 0 33 7 40 20 7 13 21 20 40 20 19 0 33 7 40 20 7 13 21 20 40 20 19 0 33 7 40 20 8 16 21 20 60 20 39 0 52 4 60 20 7 13 21 20 40 20 19 0 33 7 40 20 8 16 21 20 60 20 39 0 52 4 60 20 8 16 21 20 60 20 39 0 52 4 60 20 7 13 21 20 40 20 19 0 33 7 40 20 7 13 21 20 40 20 19 0 33 7 40 20 8 16 21 20 60 20 39 0 52 4 60 20 8 16 21 20 60 20 39 0 52 4 60 20 7 13 21 20 40 20 19 0 33 7 40 20 7 13 21 20 40 20 19 0 33 7 40 20 8 16 21 20 60 20 39 0 52 4 60 20 8 16 21 20 60 20 39 0 52 4 60 20 9 17 21 20 80 20 59 0 71 3 80 20 10 18 23 20 163 22 l152 3 3 72 c3 64 1 73-18 83-16 9-20 21-20 60 0 39-4 52-20 60-12 6-20 21-20 36 0 18-29 53-110 134-81 81-116 110-134 110-15 0-30 8-36 20-7 13-21 20-40 20-19 0-33 7-40 20-10 19-21 20-240 20-221 0-230-1-240-21-9-15-19-19-43-17-28 3-32 7-35 35-2 20-11 37-23 43-12 7-19 21-19 40 0 19-7 33-20 40-13 7-20 21-20 40 0 19-7 33-20 40-13 7-20 21-20 40 0 19-7 33-20 40-13 7-20 21-20 40 0 19-7 33-20 40-13 7-20 21-20 40 0 19-7 33-20 40-13 7-20 21-20 40 0 19-7 33-20 40-12 7-20 21-20 38 0 19-12 37-40 62-36 31-40 40-40 82 0 37-4 50-20 58-13 7-20 21-20 40 0 19-7 33-20 40-13 7-20 21-20 40 0 19-7 33-20 40-13 7-20 21-20 40 0 19-7 33-20 40-13 7-20 21-20 40 0 19-7 33-20 40-16 8-20 21-20 58 0 42-4 51-40 82-28 25-40 43-40 62 0 17-8 31-20 38-13 7-20 21-20 40 0 19-7 33-20 40-16 8-20 21-20 58 0 42-4 51-40 82-28 25-40 43-40 62 0 17-8 31-20 38-12 6-20 21-20 36 0 15-12 38-29 55-35 34-75 38-91 9z"/><path d="M9360 6100 c-9-17-21-20-80-20-59 0-71-3-80-20-8-16-21-20-60-20-39 0-52-4-60-20-7-12-21-20-38-20-19 0-37-12-62-40-21-24-44-40-58-40-33 0-242-211-242-244 0-15-8-30-20-36-13-7-20-21-20-40 0-19-7-33-20-40-13-7-20-21-20-40 0-19-7-33-20-40-16-8-20-21-20-60 0-39-4-52-20-60-17-9-20-21-20-80 0-59-3-71-20-80-20-11-20-21-20-1020 0-999 0-1009 20-1020 18-9 20-21 20-100 0-79 2-91 20-100 13-7 20-21 20-40 0-19 7-33 20-40 13-7 20-21 20-40 0-19 7-33 20-40 13-7 20-21 20-40 0-19 7-33 20-40 12-6 20-21 20-36 0-35 249-284 284-284 15 0 30-8 36-20 7-13 21-20 40-20 19 0 33-7 40-20 7-13 21-20 40-20 19 0 33-7 40-20 9-17 21-20 80-20 59 0 71-3 80-20 11-20 21-20 980-20 959 0 969 0 980 20 9 17 21 20 78 20 66 0 68 1 102 40 25 28 43 40 62 40 17 0 31 8 38 20 6 12 21 20 36 20 19 0 43 17 84 60 36 37 66 60 80 60 29 0 80 52 80 82 0 14 15 36 40 58 26 23 40 44 40 60 0 16 14 37 40 60 36 31 40 40 40 82 0 37 4 50 20 58 18 9 20 21 20 100 0 79 2 91 20 100 20 11 20 19 18 723 l-3 712-1015 0-1015 0-3-368-2-368 29-30 c35-34 75-38 91-9 7 13 21 20 40 20 19 0 33-7 40-20 7-13 21-20 40-20 19 0 33 7 40 20 9 17 21 20 80 20 59 0 71-3 80-20 10-19 21-20 160-20 139 0 150 1 160 20 7 13 21 20 40 20 20 0 31-6 35-20 3-11 13-20 20-20 8 0 19 9 25 20 6 11 17 20 25 20 7 0 17-9 20-20 9-27 52-26 76 3 l19 22 18-22 c11-12 32-23 48-25 24-2 29-8 32-35 2-21 10-34 23-38 25-8 24-29-3-49 l-23-16 23-16 c27-20 28-41 2-49-18-6-20-15-20-115 0-99-2-110-20-120-12-6-20-21-20-36 0-33-90-124-122-124-14 0-36-15-58-40 l-35-40-487 0 c-477 0-488 0-498-20-7-13-21-20-40-20-19 0-33 7-40 20-9 17-21 20-80 20-59 0-71 3-80 20-6 12-21 20-36 20-35 0-204 169-204 204 0 15-8 30-20 36-20 11-20 21-20 798 l0 787 40 35 c24 21 40 44 40 58 0 15 24 47 70 92 65 66 72 70 114 70 35 0 48 5 56 20 11 20 23 20 1063 22 l1052 3 0 435 0 435-1232 3 c-1224 2-1232 2-1243-18z"/><path d="M12428 6090 l-28-29 0-1465 c0-1455 0-1465 20-1476 18-9 20-21 20-100 0-79 2-91 20-100 16-8 20-21 20-58 0-42 4-51 40-82 26-23 40-44 40-60 0-16 14-37 40-60 25-22 40-44 40-58 0-31 91-122 122-122 14 0 36-15 58-40 23-26 44-40 60-40 16 0 37-14 60-40 25-28 43-40 62-40 17 0 31-8 38-20 9-17 21-20 80-20 59 0 71-3 80-20 11-20 19-20 1203-18 l1192 3 3 408 2 408-29 30-29 29-966 0 c-955 0-965 0-976 20-8 15-21 20-56 20-41 0-50 5-94 50-31 30-50 58-50 72 0 14-15 36-40 58-36 31-40 40-40 82 0 37-4 50-20 58-18 10-20 21-20 120 0 99 2 110 20 120 16 8 20 21 20 60 0 39-4 52-20 60-19 10-20 21-20 160 0 139 1 150 20 160 13 7 20 21 20 40 0 19-7 33-20 40-19 10-20 21-20 160 0 139 1 150 20 160 13 7 20 21 20 40 0 19-7 33-20 40-16 8-20 21-20 60 0 39 4 52 20 60 18 9 20 21 20 100 0 79-2 91-20 100-19 10-20 21-20 220 0 199 1 210 20 220 18 10 20 21 20 120 0 99-2 110-20 120-13 7-20 21-20 40 0 19 7 33 20 40 18 10 20 21 20 120 0 98-2 110-20 120-16 8-20 23-22 83 l-3 72-410 2-410 2-27-29z"/><path d="M16520 6100 c-8-16-21-20-60-20-39 0-52-4-60-20-7-13-21-20-40-20-19 0-33-7-40-20-6-12-21-20-36-20-35 0-204-169-204-204 0-15-8-30-20-36-13-7-20-21-20-40 0-19-7-33-20-40-20-11-20-21-20-1520 0-1499 0-1509 20-1520 12-6 20-21 20-36 0-35 249-284 284-284 15 0 30-8 36-20 8-16 21-20 60-20 39 0 52-4 60-20 11-20 19-20 1363-18 l1352 3 3 408 2 408-29 30-29 29-1046 0 c-1035 0-1045 0-1056 20-6 12-21 20-36 20-33 0-84 51-84 84 0 15-8 30-20 36-20 11-20 21-20 585 0 454 3 575 13 575 20 0 67-56 67-80 0-14 22-44 60-80 40-38 60-66 60-81 0-15 15-37 40-59 26-23 40-44 40-60 0-16 14-37 40-60 24-21 40-44 40-58 0-15 30-52 90-112 l89-90 721 0 722 0 29 29 29 30-2 348-3 348-1015 5-1015 5-3 272 c-2 264-2 272 18 283 12 6 20 21 20 36 0 33 51 84 84 84 15 0 30 8 36 20 11 20 21 20 1056 20 l1046 0 29 29 29 29 0 382 0 382-29 29-29 29-1306 0 c-1295 0-1305 0-1316-20z"/><path d="M3758 6060 c-13-20-24-20-1320-20-1297 0-1307 0-1318-20-7-13-21-20-40-20-19 0-33-7-40-20-6-12-21-20-36-20-33 0-244-209-244-242 0-14-16-37-40-58 l-40-35 0-1427 c0-1417 0-1427 20-1438 16-8 20-21 20-60 0-39 4-52 20-60 13-7 20-21 20-40 0-19 7-33 20-40 12-6 20-21 20-36 0-33 129-164 162-164 14 0 37-16 58-40 31-36 40-40 82-40 37 0 50-4 58-20 11-20 19-20 1343-18 l1332 3 3 408 2 408-29 30-29 29-1042 0-1041 0-49 50 c-34 33-50 57-50 74 0 15-8 30-20 36-20 11-20 19-18 543 l3 532 28 3 c33 4 87-45 87-78 0-14 23-44 60-80 43-41 60-65 60-84 0-15 8-30 20-36 12-6 20-21 20-36 0-19 17-43 60-84 37-36 60-66 60-79 0-13 21-43 50-72 l49-49 768 2 768 3 3 328 2 328-29 30-29 29-862 0-862 0-19-22-19-23-19 23 c-16 18-29 22-81 22-55 0-65 3-91 29 l-29 29 0 226 c0 215 1 226 20 236 12 6 20 21 20 36 0 34 90 124 124 124 15 0 30 8 36 20 11 20 23 20 1043 22 l1032 3 3 408 2 409-27 29 c-33 34-39 35-55 9z"/><path d="M7558 3300 c-10-15-24-20-60-20-37 0-50-4-58-20-7-13-21-20-40-20-19 0-33-7-40-20-8-16-21-20-60-20-39 0-52-4-60-20-8-16-21-20-60-20-39 0-52-4-60-20-7-13-21-20-40-20-19 0-33-7-40-20-7-13-21-20-40-20-19 0-33-7-40-20-7-13-21-20-40-20-19 0-33-7-40-20-8-15-21-20-56-20-41 0-50-5-96-51 l-50-50 41-38 c37-34 41-43 41-84 0-36 4-49 20-57 12-7 20-21 20-38 0-19 12-37 40-62 36-31 40-40 40-82 0-37 4-50 20-58 13-7 20-21 20-40 0-19 7-33 20-40 12-6 20-21 20-36 0-17 16-41 50-75 l49-49 528 2 528 3 3 48 c3 46 1 51-37 86-28 26-41 46-41 64 0 16-8 30-20 37-16 8-20 21-20 60 0 39-4 52-20 60-12 7-20 21-20 38 0 19-12 37-40 62-28 25-40 43-40 62 0 17-8 31-20 38-16 8-20 21-20 60 0 39-4 52-20 60-12 7-20 21-20 38 0 19-12 37-40 62-36 31-40 40-40 82 0 37-4 50-20 58-12 6-20 21-20 36 0 16-17 42-48 74-27 28-52 50-55 50-4 0-12-9-19-20z"/><path d="M2600 1420 c-8-16-21-20-60-20-39 0-52-4-60-20-6-12-21-20-36-20-33 0-84-51-84-84 0-15-8-30-20-36-17-9-20-21-20-80 0-59 3-71 20-80 12-6 20-21 20-36 0-17 16-41 50-74 49-50 49-50 114-50 55 0 67-3 76-20 9-17 21-20 76-20 59 0 68-3 95-29 16-16 29-39 29-51 0-12-13-35-29-51 l-29-29-143 0-142 0-38 42-38 43-50-52 c-29-30-51-62-51-73 0-30 53-80 84-80 15 0 30-8 36-20 10-19 21-20 220-20 197 0 210 1 220 19 6 12 23 21 43 23 28 3 32 7 35 35 2 20 11 37 23 43 12 7 19 21 19 40 0 19 7 33 20 40 13 7 20 21 20 40 0 19-7 33-20 40-15 8-20 21-20 56 0 37-6 51-29 75-17 17-40 29-55 29-15 0-30 8-36 20-9 18-21 20-100 20-79 0-91 2-100 20-6 12-21 20-36 20-26 0-124 86-124 108 0 7 15 12 35 12 24 0 37 6 45 20 10 18 21 20 120 20 100 0 110-2 120-21 10-17 19-20 63-17 51 3 52 4 55 35 2 20 11 37 23 44 15 8 19 19 17 42-3 31-5 32-55 35-40 2-55 8-63 23-7 12-21 19-40 19-19 0-33 7-40 20-9 17-21 20-80 20-59 0-71-3-80-20z"/><path d="M9760 1420 c-9-17-21-20-80-20-58 0-71-3-80-19-6-12-23-21-43-23-27-3-32-7-35-33-3-19-18-43-43-66 l-39-36 0-242 0-242 90-89 89-90 161 0 161 0 89 90 90 89 0 225 c0 215-1 226-20 236-12 6-20 21-20 36 0 17-21 45-70 94-65 66-72 70-114 70-35 0-48 5-56 20-7 13-21 20-40 20-19 0-33-7-40-20zm131-209 l29-29 0-202 0-202-30-29 c-29-29-31-30-117-27 l-88 3-3 32 c-2 20-11 37-23 43-18 10-19 23-19 196 l0 185 28 29 c25 27 32 29 110 30 79 0 85-2 113-29z"/><path d="M5868 1370 c-36-37-35-64 1-101 28-27 34-29 111-29 77 0 83-2 111-29 l29-29 2-309 3-308 75 0 75 0 5 335 5 335 109 3 c104 3 109 4 137 32 37 36 37 64 0 101 l-29 29-304 0-303-1-27-29z"/><path d="M13147 1370 l-27-29 2-388 3-388 75 0 75 0 3 152 c2 140 4 153 22 163 27 15 27 66-1 80-17 10-20 19-17 63 l3 52 35 0 c32 0 35-3 38-32 2-20 11-37 23-43 12-7 19-21 19-40 0-19 7-33 20-40 12-7 20-21 20-38 0-19 12-37 40-62 28-25 40-43 40-62 0-17 8-31 20-38 13-7 20-21 20-40 0-19 7-33 19-40 12-6 21-23 23-43 l3-32 115 0 115 0 0 415 0 415-75 0-75 0-3-277 c-2-213-5-278-15-278-21 0-67 57-67 84 0 15-8 30-20 36-13 7-20 21-20 40 0 19-7 33-20 40-13 7-20 21-20 40 0 19-7 33-20 40-12 7-20 21-20 38 0 19-12 37-40 62-35 31-40 40-40 78 0 35-6 50-29 73-28 27-34 29-113 29-78-1-85-3-111-30z"/><path d="M16907 1370 l-27-29 2-388 3-388 315 0 315 0 3 48 c3 41-1 51-26 77 l-30 30-189 2-188 3 0 75 0 75 149 3 148 3 30 29 c25 26 29 36 26 77 l-3 48-175 5-175 5 0 95 0 95 188 3 189 2 29 29 c37 37 37 65 0 102 l-29 29-264 0-263-1-28-29z"/></g></symbol></svg>
+
+
+<!-- DOC CHROME -->
+<div class="doc-top">
+  <div class="brand">
+    <span class="es-logo es-logo-sm" style="color:var(--es-brown)"><svg><use href="#es-logo"/></svg></span><span style="font-family:'Rajdhani',sans-serif;font-weight:700;font-size:10.5px;color:var(--es-tan-dark);letter-spacing:.22em;text-transform:uppercase;margin-left:4px">REDESIGN · PART 5 OF 5</span>
+  </div>
+  <div class="step">05 · Inventory</div>
+  <div class="switcher">
+    <button class="active" data-scr="grid">Grid</button>
+    <button data-scr="list">List</button>
+    <button data-scr="detail">Detail</button>
+  </div>
+</div>
+
+<div class="doc-banner">
+  <div style="position:relative;z-index:2">
+    <div class="eye">Delivery 5 of 5 · Final core screen</div>
+    <h1>Field Inventory — Browse &amp; Detail</h1>
+    <p>Built mobile-first from the ground up. Narrow your browser to 400px to see the drawer nav open via the hamburger, filter strips scroll horizontally, grid collapses to a single column, and the list view horizontally scrolls with a sticky SKU column.</p>
+  </div>
+</div>
+
+<!-- ==================== SCREEN 1: GRID BROWSE ==================== -->
+<div class="screen active" id="scr-grid">
+<div class="app-shell">
+  <div class="sidebar-backdrop"></div>
+  <aside class="app-sidebar">
+    <div class="sb-brand">
+      <div class="lgo"><span class="es-logo es-logo-md" style="color:var(--es-tan)"><svg><use href="#es-logo"/></svg></span></div>
+      <button class="sb-close"><svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><path d="M18 6 6 18M6 6l12 12"/></svg></button>
+    </div>
+    <div class="sb-group"><div class="nav-title">Operations</div>
+      <a class="sb-a" href="#"><svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.8"><rect x="3" y="3" width="7" height="9"/><rect x="14" y="3" width="7" height="5"/><rect x="14" y="12" width="7" height="9"/><rect x="3" y="16" width="7" height="5"/></svg>Dashboard</a>
+      <a class="sb-a" href="#"><svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.8"><path d="M17 21v-2a4 4 0 0 0-4-4H5a4 4 0 0 0-4 4v2"/><circle cx="9" cy="7" r="4"/></svg>Customers<span class="chip">147</span></a>
+      <a class="sb-a" href="#"><svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.8"><rect x="3" y="4" width="18" height="18" rx="2"/><path d="M16 2v4M8 2v4M3 10h18"/></svg>Visits<span class="chip">32</span></a>
+      <a class="sb-a active" href="#"><svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.8"><path d="M21 16V8a2 2 0 0 0-1-1.73l-7-4a2 2 0 0 0-2 0l-7 4A2 2 0 0 0 3 8v8"/></svg>Field Inventory<span class="chip">218</span></a>
+    </div>
+    <div class="sb-group"><div class="nav-title">Factory</div>
+      <a class="sb-a" href="#"><svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.8"><path d="M2 20V8l5-3 5 3 5-3 5 3v12"/><path d="M2 20h20M8 8v12M14 8v12"/></svg>Blocks</a>
+      <a class="sb-a" href="#"><svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.8"><rect x="3" y="6" width="18" height="13" rx="1"/></svg>Production</a>
+      <a class="sb-a" href="#"><svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.8"><circle cx="12" cy="12" r="3"/><path d="M19.4 15a1.65 1.65 0 0 0 .33 1.82 2 2 0 1 1-2.83 2.83"/></svg>Machines</a>
+    </div>
+    <div class="sb-foot"><div class="left"><span class="dot"></span><span class="ver">Online · v2.0</span></div></div>
+  </aside>
+
+  <div class="app-main">
+    <header class="app-header">
+      <button class="hamburger"><svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round"><path d="M3 12h18M3 6h18M3 18h18"/></svg></button>
+      <div class="welcome">Hi, <strong>Siddharth</strong><span class="time">3:42 PM IST</span></div>
+      <div class="search"><svg class="s" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><circle cx="11" cy="11" r="8"/><path d="m21 21-4.35-4.35"/></svg><input placeholder="Search…"></div>
+      <button class="hdr-btn"><svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.8"><path d="M6 8a6 6 0 0 1 12 0c0 7 3 9 3 9H3s3-2 3-9M13.73 21a2 2 0 0 1-3.46 0"/></svg><span class="num">3</span></button>
+      <div class="user-pill"><div class="avatar">SK</div><div class="meta"><div class="n">Siddharth K.</div><div class="r">Admin</div></div></div>
+    </header>
+
+    <div class="app-content">
+      <div class="page-head">
+        <div class="titles">
+          <div class="eye">218 slabs · 4 warehouses</div>
+          <h1>Field Inventory</h1>
+          <div class="sub">Every slab ready for reservation. Filter by material, finish, or grade — tap any slab to see full specs and reserve for a customer.</div>
+        </div>
+        <div class="actions">
+          <div class="toggle-group">
+            <button class="active"><svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><rect x="3" y="3" width="7" height="7"/><rect x="14" y="3" width="7" height="7"/><rect x="14" y="14" width="7" height="7"/><rect x="3" y="14" width="7" height="7"/></svg>Grid</button>
+            <button><svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><line x1="8" y1="6" x2="21" y2="6"/><line x1="8" y1="12" x2="21" y2="12"/><line x1="8" y1="18" x2="21" y2="18"/><line x1="3" y1="6" x2="3.01" y2="6"/><line x1="3" y1="12" x2="3.01" y2="12"/><line x1="3" y1="18" x2="3.01" y2="18"/></svg>List</button>
+          </div>
+          <button class="btn btn-success btn-sm"><svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.2" stroke-linecap="round"><path d="M12 5v14m-7-7h14"/></svg> Add Slab</button>
+        </div>
+      </div>
+
+      <!-- Summary strip -->
+      <div class="sum-strip">
+        <div class="c"><div class="k">Total Slabs</div><div class="v">218</div><div class="sub">across 4 warehouses</div></div>
+        <div class="c"><div class="k">In Stock</div><div class="v" style="color:var(--success)">186</div><div class="sub g">85% available</div></div>
+        <div class="c"><div class="k">Reserved</div><div class="v" style="color:var(--warning)">24</div><div class="sub">for 12 customers</div></div>
+        <div class="c"><div class="k">Inventory Value</div><div class="v">₹3.14<span class="unit">Cr</span></div><div class="sub">avg ₹14.4L / slab</div></div>
+      </div>
+
+      <!-- Filter bar: scrolls horizontally on mobile -->
+      <div class="filter-bar">
+        <div class="search-f">
+          <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><circle cx="11" cy="11" r="8"/><path d="m21 21-4.35-4.35"/></svg>
+          <input placeholder="Search by SKU, variety, color…">
+        </div>
+        <select><option>All Materials</option><option>Italian Marble</option><option>Indian Marble</option><option>Turkish Marble</option><option>Granite</option><option>Onyx</option><option>Travertine</option><option>Quartzite</option></select>
+        <select><option>All Finishes</option><option>Polished</option><option>Honed</option><option>Leather</option><option>Brushed</option><option>Flamed</option></select>
+        <select><option>All Grades</option><option>A+</option><option>A</option><option>B</option><option>C</option><option>D</option></select>
+        <select><option>All Warehouses</option><option>WH-A · Vizag Main</option><option>WH-B · Vizag North</option><option>WH-C · Hyderabad</option><option>WH-D · Bangalore</option></select>
+      </div>
+
+      <!-- Status chip strip -->
+      <div class="filter-strip">
+        <div class="chip-scroll">
+          <button class="chip active">All · 218</button>
+          <button class="chip">In Stock · 186</button>
+          <button class="chip">Reserved · 24</button>
+          <button class="chip">Premium (A+) · 48</button>
+          <button class="chip">Marble · 94</button>
+          <button class="chip">Granite · 112</button>
+          <button class="chip">Quartzite · 12</button>
+        </div>
+        <button class="chip chip-pinned">
+          <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.2" stroke-linecap="round"><path d="M3 6h18M7 12h10M11 18h2"/></svg>
+          Sort <span class="count">Price ↓</span>
+        </button>
+      </div>
+
+      <!-- Grid -->
+      <div class="inv-grid">
+        <!-- Card 1: Statuario White -->
+        <div class="inv-card">
+          <div class="inv-band band-white" data-color="White"></div>
+          <div class="inv-body">
+            <div class="inv-var">Statuario White</div>
+            <div class="inv-meta"><span>Italian Marble</span><span class="dot"></span><span>Polished</span><span class="grade">A+</span></div>
+            <div class="inv-spec">
+              <span>320 × 180 × 20mm</span>
+              <span>58 sqft</span>
+            </div>
+            <div class="inv-price-row">
+              <div class="inv-price">₹4,800<span class="per">/sqft</span></div>
+              <span class="badge badge-success no-dot">In Stock</span>
+            </div>
+          </div>
+          <div class="inv-foot">
+            <div class="wh"><span class="qty">24</span><span>slabs</span><span>·</span><span>WH-A1</span></div>
+            <button class="btn btn-accent reserve">Reserve</button>
+          </div>
+        </div>
+
+        <!-- Card 2: Black Galaxy -->
+        <div class="inv-card">
+          <div class="inv-band band-black" data-color="Black"></div>
+          <div class="inv-body">
+            <div class="inv-var">Black Galaxy</div>
+            <div class="inv-meta"><span>Indian Granite</span><span class="dot"></span><span>Polished</span><span class="grade">A</span></div>
+            <div class="inv-spec">
+              <span>300 × 180 × 18mm</span>
+              <span>54 sqft</span>
+            </div>
+            <div class="inv-price-row">
+              <div class="inv-price">₹1,200<span class="per">/sqft</span></div>
+              <span class="badge badge-success no-dot">In Stock</span>
+            </div>
+          </div>
+          <div class="inv-foot">
+            <div class="wh"><span class="qty">42</span><span>slabs</span><span>·</span><span>WH-B3</span></div>
+            <button class="btn btn-accent reserve">Reserve</button>
+          </div>
+        </div>
+
+        <!-- Card 3: Imperial Gold (reserved) -->
+        <div class="inv-card">
+          <div class="inv-band band-gold" data-color="Gold"></div>
+          <div class="inv-body">
+            <div class="inv-var">Imperial Gold</div>
+            <div class="inv-meta"><span>Indian Granite</span><span class="dot"></span><span>Honed</span><span class="grade">A</span></div>
+            <div class="inv-spec">
+              <span>280 × 170 × 18mm</span>
+              <span>47 sqft</span>
+            </div>
+            <div class="inv-price-row">
+              <div class="inv-price">₹1,800<span class="per">/sqft</span></div>
+              <span class="badge badge-warning no-dot">Reserved</span>
+            </div>
+          </div>
+          <div class="inv-foot">
+            <div class="wh"><span class="qty">8</span><span>slabs</span><span>·</span><span>WH-B1</span></div>
+            <button class="btn btn-ghost reserve" style="color:var(--text-3)">View →</button>
+          </div>
+        </div>
+
+        <!-- Card 4: Carrara -->
+        <div class="inv-card">
+          <div class="inv-band band-white" data-color="White"></div>
+          <div class="inv-body">
+            <div class="inv-var">Carrara White</div>
+            <div class="inv-meta"><span>Italian Marble</span><span class="dot"></span><span>Polished</span><span class="grade">A+</span></div>
+            <div class="inv-spec">
+              <span>310 × 190 × 20mm</span>
+              <span>59 sqft</span>
+            </div>
+            <div class="inv-price-row">
+              <div class="inv-price">₹5,200<span class="per">/sqft</span></div>
+              <span class="badge badge-success no-dot">In Stock</span>
+            </div>
+          </div>
+          <div class="inv-foot">
+            <div class="wh"><span class="qty">16</span><span>slabs</span><span>·</span><span>WH-A2</span></div>
+            <button class="btn btn-accent reserve">Reserve</button>
+          </div>
+        </div>
+
+        <!-- Card 5: Rosso Verona -->
+        <div class="inv-card">
+          <div class="inv-band band-red" data-color="Red"></div>
+          <div class="inv-body">
+            <div class="inv-var">Rosso Verona</div>
+            <div class="inv-meta"><span>Italian Marble</span><span class="dot"></span><span>Polished</span><span class="grade">A</span></div>
+            <div class="inv-spec">
+              <span>290 × 175 × 20mm</span>
+              <span>54 sqft</span>
+            </div>
+            <div class="inv-price-row">
+              <div class="inv-price">₹4,600<span class="per">/sqft</span></div>
+              <span class="badge badge-success no-dot">In Stock</span>
+            </div>
+          </div>
+          <div class="inv-foot">
+            <div class="wh"><span class="qty">10</span><span>slabs</span><span>·</span><span>WH-A4</span></div>
+            <button class="btn btn-accent reserve">Reserve</button>
+          </div>
+        </div>
+
+        <!-- Card 6: Emerald Pearl -->
+        <div class="inv-card">
+          <div class="inv-band band-green" data-color="Green"></div>
+          <div class="inv-body">
+            <div class="inv-var">Emerald Pearl</div>
+            <div class="inv-meta"><span>Norwegian Granite</span><span class="dot"></span><span>Polished</span><span class="grade">A</span></div>
+            <div class="inv-spec">
+              <span>300 × 180 × 20mm</span>
+              <span>58 sqft</span>
+            </div>
+            <div class="inv-price-row">
+              <div class="inv-price">₹3,400<span class="per">/sqft</span></div>
+              <span class="badge badge-success no-dot">In Stock</span>
+            </div>
+          </div>
+          <div class="inv-foot">
+            <div class="wh"><span class="qty">18</span><span>slabs</span><span>·</span><span>WH-B2</span></div>
+            <button class="btn btn-accent reserve">Reserve</button>
+          </div>
+        </div>
+
+        <!-- Card 7: Calacatta Gold -->
+        <div class="inv-card">
+          <div class="inv-band band-cream" data-color="Cream"></div>
+          <div class="inv-body">
+            <div class="inv-var">Calacatta Gold</div>
+            <div class="inv-meta"><span>Italian Marble</span><span class="dot"></span><span>Polished</span><span class="grade">A+</span></div>
+            <div class="inv-spec">
+              <span>320 × 190 × 20mm</span>
+              <span>61 sqft</span>
+            </div>
+            <div class="inv-price-row">
+              <div class="inv-price">₹6,200<span class="per">/sqft</span></div>
+              <span class="badge badge-warning no-dot">Reserved</span>
+            </div>
+          </div>
+          <div class="inv-foot">
+            <div class="wh"><span class="qty">4</span><span>slabs</span><span>·</span><span>WH-A1</span></div>
+            <button class="btn btn-ghost reserve" style="color:var(--text-3)">View →</button>
+          </div>
+        </div>
+
+        <!-- Card 8: Baltic Brown -->
+        <div class="inv-card">
+          <div class="inv-band band-brown" data-color="Brown"></div>
+          <div class="inv-body">
+            <div class="inv-var">Baltic Brown</div>
+            <div class="inv-meta"><span>Finnish Granite</span><span class="dot"></span><span>Leather</span><span class="grade">A</span></div>
+            <div class="inv-spec">
+              <span>290 × 175 × 18mm</span>
+              <span>55 sqft</span>
+            </div>
+            <div class="inv-price-row">
+              <div class="inv-price">₹2,400<span class="per">/sqft</span></div>
+              <span class="badge badge-success no-dot">In Stock</span>
+            </div>
+          </div>
+          <div class="inv-foot">
+            <div class="wh"><span class="qty">28</span><span>slabs</span><span>·</span><span>WH-B3</span></div>
+            <button class="btn btn-accent reserve">Reserve</button>
+          </div>
+        </div>
+      </div>
+
+      <div class="pg" style="margin-top:18px;background:var(--surface);border:1px solid var(--border);border-radius:var(--r-md)">
+        <span>Showing <strong style="color:var(--es-brown);font-weight:700">1–8</strong> of <strong style="color:var(--es-brown);font-weight:700">218</strong></span>
+        <div class="btns"><button disabled>‹</button><button class="active">1</button><button>2</button><button>3</button><button>›</button></div>
+      </div>
+    </div>
+
+    <button class="fab"><svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.4" stroke-linecap="round"><path d="M12 5v14m-7-7h14"/></svg></button>
+  </div>
+</div>
+</div>
+
+<!-- ==================== SCREEN 2: LIST VIEW ==================== -->
+<div class="screen" id="scr-list">
+<div class="app-shell">
+  <div class="sidebar-backdrop"></div>
+  <aside class="app-sidebar">
+    <div class="sb-brand">
+      <div class="lgo"><span class="es-logo es-logo-md" style="color:var(--es-tan)"><svg><use href="#es-logo"/></svg></span></div>
+      <button class="sb-close"><svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><path d="M18 6 6 18M6 6l12 12"/></svg></button>
+    </div>
+    <div class="sb-group"><div class="nav-title">Operations</div>
+      <a class="sb-a" href="#"><svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.8"><rect x="3" y="3" width="7" height="9"/><rect x="14" y="3" width="7" height="5"/><rect x="14" y="12" width="7" height="9"/><rect x="3" y="16" width="7" height="5"/></svg>Dashboard</a>
+      <a class="sb-a" href="#"><svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.8"><path d="M17 21v-2a4 4 0 0 0-4-4H5a4 4 0 0 0-4 4v2"/><circle cx="9" cy="7" r="4"/></svg>Customers<span class="chip">147</span></a>
+      <a class="sb-a" href="#"><svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.8"><rect x="3" y="4" width="18" height="18" rx="2"/></svg>Visits<span class="chip">32</span></a>
+      <a class="sb-a active" href="#"><svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.8"><path d="M21 16V8a2 2 0 0 0-1-1.73l-7-4a2 2 0 0 0-2 0l-7 4A2 2 0 0 0 3 8v8"/></svg>Field Inventory<span class="chip">218</span></a>
+    </div>
+    <div class="sb-foot"><div class="left"><span class="dot"></span><span class="ver">Online · v2.0</span></div></div>
+  </aside>
+
+  <div class="app-main">
+    <header class="app-header">
+      <button class="hamburger"><svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round"><path d="M3 12h18M3 6h18M3 18h18"/></svg></button>
+      <div class="welcome">Hi, <strong>Siddharth</strong><span class="time">3:42 PM IST</span></div>
+      <div class="search"><svg class="s" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><circle cx="11" cy="11" r="8"/><path d="m21 21-4.35-4.35"/></svg><input placeholder="Search…"></div>
+      <button class="hdr-btn"><svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.8"><path d="M6 8a6 6 0 0 1 12 0c0 7 3 9 3 9H3s3-2 3-9M13.73 21a2 2 0 0 1-3.46 0"/></svg><span class="num">3</span></button>
+      <div class="user-pill"><div class="avatar">SK</div><div class="meta"><div class="n">Siddharth K.</div><div class="r">Admin</div></div></div>
+    </header>
+
+    <div class="app-content">
+      <div class="page-head">
+        <div class="titles">
+          <div class="eye">218 slabs · list view</div>
+          <h1>Field Inventory</h1>
+          <div class="sub">On mobile the table scrolls horizontally — the SKU column stays pinned on the left so you never lose your place.</div>
+        </div>
+        <div class="actions">
+          <div class="toggle-group">
+            <button><svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><rect x="3" y="3" width="7" height="7"/><rect x="14" y="3" width="7" height="7"/><rect x="14" y="14" width="7" height="7"/><rect x="3" y="14" width="7" height="7"/></svg>Grid</button>
+            <button class="active"><svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><line x1="8" y1="6" x2="21" y2="6"/><line x1="8" y1="12" x2="21" y2="12"/><line x1="8" y1="18" x2="21" y2="18"/><line x1="3" y1="6" x2="3.01" y2="6"/><line x1="3" y1="12" x2="3.01" y2="12"/><line x1="3" y1="18" x2="3.01" y2="18"/></svg>List</button>
+          </div>
+          <button class="btn btn-success btn-sm"><svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.2" stroke-linecap="round"><path d="M12 5v14m-7-7h14"/></svg> Add Slab</button>
+        </div>
+      </div>
+
+      <!-- Filter bar -->
+      <div class="filter-bar">
+        <div class="search-f">
+          <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><circle cx="11" cy="11" r="8"/><path d="m21 21-4.35-4.35"/></svg>
+          <input placeholder="Search by SKU, variety…">
+        </div>
+        <select><option>All Materials</option><option>Italian Marble</option><option>Granite</option><option>Quartzite</option></select>
+        <select><option>All Finishes</option><option>Polished</option><option>Honed</option><option>Leather</option></select>
+        <select><option>All Grades</option><option>A+</option><option>A</option></select>
+      </div>
+
+      <div class="filter-strip">
+        <div class="chip-scroll">
+          <button class="chip active">All · 218</button>
+          <button class="chip">In Stock · 186</button>
+          <button class="chip">Reserved · 24</button>
+          <button class="chip">Marble · 94</button>
+          <button class="chip">Granite · 112</button>
+        </div>
+        <button class="chip chip-pinned"><svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.2" stroke-linecap="round"><path d="M3 6h18M7 12h10M11 18h2"/></svg>Sort</button>
+      </div>
+
+      <!-- List table with horizontal scroll + sticky SKU column -->
+      <div class="inv-list-wrap">
+        <div class="inv-list-scroll">
+          <table class="inv-list">
+            <thead>
+              <tr>
+                <th class="sticky">SKU / Variety</th>
+                <th>Material</th>
+                <th>Color</th>
+                <th>Finish</th>
+                <th>Grade</th>
+                <th>Dimensions</th>
+                <th>Warehouse</th>
+                <th class="right">Qty</th>
+                <th class="right">Price</th>
+                <th>Status</th>
+                <th></th>
+              </tr>
+            </thead>
+            <tbody>
+              <tr>
+                <td class="sticky"><div class="primary mono">ES-IM-SW-0042</div><div class="sub">Statuario White</div></td>
+                <td>Italian Marble</td>
+                <td><div class="col-dot"><span class="sw" style="background:linear-gradient(135deg,#FAF5E8,#F0E6D0)"></span>White</div></td>
+                <td>Polished</td>
+                <td><span style="font-family:'JetBrains Mono',monospace;font-weight:700;font-size:11px;background:var(--surface-3);padding:2px 7px;border-radius:var(--r-xs)">A+</span></td>
+                <td class="mono">320 × 180 × 20</td>
+                <td class="mono">WH-A1 · R-04</td>
+                <td class="right mono primary">24</td>
+                <td class="right price">₹4,800</td>
+                <td><span class="badge badge-success no-dot">In Stock</span></td>
+                <td><button class="btn btn-accent btn-sm">Reserve</button></td>
+              </tr>
+              <tr>
+                <td class="sticky"><div class="primary mono">ES-IG-BG-0118</div><div class="sub">Black Galaxy</div></td>
+                <td>Indian Granite</td>
+                <td><div class="col-dot"><span class="sw" style="background:linear-gradient(135deg,#3A342D,#1A1410)"></span>Black</div></td>
+                <td>Polished</td>
+                <td><span style="font-family:'JetBrains Mono',monospace;font-weight:700;font-size:11px;background:var(--surface-3);padding:2px 7px;border-radius:var(--r-xs)">A</span></td>
+                <td class="mono">300 × 180 × 18</td>
+                <td class="mono">WH-B3 · R-12</td>
+                <td class="right mono primary">42</td>
+                <td class="right price">₹1,200</td>
+                <td><span class="badge badge-success no-dot">In Stock</span></td>
+                <td><button class="btn btn-accent btn-sm">Reserve</button></td>
+              </tr>
+              <tr>
+                <td class="sticky"><div class="primary mono">ES-IG-IG-0085</div><div class="sub">Imperial Gold</div></td>
+                <td>Indian Granite</td>
+                <td><div class="col-dot"><span class="sw" style="background:linear-gradient(135deg,#D4A84A,#A67E2A)"></span>Gold</div></td>
+                <td>Honed</td>
+                <td><span style="font-family:'JetBrains Mono',monospace;font-weight:700;font-size:11px;background:var(--surface-3);padding:2px 7px;border-radius:var(--r-xs)">A</span></td>
+                <td class="mono">280 × 170 × 18</td>
+                <td class="mono">WH-B1 · R-02</td>
+                <td class="right mono primary">8</td>
+                <td class="right price">₹1,800</td>
+                <td><span class="badge badge-warning no-dot">Reserved</span></td>
+                <td><button class="btn btn-ghost btn-sm">View →</button></td>
+              </tr>
+              <tr>
+                <td class="sticky"><div class="primary mono">ES-IM-CW-0067</div><div class="sub">Carrara White</div></td>
+                <td>Italian Marble</td>
+                <td><div class="col-dot"><span class="sw" style="background:linear-gradient(135deg,#FAF5E8,#F0E6D0)"></span>White</div></td>
+                <td>Polished</td>
+                <td><span style="font-family:'JetBrains Mono',monospace;font-weight:700;font-size:11px;background:var(--surface-3);padding:2px 7px;border-radius:var(--r-xs)">A+</span></td>
+                <td class="mono">310 × 190 × 20</td>
+                <td class="mono">WH-A2 · R-06</td>
+                <td class="right mono primary">16</td>
+                <td class="right price">₹5,200</td>
+                <td><span class="badge badge-success no-dot">In Stock</span></td>
+                <td><button class="btn btn-accent btn-sm">Reserve</button></td>
+              </tr>
+              <tr>
+                <td class="sticky"><div class="primary mono">ES-IM-RV-0031</div><div class="sub">Rosso Verona</div></td>
+                <td>Italian Marble</td>
+                <td><div class="col-dot"><span class="sw" style="background:linear-gradient(135deg,#A8553D,#6E3524)"></span>Red</div></td>
+                <td>Polished</td>
+                <td><span style="font-family:'JetBrains Mono',monospace;font-weight:700;font-size:11px;background:var(--surface-3);padding:2px 7px;border-radius:var(--r-xs)">A</span></td>
+                <td class="mono">290 × 175 × 20</td>
+                <td class="mono">WH-A4 · R-08</td>
+                <td class="right mono primary">10</td>
+                <td class="right price">₹4,600</td>
+                <td><span class="badge badge-success no-dot">In Stock</span></td>
+                <td><button class="btn btn-accent btn-sm">Reserve</button></td>
+              </tr>
+              <tr>
+                <td class="sticky"><div class="primary mono">ES-NG-EP-0052</div><div class="sub">Emerald Pearl</div></td>
+                <td>Norwegian Granite</td>
+                <td><div class="col-dot"><span class="sw" style="background:linear-gradient(135deg,#5C7857,#3D5A3D)"></span>Green</div></td>
+                <td>Polished</td>
+                <td><span style="font-family:'JetBrains Mono',monospace;font-weight:700;font-size:11px;background:var(--surface-3);padding:2px 7px;border-radius:var(--r-xs)">A</span></td>
+                <td class="mono">300 × 180 × 20</td>
+                <td class="mono">WH-B2 · R-14</td>
+                <td class="right mono primary">18</td>
+                <td class="right price">₹3,400</td>
+                <td><span class="badge badge-success no-dot">In Stock</span></td>
+                <td><button class="btn btn-accent btn-sm">Reserve</button></td>
+              </tr>
+              <tr>
+                <td class="sticky"><div class="primary mono">ES-IM-CG-0019</div><div class="sub">Calacatta Gold</div></td>
+                <td>Italian Marble</td>
+                <td><div class="col-dot"><span class="sw" style="background:linear-gradient(135deg,#F4E9C6,#E8D4A2)"></span>Cream</div></td>
+                <td>Polished</td>
+                <td><span style="font-family:'JetBrains Mono',monospace;font-weight:700;font-size:11px;background:var(--surface-3);padding:2px 7px;border-radius:var(--r-xs)">A+</span></td>
+                <td class="mono">320 × 190 × 20</td>
+                <td class="mono">WH-A1 · R-01</td>
+                <td class="right mono primary">4</td>
+                <td class="right price">₹6,200</td>
+                <td><span class="badge badge-warning no-dot">Reserved</span></td>
+                <td><button class="btn btn-ghost btn-sm">View →</button></td>
+              </tr>
+              <tr>
+                <td class="sticky"><div class="primary mono">ES-FG-BB-0093</div><div class="sub">Baltic Brown</div></td>
+                <td>Finnish Granite</td>
+                <td><div class="col-dot"><span class="sw" style="background:linear-gradient(135deg,#8B5E3C,#5C3A22)"></span>Brown</div></td>
+                <td>Leather</td>
+                <td><span style="font-family:'JetBrains Mono',monospace;font-weight:700;font-size:11px;background:var(--surface-3);padding:2px 7px;border-radius:var(--r-xs)">A</span></td>
+                <td class="mono">290 × 175 × 18</td>
+                <td class="mono">WH-B3 · R-18</td>
+                <td class="right mono primary">28</td>
+                <td class="right price">₹2,400</td>
+                <td><span class="badge badge-success no-dot">In Stock</span></td>
+                <td><button class="btn btn-accent btn-sm">Reserve</button></td>
+              </tr>
+            </tbody>
+          </table>
+        </div>
+        <div class="pg">
+          <span>Showing <strong style="color:var(--es-brown);font-weight:700">1–8</strong> of <strong style="color:var(--es-brown);font-weight:700">218</strong></span>
+          <div class="btns"><button disabled>‹</button><button class="active">1</button><button>2</button><button>3</button><button>›</button></div>
+        </div>
+      </div>
+
+    </div>
+    <button class="fab"><svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.4" stroke-linecap="round"><path d="M12 5v14m-7-7h14"/></svg></button>
+  </div>
+</div>
+</div>
+
+<!-- ==================== SCREEN 3: DETAIL ==================== -->
+<div class="screen" id="scr-detail">
+<div class="app-shell">
+  <div class="sidebar-backdrop"></div>
+  <aside class="app-sidebar">
+    <div class="sb-brand">
+      <div class="lgo"><span class="es-logo es-logo-md" style="color:var(--es-tan)"><svg><use href="#es-logo"/></svg></span></div>
+      <button class="sb-close"><svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><path d="M18 6 6 18M6 6l12 12"/></svg></button>
+    </div>
+    <div class="sb-group"><div class="nav-title">Operations</div>
+      <a class="sb-a" href="#"><svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.8"><rect x="3" y="3" width="7" height="9"/><rect x="14" y="3" width="7" height="5"/><rect x="14" y="12" width="7" height="9"/><rect x="3" y="16" width="7" height="5"/></svg>Dashboard</a>
+      <a class="sb-a" href="#"><svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.8"><path d="M17 21v-2a4 4 0 0 0-4-4H5a4 4 0 0 0-4 4v2"/><circle cx="9" cy="7" r="4"/></svg>Customers<span class="chip">147</span></a>
+      <a class="sb-a" href="#"><svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.8"><rect x="3" y="4" width="18" height="18" rx="2"/></svg>Visits<span class="chip">32</span></a>
+      <a class="sb-a active" href="#"><svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.8"><path d="M21 16V8a2 2 0 0 0-1-1.73l-7-4a2 2 0 0 0-2 0l-7 4A2 2 0 0 0 3 8v8"/></svg>Field Inventory<span class="chip">218</span></a>
+    </div>
+    <div class="sb-foot"><div class="left"><span class="dot"></span><span class="ver">Online · v2.0</span></div></div>
+  </aside>
+
+  <div class="app-main">
+    <header class="app-header">
+      <button class="hamburger"><svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round"><path d="M3 12h18M3 6h18M3 18h18"/></svg></button>
+      <div class="welcome">Hi, <strong>Siddharth</strong><span class="time">3:42 PM IST</span></div>
+      <div class="search"><svg class="s" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><circle cx="11" cy="11" r="8"/><path d="m21 21-4.35-4.35"/></svg><input placeholder="Search…"></div>
+      <button class="hdr-btn"><svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.8"><path d="M6 8a6 6 0 0 1 12 0c0 7 3 9 3 9H3s3-2 3-9M13.73 21a2 2 0 0 1-3.46 0"/></svg><span class="num">3</span></button>
+      <div class="user-pill"><div class="avatar">SK</div><div class="meta"><div class="n">Siddharth K.</div><div class="r">Admin</div></div></div>
+    </header>
+
+    <div class="app-content">
+      <a class="back-link" href="#"><svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round"><path d="m15 18-6-6 6-6"/></svg>Back to Inventory</a>
+
+      <!-- Hero with real color band -->
+      <div class="detail-hero">
+        <div class="detail-hero-band band-white"></div>
+        <div class="detail-hero-body">
+          <div class="eye">Italian Marble · Premium · Warehouse A1</div>
+          <h1>Statuario White</h1>
+          <div class="tags-row">
+            <span class="grade-tag">Grade A+</span>
+            <span class="sku-tag">ES-IM-SW-0042</span>
+            <span class="badge badge-success">In Stock</span>
+          </div>
+          <div class="price-row">
+            <div class="price-block">
+              <div class="lbl">Price per sqft</div>
+              <div class="val">₹4,800<span class="per">/sqft</span></div>
+              <div class="sub">~₹2.78L per slab · 58 sqft</div>
+            </div>
+            <div class="actions">
+              <button class="btn btn-outline btn-sm"><svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><path d="M4 12v8a2 2 0 0 0 2 2h12a2 2 0 0 0 2-2v-8"/><polyline points="16,6 12,2 8,6"/><line x1="12" y1="2" x2="12" y2="15"/></svg> Share</button>
+              <button class="btn btn-accent btn-sm"><svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.2" stroke-linecap="round"><path d="M9 11V7a3 3 0 0 1 6 0v4M5 9h14l1 12H4z"/></svg> Reserve for Customer</button>
+            </div>
+          </div>
+        </div>
+      </div>
+
+      <!-- Two-col grid on desktop, stacks on mobile -->
+      <div class="detail-grid">
+        <!-- Specifications -->
+        <div class="card">
+          <div class="card-h"><h4>Specifications</h4><div class="sub">Slab details &amp; origin</div></div>
+          <div class="spec-grid">
+            <div class="spec-row"><div class="k">Material</div><div class="v">Italian Marble</div></div>
+            <div class="spec-row"><div class="k">Variety</div><div class="v">Statuario White</div></div>
+            <div class="spec-row"><div class="k">Color</div><div class="v swatch-row"><span class="sw" style="background:linear-gradient(135deg,#FAF5E8,#F0E6D0)"></span>White</div></div>
+            <div class="spec-row"><div class="k">Finish</div><div class="v">Polished</div></div>
+            <div class="spec-row"><div class="k">Grade</div><div class="v">A+ (Premium)</div></div>
+            <div class="spec-row"><div class="k">Quarry Origin</div><div class="v">Carrara, Italy</div></div>
+            <div class="spec-row"><div class="k">Length</div><div class="v mono">320 mm</div></div>
+            <div class="spec-row"><div class="k">Width</div><div class="v mono">180 mm</div></div>
+            <div class="spec-row"><div class="k">Thickness</div><div class="v mono">20 mm</div></div>
+            <div class="spec-row"><div class="k">Area</div><div class="v mono">57.6 sqft</div></div>
+            <div class="spec-row"><div class="k">Block Reference</div><div class="v mono">BLK-IT-2024-048</div></div>
+            <div class="spec-row"><div class="k">Bundle Number</div><div class="v mono">BDL-18</div></div>
+            <div class="spec-row span-2 last"><div class="k">Region</div><div class="v">Vizag Main Warehouse (WH-A) · Andhra Pradesh</div></div>
+          </div>
+        </div>
+
+        <!-- Right column stack -->
+        <div class="detail-col-stack">
+          <!-- Stock -->
+          <div class="card">
+            <div class="card-h"><h4>Stock</h4><div class="sub">WH-A1 · Rack 04</div></div>
+            <div class="stock-stats">
+              <div class="stock-row"><div class="k">Available</div><div class="v g">24</div></div>
+              <div class="stock-row"><div class="k">Reserved</div><div class="v w">0</div></div>
+              <div class="stock-row"><div class="k">Landed Cost</div><div class="v mono">₹3,420/sqft</div></div>
+              <div class="stock-row"><div class="k">Margin</div><div class="v g mono">+40.4%</div></div>
+            </div>
+          </div>
+
+          <!-- Warehouse -->
+          <div class="card">
+            <div class="card-h"><h4>Warehouse</h4></div>
+            <div class="wh-card">
+              <div class="wh-row"><div class="k">Code</div><div class="v mono">WH-A1</div></div>
+              <div class="wh-row"><div class="k">Location</div><div class="v">Vizag Main</div></div>
+              <div class="wh-row"><div class="k">Rack</div><div class="v mono">R-04 · Slot 12</div></div>
+              <div class="wh-row"><div class="k">Listed Since</div><div class="v mono">14 Feb 2026</div></div>
+              <div class="wh-row"><div class="k">Last Audited</div><div class="v mono">02 Apr 2026</div></div>
+            </div>
+          </div>
+
+          <!-- Reservation -->
+          <div class="card">
+            <div class="card-h"><h4>Reservation</h4><div class="sub">Available now</div></div>
+            <div class="reserve-card">
+              <div class="status-line"><span class="dot"></span>Not currently reserved — available for any customer</div>
+              <div class="field">
+                <label>Customer</label>
+                <input type="text" placeholder="Search customer name or phone…">
+              </div>
+              <button class="btn btn-accent" style="width:100%">Reserve Slab</button>
+            </div>
+          </div>
+        </div>
+      </div>
+
+      <!-- Notes (full width) -->
+      <div class="card">
+        <div class="card-h"><h4>Notes</h4><div class="sub">Internal — not visible to customers</div></div>
+        <div class="notes-body">Pure Statuario from the Lunense quarry, delivered in shipment IMP-2024-Q4-018. Strong book-matching potential — slabs 41–46 show near-identical veining and are recommended for symmetric installs. Vijay in warehouse flagged slight edge chip on slab 44, minor only — noted in QA photo log.</div>
+      </div>
+
+    </div>
+
+    <button class="fab"><svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.4" stroke-linecap="round"><path d="M12 5v14m-7-7h14"/></svg></button>
+  </div>
+</div>
+</div>
+
+<script>
+  // Screen switcher
+  document.querySelectorAll('.doc-top .switcher button').forEach(b=>{
+    b.addEventListener('click',()=>{
+      document.querySelectorAll('.doc-top .switcher button').forEach(x=>x.classList.remove('active'));
+      b.classList.add('active');
+      document.querySelectorAll('.screen').forEach(s=>s.classList.remove('active'));
+      document.getElementById('scr-'+b.dataset.scr).classList.add('active');
+      window.scrollTo({top:0,behavior:'smooth'});
+    });
+  });
+
+  // Hamburger + backdrop drawer for mobile
+  document.querySelectorAll('.hamburger').forEach(h=>{
+    h.addEventListener('click',()=>{
+      const shell = h.closest('.app-shell');
+      shell.querySelector('.app-sidebar').classList.add('open');
+      shell.querySelector('.sidebar-backdrop').classList.add('open');
+    });
+  });
+  document.querySelectorAll('.sb-close, .sidebar-backdrop').forEach(el=>{
+    el.addEventListener('click',()=>{
+      const shell = el.closest('.app-shell');
+      shell.querySelector('.app-sidebar').classList.remove('open');
+      shell.querySelector('.sidebar-backdrop').classList.remove('open');
+    });
+  });
+</script>
+</body>
+</html>
