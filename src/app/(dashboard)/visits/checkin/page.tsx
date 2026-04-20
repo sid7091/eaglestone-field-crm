@@ -37,7 +37,7 @@ export default function CheckinPageWrapper() {
   return (
     <Suspense fallback={
       <div className="flex h-64 items-center justify-center">
-        <div className="h-8 w-8 animate-spin rounded-full border-4 border-brand-accent border-t-transparent" />
+        <div className="h-8 w-8 animate-spin rounded-full border-4 border-brand-tan border-t-transparent" />
       </div>
     }>
       <CheckinPage />
@@ -208,7 +208,7 @@ function CheckinPage() {
   }
 
   if (!visitId) {
-    return <Card><div className="p-8 text-center text-stone-500">No visit ID specified. Go to <button onClick={() => router.push("/visits")} className="text-brand-accent underline">Visits</button> to select one.</div></Card>;
+    return <Card><div className="p-8 text-center text-stone-500">No visit ID specified. Go to <button onClick={() => router.push("/visits")} className="text-brand-tan underline">Visits</button> to select one.</div></Card>;
   }
 
   return (
@@ -431,7 +431,7 @@ function CheckinPage() {
               <div className="flex gap-3">
                 <button
                   onClick={() => router.push(`/visits/${visitId}`)}
-                  className="flex-1 rounded-lg bg-brand-accent py-2 text-sm font-medium text-white"
+                  className="flex-1 rounded-lg bg-brand-tan py-2 text-sm font-medium text-white"
                 >
                   View Details
                 </button>

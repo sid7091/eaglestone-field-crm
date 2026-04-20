@@ -176,7 +176,7 @@ export default function GeofenceMap({
         style={{ height }}
         className="flex items-center justify-center rounded-lg bg-stone-100"
       >
-        <div className="h-6 w-6 animate-spin rounded-full border-2 border-brand-accent border-t-transparent" />
+        <div className="h-6 w-6 animate-spin rounded-full border-2 border-brand-tan border-t-transparent" />
       </div>
     );
   }
