@@ -81,7 +81,7 @@ export default function InventoryDetailPage() {
   }
 
   if (!item) {
-    return <Card><div className="p-8 text-center text-stone-500">Item not found</div></Card>;
+    return <Card><div className="p-8 text-center text-brand-olive/60">Item not found</div></Card>;
   }
 
   const sqft = ((item.lengthCm * item.widthCm) / 929.0304).toFixed(1);
@@ -89,8 +89,8 @@ export default function InventoryDetailPage() {
 
   const Field = ({ label, value }: { label: string; value: React.ReactNode }) => (
     <div>
-      <dt className="text-xs font-medium uppercase tracking-wider text-stone-500">{label}</dt>
-      <dd className="mt-1 text-sm text-stone-900">{value || "—"}</dd>
+      <dt className="font-display text-[10px] font-semibold tracking-[.12em] text-brand-olive/50 uppercase">{label}</dt>
+      <dd className="mt-1 text-[13px] text-brand-brown">{value || "—"}</dd>
     </div>
   );
 
@@ -99,27 +99,27 @@ export default function InventoryDetailPage() {
       {/* Header */}
       <div className="flex flex-wrap items-center justify-between gap-4">
         <div>
-          <button onClick={() => router.push("/field-inventory")} className="mb-2 text-sm text-stone-500 hover:text-stone-700">
-            &larr; Back to Inventory
+          <button onClick={() => router.push("/field-inventory")} className="mb-2 font-display text-[11px] font-semibold tracking-wide text-brand-olive/50 hover:text-brand-olive">
+            ← BACK TO INVENTORY
           </button>
-          <h1 className="text-2xl font-bold text-stone-900">{item.variety}</h1>
-          <div className="mt-1 flex items-center gap-3 text-sm text-stone-500">
+          <h1 className="font-display text-[28px] font-bold leading-tight text-brand-brown">{item.variety}</h1>
+          <div className="mt-1 flex items-center gap-3 text-sm text-brand-olive/60">
             <span className="font-mono">{item.sku}</span>
             <StatusBadge status={item.status} />
-            <span className="rounded bg-stone-100 px-1.5 py-0.5 text-xs font-bold text-stone-700">Grade {item.grade}</span>
+            <span className="rounded bg-brand-brown/8 px-1.5 py-0.5 text-xs font-bold text-brand-olive">Grade {item.grade}</span>
           </div>
         </div>
         <div className="text-right">
-          <p className="text-2xl font-bold text-brand-accent">{formatCurrency(item.pricePerSqftINR)}<span className="text-sm font-normal text-stone-500">/sqft</span></p>
-          <p className="text-xs text-stone-500">Total value: {formatCurrency(totalValue)}</p>
+          <p className="text-2xl font-bold text-brand-tan-dark">{formatCurrency(item.pricePerSqftINR)}<span className="text-sm font-normal text-brand-olive/60">/sqft</span></p>
+          <p className="text-xs text-brand-olive/60">Total value: {formatCurrency(totalValue)}</p>
         </div>
       </div>
 
       <div className="grid grid-cols-1 gap-6 lg:grid-cols-3">
         {/* Specifications */}
         <Card className="lg:col-span-2">
-          <div className="border-b border-stone-200 px-6 py-4">
-            <h2 className="text-lg font-semibold text-stone-900">Specifications</h2>
+          <div className="border-b border-brand-brown/10 px-6 py-4">
+            <h2 className="font-display text-[15px] font-bold text-brand-brown">Specifications</h2>
           </div>
           <div className="grid grid-cols-2 gap-6 p-6 sm:grid-cols-3">
             <Field label="Material Type" value={item.materialType} />
@@ -140,21 +140,21 @@ export default function InventoryDetailPage() {
         {/* Stock & Warehouse */}
         <div className="space-y-6">
           <Card>
-            <div className="border-b border-stone-200 px-6 py-4">
-              <h2 className="text-lg font-semibold text-stone-900">Stock</h2>
+            <div className="border-b border-brand-brown/10 px-6 py-4">
+              <h2 className="font-display text-[15px] font-bold text-brand-brown">Stock</h2>
             </div>
             <div className="p-6 space-y-4">
               <div className="flex items-center justify-between">
-                <span className="text-sm text-stone-500">Available</span>
-                <span className="text-2xl font-bold text-green-600">{item.quantityAvailable}</span>
+                <span className="text-sm text-brand-olive/60">Available</span>
+                <span className="text-2xl font-bold text-success">{item.quantityAvailable}</span>
               </div>
               <div className="flex items-center justify-between">
-                <span className="text-sm text-stone-500">Reserved</span>
-                <span className="text-lg font-semibold text-amber-600">{item.quantityReserved}</span>
+                <span className="text-sm text-brand-olive/60">Reserved</span>
+                <span className="text-lg font-semibold text-warning">{item.quantityReserved}</span>
               </div>
               {item.landedCostPerSqftINR && (
-                <div className="flex items-center justify-between border-t border-stone-100 pt-3">
-                  <span className="text-sm text-stone-500">Landed Cost</span>
+                <div className="flex items-center justify-between border-t border-brand-brown/6 pt-3">
+                  <span className="text-sm text-brand-olive/60">Landed Cost</span>
                   <span className="text-sm font-medium">{formatCurrency(item.landedCostPerSqftINR)}/sqft</span>
                 </div>
               )}
@@ -162,8 +162,8 @@ export default function InventoryDetailPage() {
           </Card>
 
           <Card>
-            <div className="border-b border-stone-200 px-6 py-4">
-              <h2 className="text-lg font-semibold text-stone-900">Warehouse</h2>
+            <div className="border-b border-brand-brown/10 px-6 py-4">
+              <h2 className="font-display text-[15px] font-bold text-brand-brown">Warehouse</h2>
             </div>
             <div className="p-6 space-y-3">
               <Field label="Warehouse" value={item.warehouseCode} />
@@ -176,23 +176,23 @@ export default function InventoryDetailPage() {
 
       {/* Reservation Section */}
       <Card>
-        <div className="border-b border-stone-200 px-6 py-4">
-          <h2 className="text-lg font-semibold text-stone-900">Reservation</h2>
+        <div className="border-b border-brand-brown/10 px-6 py-4">
+          <h2 className="font-display text-[15px] font-bold text-brand-brown">Reservation</h2>
         </div>
         <div className="p-6">
           {item.reservedForCustomer ? (
             <div className="flex items-center justify-between">
               <div>
-                <p className="text-sm text-stone-900">
+                <p className="text-sm text-brand-brown">
                   Reserved for: <strong>{item.reservedForCustomer.businessName}</strong>
                 </p>
                 {item.reservedDate && (
-                  <p className="text-xs text-stone-500 mt-1">Reserved on {formatDate(item.reservedDate)}</p>
+                  <p className="text-xs text-brand-olive/60 mt-1">Reserved on {formatDate(item.reservedDate)}</p>
                 )}
               </div>
               <button
                 onClick={() => router.push(`/customers/${item.reservedForCustomer!.id}`)}
-                className="rounded-lg border border-stone-300 px-3 py-1.5 text-sm text-stone-700 hover:bg-stone-50"
+                className="rounded-sm border border-brand-brown/20 px-3 py-1.5 text-sm text-brand-olive hover:bg-brand-brown/3"
               >
                 View Customer
               </button>
@@ -204,37 +204,37 @@ export default function InventoryDetailPage() {
                   placeholder="Search customer name..."
                   value={customerSearch}
                   onChange={(e) => searchCustomers(e.target.value)}
-                  className="w-full rounded-lg border border-stone-300 px-3 py-2 text-sm"
+                  className="w-full rounded-sm border border-brand-brown/20 px-3 py-2 text-sm"
                   autoFocus
                 />
-                <div className="max-h-40 overflow-y-auto rounded-lg border border-stone-200">
+                <div className="max-h-40 overflow-y-auto rounded-sm border border-brand-brown/10">
                   {customers.map((c) => (
                     <button
                       key={c.id}
                       onClick={() => reserveItem(c.id)}
-                      className="w-full px-3 py-2 text-left text-sm hover:bg-stone-50 border-b border-stone-100 last:border-0"
+                      className="w-full px-3 py-2 text-left text-sm hover:bg-brand-brown/3 border-b border-brand-brown/6 last:border-0"
                     >
                       {c.businessName}
                     </button>
                   ))}
                   {customerSearch.length >= 2 && customers.length === 0 && (
-                    <p className="px-3 py-2 text-sm text-stone-400">No customers found</p>
+                    <p className="px-3 py-2 text-sm text-brand-olive/40">No customers found</p>
                   )}
                 </div>
-                <button onClick={() => { setReserving(false); setCustomerSearch(""); }} className="text-sm text-stone-500 hover:text-stone-700">
+                <button onClick={() => { setReserving(false); setCustomerSearch(""); }} className="text-sm text-brand-olive/60 hover:text-brand-olive">
                   Cancel
                 </button>
               </div>
             ) : (
               <button
                 onClick={() => setReserving(true)}
-                className="rounded-lg bg-brand-accent px-4 py-2 text-sm font-medium text-white hover:bg-brand-accent/90"
+                className="rounded-sm bg-brand-brown px-4 py-2 text-sm font-medium text-white hover:bg-brand-brown/90"
               >
                 Reserve for Customer
               </button>
             )
           ) : (
-            <p className="text-sm text-stone-500">This item is not available for reservation.</p>
+            <p className="text-sm text-brand-olive/60">This item is not available for reservation.</p>
           )}
         </div>
       </Card>
@@ -242,10 +242,10 @@ export default function InventoryDetailPage() {
       {/* Notes */}
       {item.notes && (
         <Card>
-          <div className="border-b border-stone-200 px-6 py-4">
-            <h2 className="text-lg font-semibold text-stone-900">Notes</h2>
+          <div className="border-b border-brand-brown/10 px-6 py-4">
+            <h2 className="font-display text-[15px] font-bold text-brand-brown">Notes</h2>
           </div>
-          <div className="p-6 text-sm text-stone-700 whitespace-pre-wrap">{item.notes}</div>
+          <div className="p-6 text-sm text-brand-olive whitespace-pre-wrap">{item.notes}</div>
         </Card>
       )}
     </div>
