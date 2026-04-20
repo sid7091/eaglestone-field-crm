@@ -2,8 +2,9 @@
 
 import { useEffect, useState, useCallback } from "react";
 import { useParams, useRouter } from "next/navigation";
-import { Card } from "@/components/ui/Card";
+import { Card, CardHeader, CardContent } from "@/components/ui/Card";
 import StatusBadge from "@/components/ui/StatusBadge";
+import Button from "@/components/ui/Button";
 import PlanVisitModal from "@/components/ui/PlanVisitModal";
 import SitePhotos from "@/components/ui/SitePhotos";
 import { api } from "@/lib/api-client";
@@ -44,20 +45,14 @@ interface Visit {
   geofenceValidation: { isWithinGeofence: boolean } | null;
 }
 
-const TIER_COLORS: Record<string, string> = {
-  PLATINUM: "bg-violet-100 text-violet-800",
-  GOLD: "bg-amber-100 text-amber-800",
-  SILVER: "bg-stone-100 text-stone-700",
-  BRONZE: "bg-orange-100 text-orange-800",
-};
-
-const CUSTOMER_TYPES = [
-  "DEALER", "ARCHITECT", "BUILDER", "CONTRACTOR", "DIRECT_CLIENT", "QUARRY_OWNER",
-];
+const CUSTOMER_TYPES = ["DEALER", "ARCHITECT", "BUILDER", "CONTRACTOR", "DIRECT_CLIENT", "QUARRY_OWNER"];
 const TIERS = ["PLATINUM", "GOLD", "SILVER", "BRONZE"];
-const LEAD_STATUSES = [
-  "NEW", "CONTACTED", "QUALIFIED", "PROPOSAL_SENT", "NEGOTIATION", "WON", "LOST", "DORMANT",
-];
+const LEAD_STATUSES = ["NEW", "CONTACTED", "QUALIFIED", "PROPOSAL_SENT", "NEGOTIATION", "WON", "LOST", "DORMANT"];
+
+const INPUT_CLS =
+  "w-full rounded-sm border border-brand-brown/20 bg-surface px-3 py-2 text-[13px] text-brand-brown placeholder:text-brand-olive/35 focus:border-brand-tan focus:outline-none focus:ring-2 focus:ring-brand-tan/20 transition-colors";
+const LABEL_CLS =
+  "mb-1 block font-display text-[11px] font-semibold tracking-[.12em] text-brand-olive/80 uppercase";
 
 export default function CustomerDetailPage() {
   const { id } = useParams<{ id: string }>();
@@ -76,9 +71,7 @@ export default function CustomerDetailPage() {
       const data = await api.get<Customer>(`/customers/${id}`);
       setCustomer(data);
       setForm(data);
-    } catch {
-      /* handled below */
-    } finally {
+    } catch { /* handled below */ } finally {
       setLoading(false);
     }
   }, [id]);
@@ -87,9 +80,7 @@ export default function CustomerDetailPage() {
     try {
       const res = await api.get<{ data: Visit[] }>(`/visits?customerId=${id}&limit=10`);
       setVisits(res.data);
-    } catch {
-      /* non-critical */
-    }
+    } catch { /* non-critical */ }
   }, [id]);
 
   useEffect(() => {
@@ -130,7 +121,7 @@ export default function CustomerDetailPage() {
   if (loading) {
     return (
       <div className="flex h-64 items-center justify-center">
-        <div className="h-8 w-8 animate-spin rounded-full border-4 border-brand-accent border-t-transparent" />
+        <div className="h-8 w-8 animate-spin rounded-full border-4 border-brand-tan/30 border-t-brand-tan" />
       </div>
     );
   }
@@ -138,15 +129,15 @@ export default function CustomerDetailPage() {
   if (!customer) {
     return (
       <Card>
-        <div className="p-8 text-center text-stone-500">Customer not found</div>
+        <div className="p-8 text-center text-[13px] text-brand-olive/50">Customer not found</div>
       </Card>
     );
   }
 
   const Field = ({ label, value }: { label: string; value: React.ReactNode }) => (
     <div>
-      <dt className="text-xs font-medium uppercase tracking-wider text-stone-500">{label}</dt>
-      <dd className="mt-1 text-sm text-stone-900">{value || "—"}</dd>
+      <dt className="font-display text-[10px] font-semibold tracking-[.12em] text-brand-olive/60 uppercase">{label}</dt>
+      <dd className="mt-1 text-[13px] text-brand-brown">{value || "—"}</dd>
     </div>
   );
 
@@ -157,43 +148,31 @@ export default function CustomerDetailPage() {
         <div>
           <button
             onClick={() => router.push("/customers")}
-            className="mb-2 text-sm text-stone-500 hover:text-stone-700"
+            className="mb-2 font-display text-[11px] font-semibold tracking-wide text-brand-olive/50 transition-colors hover:text-brand-olive"
           >
-            &larr; Back to Customers
+            ← BACK TO CUSTOMERS
           </button>
-          <h1 className="text-2xl font-bold text-stone-900">{customer.businessName}</h1>
-          <div className="mt-1 flex items-center gap-2">
+          <h1 className="font-display text-[28px] font-bold leading-tight text-brand-brown">{customer.businessName}</h1>
+          <div className="mt-2 flex items-center gap-2">
             <StatusBadge status={customer.leadStatus} />
-            <span className={`inline-flex items-center rounded-full px-2.5 py-0.5 text-xs font-medium ${TIER_COLORS[customer.tier] || ""}`}>
-              {customer.tier}
-            </span>
-            <span className="text-sm text-stone-500">{customer.customerType.replace(/_/g, " ")}</span>
+            <StatusBadge status={customer.tier} variant="tier" />
+            <span className="text-[12px] text-brand-olive/60">{customer.customerType.replace(/_/g, " ")}</span>
           </div>
         </div>
         <div className="flex gap-2">
           {editing ? (
             <>
-              <button
-                onClick={() => { setEditing(false); setForm(customer); }}
-                className="rounded-lg border border-stone-300 px-4 py-2 text-sm text-stone-700 hover:bg-stone-50"
-              >
-                Cancel
-              </button>
-              <button
-                onClick={handleSave}
-                disabled={saving}
-                className="rounded-lg bg-brand-accent px-4 py-2 text-sm font-medium text-white hover:bg-brand-accent/90 disabled:opacity-50"
-              >
-                {saving ? "Saving..." : "Save Changes"}
-              </button>
+              <Button variant="ghost" size="sm" onClick={() => { setEditing(false); setForm(customer); }}>
+                CANCEL
+              </Button>
+              <Button variant="accent" size="sm" onClick={handleSave} loading={saving}>
+                {saving ? "SAVING…" : "SAVE CHANGES"}
+              </Button>
             </>
           ) : (
-            <button
-              onClick={() => setEditing(true)}
-              className="rounded-lg bg-brand-accent px-4 py-2 text-sm font-medium text-white hover:bg-brand-accent/90"
-            >
-              Edit Customer
-            </button>
+            <Button variant="accent" size="sm" onClick={() => setEditing(true)}>
+              EDIT CUSTOMER
+            </Button>
           )}
         </div>
       </div>
@@ -201,173 +180,171 @@ export default function CustomerDetailPage() {
       <div className="grid grid-cols-1 gap-6 lg:grid-cols-3">
         {/* Main Info */}
         <Card className="lg:col-span-2">
-          <div className="border-b border-stone-200 px-6 py-4">
-            <h2 className="text-lg font-semibold text-stone-900">Business Details</h2>
-          </div>
-          <div className="grid grid-cols-1 gap-6 p-6 sm:grid-cols-2">
-            {editing ? (
-              <>
-                <div>
-                  <label className="text-xs font-medium uppercase text-stone-500">Business Name</label>
-                  <input value={form.businessName || ""} onChange={(e) => setForm({ ...form, businessName: e.target.value })} className="mt-1 w-full rounded-lg border border-stone-300 px-3 py-2 text-sm" />
-                </div>
-                <div>
-                  <label className="text-xs font-medium uppercase text-stone-500">Contact Person</label>
-                  <input value={form.contactPerson || ""} onChange={(e) => setForm({ ...form, contactPerson: e.target.value })} className="mt-1 w-full rounded-lg border border-stone-300 px-3 py-2 text-sm" />
-                </div>
-                <div>
-                  <label className="text-xs font-medium uppercase text-stone-500">Phone</label>
-                  <input value={form.phone || ""} onChange={(e) => setForm({ ...form, phone: e.target.value })} className="mt-1 w-full rounded-lg border border-stone-300 px-3 py-2 text-sm" />
-                </div>
-                <div>
-                  <label className="text-xs font-medium uppercase text-stone-500">Email</label>
-                  <input value={form.email || ""} onChange={(e) => setForm({ ...form, email: e.target.value })} className="mt-1 w-full rounded-lg border border-stone-300 px-3 py-2 text-sm" />
-                </div>
-                <div>
-                  <label className="text-xs font-medium uppercase text-stone-500">Type</label>
-                  <select value={form.customerType || ""} onChange={(e) => setForm({ ...form, customerType: e.target.value })} className="mt-1 w-full rounded-lg border border-stone-300 px-3 py-2 text-sm">
-                    {CUSTOMER_TYPES.map((t) => <option key={t} value={t}>{t.replace(/_/g, " ")}</option>)}
-                  </select>
-                </div>
-                <div>
-                  <label className="text-xs font-medium uppercase text-stone-500">Tier</label>
-                  <select value={form.tier || ""} onChange={(e) => setForm({ ...form, tier: e.target.value })} className="mt-1 w-full rounded-lg border border-stone-300 px-3 py-2 text-sm">
-                    {TIERS.map((t) => <option key={t} value={t}>{t}</option>)}
-                  </select>
-                </div>
-                <div>
-                  <label className="text-xs font-medium uppercase text-stone-500">Lead Status</label>
-                  <select value={form.leadStatus || ""} onChange={(e) => setForm({ ...form, leadStatus: e.target.value })} className="mt-1 w-full rounded-lg border border-stone-300 px-3 py-2 text-sm">
-                    {LEAD_STATUSES.map((s) => <option key={s} value={s}>{s.replace(/_/g, " ")}</option>)}
-                  </select>
-                </div>
-                <div>
-                  <label className="text-xs font-medium uppercase text-stone-500">GSTIN</label>
-                  <input value={form.gstin || ""} onChange={(e) => setForm({ ...form, gstin: e.target.value })} className="mt-1 w-full rounded-lg border border-stone-300 px-3 py-2 text-sm" />
-                </div>
-                <div className="sm:col-span-2">
-                  <label className="text-xs font-medium uppercase text-stone-500">Address</label>
-                  <textarea value={form.address || ""} onChange={(e) => setForm({ ...form, address: e.target.value })} rows={2} className="mt-1 w-full rounded-lg border border-stone-300 px-3 py-2 text-sm" />
-                </div>
-                <div>
-                  <label className="text-xs font-medium uppercase text-stone-500">Annual Potential (INR)</label>
-                  <input type="number" value={form.annualPotentialINR || 0} onChange={(e) => setForm({ ...form, annualPotentialINR: parseFloat(e.target.value) })} className="mt-1 w-full rounded-lg border border-stone-300 px-3 py-2 text-sm" />
-                </div>
-                <div>
-                  <label className="text-xs font-medium uppercase text-stone-500">Notes</label>
-                  <textarea value={form.notes || ""} onChange={(e) => setForm({ ...form, notes: e.target.value })} rows={2} className="mt-1 w-full rounded-lg border border-stone-300 px-3 py-2 text-sm" />
-                </div>
-              </>
-            ) : (
-              <>
-                <Field label="Contact Person" value={customer.contactPerson} />
-                <Field label="Phone" value={customer.phone} />
-                <Field label="Alt Phone" value={customer.altPhone} />
-                <Field label="Email" value={customer.email} />
-                <Field label="GSTIN" value={customer.gstin} />
-                <Field label="PAN" value={customer.pan} />
-                <Field label="Address" value={`${customer.address}, ${customer.city || customer.district}, ${customer.regionCode} ${customer.pincode || ""}`} />
-                <Field label="Preferred Materials" value={customer.preferredMaterials?.join(", ")} />
-                <Field label="Annual Potential" value={formatCurrency(customer.annualPotentialINR)} />
-                <Field label="Lifetime Value" value={formatCurrency(customer.lifetimeValueINR)} />
-                <Field label="Notes" value={customer.notes} />
-                <Field label="Created" value={formatDate(customer.createdAt)} />
-              </>
-            )}
-          </div>
+          <CardHeader>
+            <h2 className="font-display text-[15px] font-bold text-brand-brown">Business Details</h2>
+          </CardHeader>
+          <CardContent>
+            <div className="grid grid-cols-1 gap-5 sm:grid-cols-2">
+              {editing ? (
+                <>
+                  <div>
+                    <label className={LABEL_CLS}>Business Name</label>
+                    <input value={form.businessName || ""} onChange={(e) => setForm({ ...form, businessName: e.target.value })} className={INPUT_CLS} />
+                  </div>
+                  <div>
+                    <label className={LABEL_CLS}>Contact Person</label>
+                    <input value={form.contactPerson || ""} onChange={(e) => setForm({ ...form, contactPerson: e.target.value })} className={INPUT_CLS} />
+                  </div>
+                  <div>
+                    <label className={LABEL_CLS}>Phone</label>
+                    <input value={form.phone || ""} onChange={(e) => setForm({ ...form, phone: e.target.value })} className={INPUT_CLS} />
+                  </div>
+                  <div>
+                    <label className={LABEL_CLS}>Email</label>
+                    <input value={form.email || ""} onChange={(e) => setForm({ ...form, email: e.target.value })} className={INPUT_CLS} />
+                  </div>
+                  <div>
+                    <label className={LABEL_CLS}>Type</label>
+                    <select value={form.customerType || ""} onChange={(e) => setForm({ ...form, customerType: e.target.value })} className={INPUT_CLS}>
+                      {CUSTOMER_TYPES.map((t) => <option key={t} value={t}>{t.replace(/_/g, " ")}</option>)}
+                    </select>
+                  </div>
+                  <div>
+                    <label className={LABEL_CLS}>Tier</label>
+                    <select value={form.tier || ""} onChange={(e) => setForm({ ...form, tier: e.target.value })} className={INPUT_CLS}>
+                      {TIERS.map((t) => <option key={t} value={t}>{t}</option>)}
+                    </select>
+                  </div>
+                  <div>
+                    <label className={LABEL_CLS}>Lead Status</label>
+                    <select value={form.leadStatus || ""} onChange={(e) => setForm({ ...form, leadStatus: e.target.value })} className={INPUT_CLS}>
+                      {LEAD_STATUSES.map((s) => <option key={s} value={s}>{s.replace(/_/g, " ")}</option>)}
+                    </select>
+                  </div>
+                  <div>
+                    <label className={LABEL_CLS}>GSTIN</label>
+                    <input value={form.gstin || ""} onChange={(e) => setForm({ ...form, gstin: e.target.value })} className={INPUT_CLS} />
+                  </div>
+                  <div className="sm:col-span-2">
+                    <label className={LABEL_CLS}>Address</label>
+                    <textarea value={form.address || ""} onChange={(e) => setForm({ ...form, address: e.target.value })} rows={2} className={INPUT_CLS} />
+                  </div>
+                  <div>
+                    <label className={LABEL_CLS}>Annual Potential (INR)</label>
+                    <input type="number" value={form.annualPotentialINR || 0} onChange={(e) => setForm({ ...form, annualPotentialINR: parseFloat(e.target.value) })} className={INPUT_CLS} />
+                  </div>
+                  <div>
+                    <label className={LABEL_CLS}>Notes</label>
+                    <textarea value={form.notes || ""} onChange={(e) => setForm({ ...form, notes: e.target.value })} rows={2} className={INPUT_CLS} />
+                  </div>
+                </>
+              ) : (
+                <>
+                  <Field label="Contact Person" value={customer.contactPerson} />
+                  <Field label="Phone" value={<span className="font-mono">{customer.phone}</span>} />
+                  <Field label="Alt Phone" value={customer.altPhone && <span className="font-mono">{customer.altPhone}</span>} />
+                  <Field label="Email" value={customer.email} />
+                  <Field label="GSTIN" value={customer.gstin && <span className="font-mono">{customer.gstin}</span>} />
+                  <Field label="PAN" value={customer.pan && <span className="font-mono">{customer.pan}</span>} />
+                  <Field label="Address" value={`${customer.address}, ${customer.city || customer.district}, ${customer.regionCode} ${customer.pincode || ""}`} />
+                  <Field label="Preferred Materials" value={customer.preferredMaterials?.join(", ")} />
+                  <Field label="Annual Potential" value={<span className="font-mono">{formatCurrency(customer.annualPotentialINR)}</span>} />
+                  <Field label="Lifetime Value" value={<span className="font-mono">{formatCurrency(customer.lifetimeValueINR)}</span>} />
+                  <Field label="Notes" value={customer.notes} />
+                  <Field label="Created" value={formatDate(customer.createdAt)} />
+                </>
+              )}
+            </div>
+          </CardContent>
         </Card>
 
         {/* Side Panel */}
         <div className="space-y-6">
-          {/* Location */}
           <Card>
-            <div className="border-b border-stone-200 px-6 py-4">
-              <h2 className="text-lg font-semibold text-stone-900">Location</h2>
-            </div>
-            <div className="p-6">
-              <div className="text-sm text-stone-600">
+            <CardHeader>
+              <h2 className="font-display text-[15px] font-bold text-brand-brown">Location</h2>
+            </CardHeader>
+            <CardContent>
+              <div className="text-[13px] text-brand-olive">
                 <p>{customer.district}, {customer.regionCode}</p>
                 {customer.location ? (
-                  <p className="mt-2 text-xs text-stone-500">
-                    GPS: {customer.location.latitude.toFixed(6)}, {customer.location.longitude.toFixed(6)}
+                  <p className="mt-2 font-mono text-[11px] text-brand-olive/50">
+                    {customer.location.latitude.toFixed(6)}, {customer.location.longitude.toFixed(6)}
                   </p>
                 ) : (
-                  <p className="mt-2 text-xs text-stone-400">No GPS location set</p>
+                  <p className="mt-2 text-[11px] text-brand-olive/40">No GPS location set</p>
                 )}
               </div>
               {customer.location && (
-                <div className="mt-4 flex h-32 items-center justify-center rounded-lg bg-stone-100 text-xs text-stone-400">
-                  Map view (Phase 3.3)
+                <div className="mt-4 flex h-32 items-center justify-center rounded-sm bg-surface-2 font-display text-[10px] tracking-wide text-brand-olive/30">
+                  MAP VIEW
                 </div>
               )}
-            </div>
+            </CardContent>
           </Card>
 
-          {/* Quick Stats */}
           <Card>
-            <div className="border-b border-stone-200 px-6 py-4">
-              <h2 className="text-lg font-semibold text-stone-900">Visit Summary</h2>
-            </div>
-            <div className="p-6 space-y-3">
-              <div className="flex items-center justify-between text-sm">
-                <span className="text-stone-500">Total Visits</span>
-                <span className="font-medium text-stone-900">{visits.length}</span>
+            <CardHeader>
+              <h2 className="font-display text-[15px] font-bold text-brand-brown">Visit Summary</h2>
+            </CardHeader>
+            <CardContent>
+              <div className="space-y-3">
+                <div className="flex items-center justify-between text-[13px]">
+                  <span className="text-brand-olive/60">Total Visits</span>
+                  <span className="font-display font-bold text-brand-brown">{visits.length}</span>
+                </div>
+                <div className="flex items-center justify-between text-[13px]">
+                  <span className="text-brand-olive/60">Completed</span>
+                  <span className="font-display font-bold text-success">{visits.filter((v) => v.status === "COMPLETED").length}</span>
+                </div>
+                <div className="flex items-center justify-between text-[13px]">
+                  <span className="text-brand-olive/60">Flagged</span>
+                  <span className="font-display font-bold text-danger">{visits.filter((v) => v.status === "FLAGGED_FAKE").length}</span>
+                </div>
               </div>
-              <div className="flex items-center justify-between text-sm">
-                <span className="text-stone-500">Completed</span>
-                <span className="font-medium text-green-600">{visits.filter((v) => v.status === "COMPLETED").length}</span>
-              </div>
-              <div className="flex items-center justify-between text-sm">
-                <span className="text-stone-500">Flagged</span>
-                <span className="font-medium text-red-600">{visits.filter((v) => v.status === "FLAGGED_FAKE").length}</span>
-              </div>
-            </div>
+            </CardContent>
           </Card>
 
-          {/* Site Photos */}
           <Card>
-            <div className="border-b border-stone-200 px-6 py-4">
-              <h2 className="text-lg font-semibold text-stone-900">Site Photos</h2>
-            </div>
-            <div className="p-6">
+            <CardHeader>
+              <h2 className="font-display text-[15px] font-bold text-brand-brown">Site Photos</h2>
+            </CardHeader>
+            <CardContent>
               <SitePhotos photos={sitePhotos} onPhotosChange={setSitePhotos} />
-            </div>
+            </CardContent>
           </Card>
         </div>
       </div>
 
-      {/* Recent Visits Table */}
+      {/* Recent Visits */}
       <Card>
-        <div className="border-b border-stone-200 px-6 py-4 flex items-center justify-between">
-          <h2 className="text-lg font-semibold text-stone-900">Recent Visits</h2>
-          <button
-            onClick={() => setPlanVisitOpen(true)}
-            className="rounded-lg bg-brand-accent px-3 py-1.5 text-xs font-medium text-white hover:bg-brand-accent/90"
-          >
-            Plan Visit
-          </button>
-          <PlanVisitModal
-            open={planVisitOpen}
-            onClose={() => setPlanVisitOpen(false)}
-            onCreated={() => fetchVisits()}
-            preselectedCustomer={customer ? { id: customer.id, businessName: customer.businessName, regionCode: customer.regionCode, city: customer.city, district: customer.district } : null}
-          />
-        </div>
+        <CardHeader>
+          <h2 className="font-display text-[15px] font-bold text-brand-brown">Recent Visits</h2>
+          <Button variant="accent" size="sm" onClick={() => setPlanVisitOpen(true)}>
+            PLAN VISIT
+          </Button>
+        </CardHeader>
+        <PlanVisitModal
+          open={planVisitOpen}
+          onClose={() => setPlanVisitOpen(false)}
+          onCreated={() => fetchVisits()}
+          preselectedCustomer={customer ? { id: customer.id, businessName: customer.businessName, regionCode: customer.regionCode, city: customer.city, district: customer.district } : null}
+        />
         <div className="overflow-x-auto">
           <table className="w-full">
             <thead>
-              <tr className="border-b border-stone-200">
-                <th className="px-4 py-3 text-left text-xs font-semibold uppercase tracking-wider text-stone-500">Date</th>
-                <th className="px-4 py-3 text-left text-xs font-semibold uppercase tracking-wider text-stone-500">Purpose</th>
-                <th className="px-4 py-3 text-left text-xs font-semibold uppercase tracking-wider text-stone-500">Status</th>
-                <th className="px-4 py-3 text-left text-xs font-semibold uppercase tracking-wider text-stone-500">Duration</th>
-                <th className="px-4 py-3 text-left text-xs font-semibold uppercase tracking-wider text-stone-500">Geofence</th>
+              <tr className="border-b border-brand-brown/10">
+                <th className="px-4 py-3 text-left font-display text-[10px] font-semibold tracking-[.12em] text-brand-olive/60 uppercase">Date</th>
+                <th className="px-4 py-3 text-left font-display text-[10px] font-semibold tracking-[.12em] text-brand-olive/60 uppercase">Purpose</th>
+                <th className="px-4 py-3 text-left font-display text-[10px] font-semibold tracking-[.12em] text-brand-olive/60 uppercase">Status</th>
+                <th className="px-4 py-3 text-left font-display text-[10px] font-semibold tracking-[.12em] text-brand-olive/60 uppercase">Duration</th>
+                <th className="px-4 py-3 text-left font-display text-[10px] font-semibold tracking-[.12em] text-brand-olive/60 uppercase">Geofence</th>
               </tr>
             </thead>
-            <tbody className="divide-y divide-stone-100">
+            <tbody className="divide-y divide-brand-brown/6">
               {visits.length === 0 ? (
                 <tr>
-                  <td colSpan={5} className="px-4 py-8 text-center text-sm text-stone-500">
+                  <td colSpan={5} className="px-4 py-8 text-center text-[13px] text-brand-olive/40">
                     No visits recorded yet
                   </td>
                 </tr>
@@ -376,19 +353,19 @@ export default function CustomerDetailPage() {
                   <tr
                     key={v.id}
                     onClick={() => router.push(`/visits/${v.id}`)}
-                    className="cursor-pointer hover:bg-stone-50"
+                    className="cursor-pointer transition-colors hover:bg-brand-brown/3"
                   >
-                    <td className="px-4 py-3 text-sm text-stone-900">{formatDate(v.visitDate)}</td>
-                    <td className="px-4 py-3 text-sm text-stone-600">{v.purpose.replace(/_/g, " ")}</td>
+                    <td className="px-4 py-3 text-[13px] text-brand-brown">{formatDate(v.visitDate)}</td>
+                    <td className="px-4 py-3 text-[13px] text-brand-olive">{v.purpose.replace(/_/g, " ")}</td>
                     <td className="px-4 py-3"><StatusBadge status={v.status} /></td>
-                    <td className="px-4 py-3 text-sm text-stone-600">{v.durationMinutes ? `${v.durationMinutes}m` : "—"}</td>
-                    <td className="px-4 py-3 text-sm">
+                    <td className="px-4 py-3 font-mono text-[12px] text-brand-olive">{v.durationMinutes ? `${v.durationMinutes}m` : "—"}</td>
+                    <td className="px-4 py-3 text-[12px]">
                       {v.geofenceValidation ? (
                         v.geofenceValidation.isWithinGeofence
-                          ? <span className="text-green-600 font-medium">Valid</span>
-                          : <span className="text-red-600 font-medium">Invalid</span>
+                          ? <span className="font-semibold text-success">✓ Valid</span>
+                          : <span className="font-semibold text-danger">✕ Invalid</span>
                       ) : (
-                        <span className="text-stone-400">—</span>
+                        <span className="text-brand-olive/30">—</span>
                       )}
                     </td>
                   </tr>
