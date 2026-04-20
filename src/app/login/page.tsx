@@ -2,7 +2,7 @@
 
 import { useState } from "react";
 import { useRouter } from "next/navigation";
-import Image from "next/image";
+import EagleLogo from "@/components/ui/eagle-logo";
 
 export default function LoginPage() {
   const router = useRouter();
@@ -39,37 +39,31 @@ export default function LoginPage() {
   };
 
   return (
-    <div className="flex min-h-screen items-center justify-center bg-gradient-to-br from-brand-dark via-brand-medium to-brand-dark">
+    <div className="flex min-h-screen items-center justify-center bg-gradient-to-br from-brand-brown via-brand-brown-deep to-brand-brown">
       <div className="w-full max-w-md px-4">
         {/* Logo */}
         <div className="mb-8 flex justify-center">
-          <Image
-            src="/logo.svg"
-            alt="Eagle Stone"
-            width={220}
-            height={100}
-            className="h-20 w-auto"
-            style={{ filter: "brightness(0) invert(93%) sepia(8%) saturate(300%) hue-rotate(15deg)" }}
-            priority
-          />
+          <EagleLogo variant="cream" height={60} />
         </div>
 
         {/* Login Form */}
         <form
           onSubmit={handleSubmit}
-          className="rounded-2xl border border-stone-600/30 bg-brand-medium/50 p-8 shadow-xl backdrop-blur"
+          className="rounded-lg border border-white/10 bg-white/5 p-8 shadow-4 backdrop-blur"
         >
-          <p className="mb-6 text-center text-sm text-stone-300">Sign in to your ERP account</p>
+          <p className="mb-6 text-center font-display text-[11px] font-semibold tracking-[.2em] text-brand-cream/50">
+            SIGN IN TO YOUR ACCOUNT
+          </p>
 
           {error && (
-            <div className="mb-4 rounded-lg bg-red-500/10 p-3 text-sm text-red-400">
+            <div className="mb-4 rounded-sm bg-danger/15 p-3 text-[13px] text-danger">
               {error}
             </div>
           )}
 
           <div className="space-y-4">
             <div>
-              <label className="mb-1.5 block text-sm font-medium text-stone-300">
+              <label className="mb-1.5 block font-display text-[11px] font-semibold tracking-[.12em] text-brand-cream/60 uppercase">
                 Email
               </label>
               <input
@@ -77,13 +71,13 @@ export default function LoginPage() {
                 value={email}
                 onChange={(e) => setEmail(e.target.value)}
                 placeholder="admin@eaglestone.in"
-                className="w-full rounded-lg border border-stone-600 bg-stone-700/50 px-4 py-2.5 text-white placeholder-stone-400 focus:border-brand-accent focus:outline-none focus:ring-1 focus:ring-brand-accent"
+                className="w-full rounded-sm border border-white/15 bg-white/8 px-4 py-2.5 text-[13px] text-brand-cream placeholder:text-brand-cream/30 focus:border-brand-tan focus:outline-none focus:ring-2 focus:ring-brand-tan/20"
                 required
               />
             </div>
 
             <div>
-              <label className="mb-1.5 block text-sm font-medium text-stone-300">
+              <label className="mb-1.5 block font-display text-[11px] font-semibold tracking-[.12em] text-brand-cream/60 uppercase">
                 Password
               </label>
               <input
@@ -91,7 +85,7 @@ export default function LoginPage() {
                 value={password}
                 onChange={(e) => setPassword(e.target.value)}
                 placeholder="Enter password"
-                className="w-full rounded-lg border border-stone-600 bg-stone-700/50 px-4 py-2.5 text-white placeholder-stone-400 focus:border-brand-accent focus:outline-none focus:ring-1 focus:ring-brand-accent"
+                className="w-full rounded-sm border border-white/15 bg-white/8 px-4 py-2.5 text-[13px] text-brand-cream placeholder:text-brand-cream/30 focus:border-brand-tan focus:outline-none focus:ring-2 focus:ring-brand-tan/20"
                 required
               />
             </div>
@@ -100,14 +94,14 @@ export default function LoginPage() {
           <button
             type="submit"
             disabled={loading}
-            className="mt-6 w-full rounded-lg bg-brand-accent py-2.5 font-semibold text-brand-dark transition-colors hover:brightness-110 disabled:opacity-50"
+            className="mt-6 w-full rounded-sm bg-brand-tan py-2.5 font-display text-[13px] font-bold tracking-wide text-brand-brown transition-colors hover:bg-brand-tan-dark disabled:opacity-50"
           >
-            {loading ? "Signing in..." : "Sign In"}
+            {loading ? "SIGNING IN…" : "SIGN IN"}
           </button>
 
-          <div className="mt-4 rounded-lg bg-stone-700/30 p-3 text-xs text-stone-400">
-            <p className="font-medium text-stone-300">Demo Credentials:</p>
-            <p>Admin: admin@eaglestone.in / admin123</p>
+          <div className="mt-4 rounded-sm bg-white/5 p-3 text-[11px] text-brand-cream/40">
+            <p className="font-display text-[10px] font-semibold tracking-wide text-brand-cream/50">DEMO CREDENTIALS</p>
+            <p className="mt-1">Admin: admin@eaglestone.in / admin123</p>
             <p>Operator: operator@eaglestone.in / operator123</p>
           </div>
         </form>
