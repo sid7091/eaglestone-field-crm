@@ -4,52 +4,34 @@ interface StatCardProps {
   title: string;
   value: string | number;
   subtitle?: string;
-  icon?: string;
   trend?: { value: number; isPositive: boolean };
   color?: "amber" | "blue" | "green" | "red" | "purple" | "indigo";
 }
 
-const colorMap = {
-  amber: "bg-amber-50 text-amber-600",
-  blue: "bg-blue-50 text-blue-600",
-  green: "bg-green-50 text-green-600",
-  red: "bg-red-50 text-red-600",
-  purple: "bg-purple-50 text-purple-600",
-  indigo: "bg-indigo-50 text-indigo-600",
-};
-
-export default function StatCard({
-  title,
-  value,
-  subtitle,
-  color = "amber",
-}: StatCardProps) {
+export default function StatCard({ title, value, subtitle, trend }: StatCardProps) {
   return (
-    <div className="rounded-xl border border-stone-200 bg-white p-6 shadow-sm">
-      <div className="flex items-center justify-between">
-        <div>
-          <p className="text-sm font-medium text-stone-500">{title}</p>
-          <p className="mt-1 text-3xl font-bold text-stone-900">{value}</p>
+    <div className="rounded-lg border border-brand-brown/10 bg-surface p-5 shadow-1">
+      <p className="font-display text-[10px] font-semibold tracking-[.15em] text-brand-olive/70 uppercase">
+        {title}
+      </p>
+      <p className="mt-2 font-display text-[28px] font-bold leading-none text-brand-brown">
+        {value}
+      </p>
+      {(subtitle || trend) && (
+        <div className="mt-2 flex items-center gap-2">
+          {trend && (
+            <span className={cn(
+              "font-display text-[11px] font-semibold",
+              trend.isPositive ? "text-success" : "text-danger"
+            )}>
+              {trend.isPositive ? "+" : ""}{trend.value}%
+            </span>
+          )}
           {subtitle && (
-            <p className="mt-1 text-sm text-stone-500">{subtitle}</p>
+            <span className="text-[12px] text-brand-olive/60">{subtitle}</span>
           )}
         </div>
-        <div className={cn("rounded-xl p-3", colorMap[color])}>
-          <svg
-            className="h-6 w-6"
-            fill="none"
-            viewBox="0 0 24 24"
-            strokeWidth={1.5}
-            stroke="currentColor"
-          >
-            <path
-              strokeLinecap="round"
-              strokeLinejoin="round"
-              d="M3.75 3v11.25A2.25 2.25 0 006 16.5h2.25M3.75 3h-1.5m1.5 0h16.5m0 0h1.5m-1.5 0v11.25A2.25 2.25 0 0118 16.5h-2.25m-7.5 0h7.5m-7.5 0l-1 3m8.5-3l1 3m0 0l.5 1.5m-.5-1.5h-9.5m0 0l-.5 1.5"
-            />
-          </svg>
-        </div>
-      </div>
+      )}
     </div>
   );
 }
