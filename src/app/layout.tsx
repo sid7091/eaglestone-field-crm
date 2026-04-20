@@ -15,8 +15,7 @@ export const metadata: Metadata = {
     telephone: false,
   },
   other: {
-    // Ensure the browser uses the manifest theme colour in the chrome UI.
-    "msapplication-TileColor": "#1a1a2e",
+    "msapplication-TileColor": "#362418",
   },
 };
 
@@ -28,14 +27,18 @@ export default function RootLayout({
   return (
     <html lang="en">
       <head>
-        {/* Explicit manifest link — belt-and-suspenders alongside metadata.manifest */}
         <link rel="manifest" href="/manifest.json" />
-        <meta name="theme-color" content="#8B6914" />
+        <meta name="theme-color" content="#362418" />
         <link rel="apple-touch-icon" href="/icons/icon-192.png" />
+        <link rel="preconnect" href="https://fonts.googleapis.com" />
+        <link rel="preconnect" href="https://fonts.gstatic.com" crossOrigin="anonymous" />
+        <link
+          href="https://fonts.googleapis.com/css2?family=Rajdhani:wght@500;600;700&family=Manrope:wght@400;500;600;700&family=JetBrains+Mono:wght@400;500&display=swap"
+          rel="stylesheet"
+        />
       </head>
       <body className="font-sans antialiased">
         {children}
-        {/* Register the service worker on the client; renders nothing. */}
         <SWRegister />
       </body>
     </html>

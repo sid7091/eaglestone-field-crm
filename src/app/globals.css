@@ -1,27 +1,56 @@
 @import "tailwindcss";
 
-:root {
-  --background: #faf8f6;
-  --foreground: #2c2420;
-  --brand-dark: #3C332C;
-  --brand-medium: #5C4F43;
-  --brand-cream: #EDE8E0;
-  --brand-accent: #C4A265;
-}
+@theme {
+  /* ── Brand ──────────────────────────────────── */
+  --color-brand-tan:        #EABB87;
+  --color-brand-tan-dark:   #C89963;
+  --color-brand-brown:      #362418;
+  --color-brand-brown-deep: #1E140C;
+  --color-brand-cream:      #FFF5DC;
+  --color-brand-olive:      #5B5038;
 
-@theme inline {
-  --color-background: var(--background);
-  --color-foreground: var(--foreground);
-  --color-brand-dark: var(--brand-dark);
-  --color-brand-medium: var(--brand-medium);
-  --color-brand-cream: var(--brand-cream);
-  --color-brand-accent: var(--brand-accent);
-  --font-sans: var(--font-geist-sans);
-  --font-mono: var(--font-geist-mono);
+  /* ── Surface ────────────────────────────────── */
+  --color-bg:               #FBF6E9;
+  --color-surface:          #FFFFFF;
+  --color-surface-2:        #FAF3DC;
+
+  /* ── Status ─────────────────────────────────── */
+  --color-success:          #3D5A3D;
+  --color-warning:          #9E6A1C;
+  --color-danger:           #8B3A2A;
+  --color-info:             #3D4A58;
+
+  /* ── Module accents ─────────────────────────── */
+  --color-mod-sales:        #8B6914;
+  --color-mod-visit:        #2C3A2A;
+  --color-mod-inventory:    #7A5B2E;
+  --color-mod-gangsaw:      #3D4A58;
+  --color-mod-epoxy:        #5B2A3A;
+  --color-mod-polish:       #A8682D;
+
+  /* ── Typography ─────────────────────────────── */
+  --font-display:           "Rajdhani", ui-sans-serif, sans-serif;
+  --font-sans:              "Manrope", ui-sans-serif, sans-serif;
+  --font-mono:              "JetBrains Mono", ui-monospace, monospace;
+
+  /* ── Radii ──────────────────────────────────── */
+  --radius-xs: 2px;
+  --radius-sm: 4px;
+  --radius-md: 8px;
+  --radius-lg: 12px;
+  --radius-xl: 16px;
+
+  /* ── Shadows (warm-tinted) ──────────────────── */
+  --shadow-1: 0 1px 2px rgb(54 36 24 / .06), 0 1px 1px rgb(54 36 24 / .04);
+  --shadow-2: 0 4px 12px -2px rgb(54 36 24 / .08), 0 2px 4px rgb(54 36 24 / .04);
+  --shadow-3: 0 14px 28px -8px rgb(54 36 24 / .14);
+  --shadow-4: 0 24px 48px -12px rgb(30 20 12 / .25);
 }
 
 body {
-  background: var(--background);
-  color: var(--foreground);
-  font-family: Arial, Helvetica, sans-serif;
+  background: var(--color-bg);
+  color: var(--color-brand-brown);
+  font-family: var(--font-sans);
+  -webkit-font-smoothing: antialiased;
+  -moz-osx-font-smoothing: grayscale;
 }

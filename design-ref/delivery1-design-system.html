@@ -1,0 +1,380 @@
+
+
+CRM · DESIGN SYSTEM
+PART 1 OF 5
+
+TOKENS
+TYPOGRAPHY
+BUTTONS
+FORMS
+BADGES
+CARDS & TABLES
+BANNERS
+MODALS
+FAB
+MISC
+FOUNDATION · 01/05
+DELIVERY 1 OF 5 · FOUNDATION
+Design System & Component Kit
+The vocabulary every screen in the Field CRM will be assembled from. Paste the token block straight into globals.css and the whole system becomes available as Tailwind 4 utilities. Your current codebase hand-rolls about ten repeated input/button/badge class strings — turning them into real primitives is the highest-ROI refactor before any screen-level redesign.
+STACKNext 16 · React 19 · Tailwind 4
+FONTSRajdhani · Manrope · JetBrains Mono
+PALETTEEagle Stone official (Modern Day Agency)
+01 · BRAND PALETTE
+6 CORE · 4 STATUS · 6 MODULES
+Colors
+The four brand colors from Modern Day's guide, plus derived surface tones. All four brand values, both official gradients, and a full set of status + module accents reworked into the earth-tone family.
+Tan
+#EABB87
+Highlights, active nav, accent on dark panels.
+Brown
+#362418
+Primary text, sidebar, primary button.
+Cream
+#FFF5DC
+Inverted text on dark, warm page background.
+Olive
+#5B5038
+Secondary text, form labels, subdued UI.
+Tan → Brown
+#EABB87 → #362418
+Brand gradient — login hero, dark panels.
+Cream → Olive
+#FFF5DC → #5B5038
+Soft gradient for light surfaces.
+Status — brand-aligned
+Replaces generic Tailwind green/red/amber. These feel like they belong on stone surfaces: deep olive for success, rust for danger, bronze for warning, slate for info.
+Success
+#3D5A3D
+Check-in, valid geofence, Won leads.
+Warning
+#9E6A1C
+Offline, low-accuracy GPS, planned state.
+Danger
+#8B3A2A
+Check-out, errors, flagged-fake rows.
+Info
+#3D4A58
+Syncing, neutral informational.
+Module Accents
+Each production module keeps a distinct color (you rely on this in the factory pages) but every accent has been pulled into the earth palette so the whole app feels like one system instead of six.
+Sales · Customer
+#8B6914
+Customer CRUD, pipeline, gold tier.
+Visits
+#2C3A2A
+Visit lifecycle, field operations.
+Inventory
+#7A5B2E
+Slabs, blocks, warehouse.
+Gang Saw
+#3D4A58
+Raw cut production module.
+Epoxy
+#5B2A3A
+Resin treatment module.
+Polishing
+#A8682D
+Finishing module.
+02 · TYPOGRAPHY
+Type Scale
+Rajdhani (display) mirrors the angular geometry of the EAGLE wordmark. Manrope is a clean, warm body sans. JetBrains Mono is for anything identifier-like: SKUs, GPS coords, phone numbers.
+DISPLAY / HERO
+Masterpieces carved in legacy.
+Rajdhani 700 · 44px / 1.0 / -.5%
+PAGE TITLE
+Field CRM Dashboard
+Rajdhani 700 · 28px
+SECTION TITLE
+Recent Visits
+Rajdhani 700 · 22px
+CARD TITLE
+Upcoming Visits
+Rajdhani 700 · 15px
+EYEBROW / LABEL
+LIVE KPIS · APRIL 2026
+Rajdhani 600 · 11px / .3em
+BODY
+The operator should be able to scan this table and understand the month in under three seconds. Density matters; so does breathing room.
+Manrope 400 · 14px / 1.6
+SMALL · CAPTION
+4 completed · 1 flagged · avg 26 min / visit
+Manrope 400 · 12px
+MONOSPACE
+SKU-EG-4821 · +91 98765 43210 · 17.7288°N
+JetBrains Mono 500 · 13px
+03 · SHAPE & ELEVATION
+Radii
+Tighter corners (2–16) read "carved stone" rather than "friendly SaaS." Pills stay fully rounded for badges and the FAB.
+2 · XS 4 · SM 8 · MD 12 · LG 16 · XL FULL
+Elevation
+Shadows carry a warm rgba tint (based on the brown) instead of neutral black — a subtle cue that keeps surfaces reading as part of the stone palette.
+SH-1 · CARD SH-2 · POPOVER SH-3 · FAB SH-4 · MODAL
+04 · FOR IMPLEMENTATION
+Tailwind 4 Token Block
+Drop this inside an @theme rule at the top of src/app/globals.css. After that, utilities like bg-brand-brown, text-brand-tan, rounded-md, and font-display all just work.
+/* src/app/globals.css */
+@import "tailwindcss";
+
+@theme {
+  /* Brand */
+  --color-brand-tan:        #EABB87;
+  --color-brand-tan-dark:   #C89963;
+  --color-brand-brown:      #362418;
+  --color-brand-brown-deep: #1E140C;
+  --color-brand-cream:      #FFF5DC;
+  --color-brand-olive:      #5B5038;
+
+  /* Surface */
+  --color-bg:               #FBF6E9;
+  --color-surface:          #FFFFFF;
+  --color-surface-2:        #FAF3DC;
+
+  /* Status */
+  --color-success:          #3D5A3D;
+  --color-warning:          #9E6A1C;
+  --color-danger:           #8B3A2A;
+  --color-info:             #3D4A58;
+
+  /* Module accents */
+  --color-mod-sales:        #8B6914;
+  --color-mod-visit:        #2C3A2A;
+  --color-mod-inventory:    #7A5B2E;
+  --color-mod-gangsaw:      #3D4A58;
+  --color-mod-epoxy:        #5B2A3A;
+  --color-mod-polish:       #A8682D;
+
+  /* Typography */
+  --font-display:           "Rajdhani", ui-sans-serif;
+  --font-sans:              "Manrope", ui-sans-serif;
+  --font-mono:              "JetBrains Mono", monospace;
+
+  /* Radii */
+  --radius-xs: 2px;
+  --radius-sm: 4px;
+  --radius-md: 8px;
+  --radius-lg: 12px;
+  --radius-xl: 16px;
+
+  /* Shadows (warm-tinted) */
+  --shadow-1: 0 1px 2px rgb(54 36 24 / .06), 0 1px 1px rgb(54 36 24 / .04);
+  --shadow-2: 0 4px 12px -2px rgb(54 36 24 / .08), 0 2px 4px rgb(54 36 24 / .04);
+  --shadow-3: 0 14px 28px -8px rgb(54 36 24 / .14);
+  --shadow-4: 0 24px 48px -12px rgb(30 20 12 / .25);
+}
+05 · BUTTONS
+Variants
+Primary is dark brown on cream — the workhorse. Accent tan is for "edit" or secondary emphasis. Module colors (success/danger) map to specific field actions (check-in / check-out) and shouldn't be used decoratively.
+DEFAULT SIZE SAVE CHANGES EDIT CUSTOMER CANCEL DISMISS CHECK IN CHECK OUT SIZES SMALL DEFAULT LARGE ACTION
+
+WITH ICONS
+
+ADD CUSTOMER RESERVE SLAB
+
+
+DOWNLOAD CSV
+
+DELETE DISABLED LOCATING GPS… CHECK IN (NO GPS) SAVE DISABLED
+06 · FORM FIELDS
+Inputs
+All fields share the same shell: uppercase Rajdhani label, 1px warm-brown border, cream focus ring. Required fields show a rust asterisk; errors use the rust palette.
+BUSINESS NAME*
+Raghavendra Marbles & Granites
+PHONE*
+
++91 98765 43210
+CUSTOMER TYPE*
+ArchitectBuilderDealerContractor
+TIER
+PlatinumGoldSilverBronze
+GSTIN
+37AABCR1234
+
+GSTIN must be 15 characters.
+EMAIL
+raghav@raghavendramarbles.in
+Used for invoice delivery — leave empty if the customer prefers WhatsApp.
+SITE NOTES
+Commercial tower lobby — client prefers warm-toned Italian marble, 20mm thickness. Delivery to basement loading bay only (not front). Avoid Thursdays.
+REGION*
+Andhra PradeshKarnatakaTamil NaduTelangana
+PINCODE
+530008
+SELECTION CONTROLS
+
+Keep me signed in
+
+Allow offline sync
+
+Grid view
+
+List view
+07 · BADGES
+Status & Tier & Pipeline
+Status badges are rounded pills with a leading dot — the dot is a subtle cue that reads even at small sizes. Tier badges are sharper and squarer — they should feel like embossed stamps. Pipeline swatches are squares so they don't compete with status pills in tables.
+VISIT / LEAD STATUS COMPLETED PLANNED FLAGGED SYNCING DORMANT NEW BADGES WITHOUT DOTS (FOR TABLES) ✓ VALID ✕ 142M OFF ⚠ LOW GPS — TIER
+PLATINUM
+GOLD
+SILVER
+BRONZE
+PIPELINE STATES
+
+NEW
+
+CONTACTED
+
+QUALIFIED
+
+PROPOSAL SENT
+
+NEGOTIATION
+
+WON
+
+LOST
+
+DORMANT REGION CHIP (MONO — READS AS A CODE) AP-VZG AP-VZM AP-EST KA-BLR TN-CHN
+08 · CARDS & TABLES
+Standard card + data table
+The dominant pattern across the app. Header with title + optional action, body with a table or content block. Flagged rows get a subtle rust tint so they catch the eye without shouting.
+Recent Visits
+Last 30 days · 5 records
++ PLAN VISIT
+DATE
+CUSTOMER
+PURPOSE
+STATUS
+GEOFENCE
+DURATION
+19 Apr 2026
+Elegant Interiors Pvt. Ltd.
+Meera Shankar
+Sales Pitch
+COMPLETED
+✓ VALID
+32 min
+18 Apr 2026
+Raghavendra Marbles & Granites
+Raghavendra Naidu
+Order Follow-up
+COMPLETED
+✓ VALID
+24 min
+17 Apr 2026
+Sunrise Builders
+Ravi Prasad
+Sample Drop
+FLAGGED
+✕ 142M OFF
+06 min
+16 Apr 2026
+Paragon Constructions
+Krishna Murthy
+Site Measurement
+PLANNED
+—
+—
+Showing 1–4 of 36
+‹ 1 2 3 ›
+09 · CONNECTIVITY BANNER
+Four PWA states
+Sits directly under the app header. Mutually exclusive — only one at a time. This is critical for field reps in low-signal areas; the app should never feel frozen.
+OFFLINE · ITEMS QUEUED LOCALLY
+
+YOU'RE OFFLINE — VISITS & CUSTOMERS WILL SYNC WHEN YOU RECONNECT 3 PENDING SYNCING · WRITING PENDING ITEMS TO SERVER
+
+SYNCING 2 PENDING VISITS & 1 CUSTOMER… PENDING · ONLINE BUT UNSYNCED (MANUAL TRIGGER)
+
+2 ITEMS WAITING TO SYNC SYNC NOW
+10 · MODALS
+Centered dialog · desktop
+Max width 460px. Backdrop is a warm rgba tint with a subtle noise overlay — never pure black. Header, body, footer rhythm with cream footer separating the actions from content.
+FIELD OPERATION
+Plan a Visit
+
+CUSTOMER
+
+Raghavendra Marbles & Granites
+
+Visakhapatnam · Andhra Pradesh
+DATE
+PURPOSE
+Order Follow-upSales PitchSite MeasurementSample DropPayment Collection
+NOTES
+Bring samples of Statuario and Calacatta — client requested premium whites. CANCEL SCHEDULE VISIT
+Bottom sheet · mobile
+Same modal on phones slides up from the bottom with a drag handle. Touch-friendly heights. Stops at 90vh to stay scroll-recoverable.
+Plan a Visit
+
+CUSTOMER
+Raghavendra Marbles
+PURPOSE
+Order Follow-up
+SCHEDULE VISIT
+11 · FLOATING ACTION BUTTON
+Closed & expanded
+56px brown circle with tan plus-mark, always bottom-right on authenticated pages. Tap to expand three branded pills. Each pill's icon-circle uses the role's module color (success/warning/info) so reps can recognize actions by color alone.
+NEW CLIENT VISIT
+
+POST FOLLOW UP
+
+ADD CUSTOMER
+
+
+12 · OTHER PRIMITIVES
+Tabs & Chips & Toggles
+Quick filters and view switchers used throughout the list pages.
+TABS (VISITS LIST USES THIS)
+ALL 32
+PLANNED 8
+COMPLETED 23
+FLAGGED 1
+FILTER STRIP — MOBILE-FIRST (HORIZONTAL SCROLL + PINNED ACTION)
+On narrow viewports the chips scroll horizontally with a right-edge fade. The "Filters" button stays pinned. Never wraps. Use this pattern for every filter row in the app.
+Today This Week This Month Last 30 Days Last 90 Days This Quarter Custom…
+
+Filters
+2
+VIEW TOGGLE (INVENTORY GRID/LIST)
+
+Grid
+
+List
+Info row (detail pages)
+The vertical key/value row used on Customer Detail, Visit Detail, Inventory Detail. Label above, value below — reads quickly and wraps cleanly on mobile.
+CONTACT PERSON
+Raghavendra Naidu
+PRIMARY PHONE
++91 98765 43210
+GSTIN
+37AABCR1234F1Z5
+CUSTOMER SINCE
+Aug 2023
+LEAD SOURCE
+Trade Show · 2023
+ANNUAL POTENTIAL
+₹ 48,00,000
+Empty & Loading states
+Empty states always offer the one next-best action. Loading spinners are small, brown, and show a Rajdhani label when space allows — "LOADING…" in cream is friendlier than an endless shimmer.
+No visits planned
+Your upcoming visits will appear here as field reps schedule them.
++ PLAN A VISIT
+
+LOADING CUSTOMERS…
+What's next in this series
+This foundation unlocks everything else — every screen is assembled from the components above. Next four deliveries apply this system to the actual pages in the Field CRM.
+01 · DELIVERED
+Design System
+Tokens, components, primitives.
+02 · NEXT
+Dashboard + Chrome
+Sidebar, header, field dashboard with KPIs, calendar, pipeline, trends, tiers.
+03 · AFTER
+Customers
+List with filters, detail view with visit summary & site photos.
+04 · AFTER
+Visits
+List + calendar view, visit detail, mobile check-in state machine.
+05 · AFTER
+Field Inventory
+Grid + list browse, slab detail, reserve flow.

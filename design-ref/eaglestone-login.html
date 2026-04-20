@@ -1,0 +1,597 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+<meta charset="UTF-8" />
+<meta name="viewport" content="width=device-width, initial-scale=1.0" />
+<title>Eagle Stone — Field Operations Portal</title>
+<link rel="preconnect" href="https://fonts.googleapis.com">
+<link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
+<link href="https://fonts.googleapis.com/css2?family=Rajdhani:wght@500;600;700&family=Manrope:wght@400;500;600;700&display=swap" rel="stylesheet">
+<style>
+  :root{
+    --tan:        #EABB87;
+    --tan-soft:   #F4D4AC;
+    --brown:      #362418;
+    --brown-deep: #1E140C;
+    --cream:      #FFF5DC;
+    --cream-2:    #F7ECCE;
+    --olive:      #5B5038;
+    --forest:     #2C3A2A;
+    --line:       rgba(54, 36, 24, 0.12);
+    --line-light: rgba(255, 245, 220, 0.14);
+  }
+
+  *{box-sizing:border-box;margin:0;padding:0}
+  html,body{height:100%}
+  body{
+    font-family:'Manrope', system-ui, sans-serif;
+    background:var(--cream);
+    color:var(--brown);
+    -webkit-font-smoothing:antialiased;
+    overflow-x:hidden;
+  }
+
+  /* ---------- LAYOUT ---------- */
+  .shell{
+    display:block;
+    min-height:100vh;
+  }
+
+  /* ---------- BRAND PANEL (LEFT) ---------- */
+  .brand{
+    position:relative;
+    background:
+      radial-gradient(120% 80% at 10% 0%, rgba(234,187,135,0.35) 0%, rgba(234,187,135,0) 55%),
+      radial-gradient(90% 60% at 100% 100%, rgba(91,80,56,0.55) 0%, rgba(91,80,56,0) 60%),
+      linear-gradient(135deg, #3E2A1B 0%, var(--brown) 45%, var(--brown-deep) 100%);
+    color:var(--cream);
+    padding: 32px 22px 44px;
+    display:flex;
+    flex-direction:column;
+    justify-content:space-between;
+    overflow:hidden;
+  }
+
+  /* grain/texture overlay */
+  .brand::before{
+    content:"";
+    position:absolute; inset:0;
+    background-image:url("data:image/svg+xml;utf8,<svg xmlns='http://www.w3.org/2000/svg' width='240' height='240'><filter id='n'><feTurbulence type='fractalNoise' baseFrequency='0.9' numOctaves='2' stitchTiles='stitch'/><feColorMatrix values='0 0 0 0 0.92  0 0 0 0 0.73  0 0 0 0 0.53  0 0 0 0.22 0'/></filter><rect width='100%' height='100%' filter='url(%23n)' opacity='0.6'/></svg>");
+    mix-blend-mode:overlay;
+    opacity:.35;
+    pointer-events:none;
+  }
+
+  /* giant watermark eagle */
+  .brand::after{
+    content:"";
+    position:absolute;
+    right:-120px; bottom:-160px;
+    width:620px; height:620px;
+    background:url("data:image/svg+xml;utf8,<svg xmlns='http://www.w3.org/2000/svg' viewBox='0 0 200 200'><path fill='%23EABB87' d='M100 40 L140 100 L120 100 L160 140 L130 140 L130 160 L70 160 L70 140 L40 140 L80 100 L60 100 Z'/></svg>") no-repeat center/contain;
+    opacity:.045;
+    pointer-events:none;
+    transform:rotate(-8deg);
+  }
+
+  .brand-top{
+    display:flex;
+    align-items:center;
+    justify-content:space-between;
+    position:relative; z-index:2;
+  }
+
+  .eyebrow{
+    font-family:'Rajdhani', sans-serif;
+    font-weight:600;
+    letter-spacing:.28em;
+    font-size:11px;
+    color:var(--tan);
+    text-transform:uppercase;
+    display:flex; align-items:center; gap:14px;
+  }
+  .eyebrow .dot{
+    width:6px;height:6px;border-radius:50%;
+    background:var(--tan);
+    box-shadow:0 0 0 4px rgba(234,187,135,.15);
+  }
+
+  .vtag{
+    font-family:'Rajdhani', sans-serif;
+    font-size:11px;
+    letter-spacing:.25em;
+    color:rgba(255,245,220,.45);
+    text-transform:uppercase;
+  }
+
+  .brand-center{
+    position:relative; z-index:2;
+    max-width:520px;
+  }
+
+  .logo{
+    display:flex; align-items:center; gap:14px; margin-bottom:48px;
+    opacity:0; transform:translateY(12px);
+    animation: rise .9s .1s ease-out forwards;
+  }
+  .logo-mark{
+    width:44px;height:44px;
+    display:grid;place-items:center;
+  }
+  .logo-word{
+    font-family:'Rajdhani', sans-serif;
+    font-weight:700;
+    font-size:28px;
+    letter-spacing:.12em;
+    color:var(--cream);
+    line-height:1;
+  }
+  .logo-sub{
+    font-family:'Rajdhani', sans-serif;
+    font-weight:500;
+    font-size:10px;
+    letter-spacing:.5em;
+    color:var(--tan);
+    margin-top:4px;
+  }
+
+  h1.hero{
+    font-family:'Rajdhani', sans-serif;
+    font-weight:600;
+    font-size: 36px;
+    line-height:1.05;
+    letter-spacing:-.005em;
+    color:var(--cream);
+    margin-bottom:22px;
+    opacity:0; transform:translateY(16px);
+    animation: rise .9s .25s ease-out forwards;
+  }
+  h1.hero em{
+    font-style:normal;
+    color:var(--tan);
+    font-weight:700;
+  }
+  h1.hero .thin{
+    font-weight:500;
+    color:rgba(255,245,220,.72);
+  }
+
+  .quote{
+    position:relative;
+    padding-left:24px;
+    border-left:2px solid var(--tan);
+    max-width:460px;
+    font-size:15px;
+    line-height:1.65;
+    color:rgba(255,245,220,.78);
+    margin-bottom:36px;
+    opacity:0; transform:translateY(16px);
+    animation: rise .9s .4s ease-out forwards;
+  }
+  .quote strong{color:var(--cream); font-weight:600}
+
+  .meta-grid{
+    display:grid;
+    grid-template-columns:repeat(2,minmax(0,1fr));
+    gap:18px;
+    padding-top:22px;
+    border-top:1px solid var(--line-light);
+    max-width:460px;
+    opacity:0; transform:translateY(16px);
+    animation: rise .9s .55s ease-out forwards;
+  }
+  .meta-grid > div:nth-child(3){ display:none }
+  .meta-grid .k{
+    font-family:'Rajdhani', sans-serif;
+    font-size:10px;
+    letter-spacing:.25em;
+    text-transform:uppercase;
+    color:rgba(255,245,220,.45);
+    margin-bottom:6px;
+  }
+  .meta-grid .v{
+    font-family:'Rajdhani', sans-serif;
+    font-weight:600;
+    font-size:16px;
+    color:var(--cream);
+    letter-spacing:.04em;
+  }
+
+  .brand-bottom{
+    position:relative; z-index:2;
+    display:flex; align-items:center; justify-content:space-between;
+    font-size:11px;
+    color:rgba(255,245,220,.45);
+    letter-spacing:.1em;
+    text-transform:uppercase;
+    font-family:'Rajdhani', sans-serif;
+    font-weight:500;
+  }
+  .brand-bottom a{color:var(--tan); text-decoration:none}
+  .brand-bottom a:hover{color:var(--cream)}
+
+  /* ---------- FORM PANEL (RIGHT) ---------- */
+  .form-wrap{
+    background:
+      radial-gradient(100% 60% at 100% 0%, rgba(234,187,135,0.18) 0%, rgba(234,187,135,0) 55%),
+      linear-gradient(180deg, var(--cream) 0%, var(--cream-2) 100%);
+    display:flex;
+    align-items:center;
+    justify-content:center;
+    padding:36px 22px 48px;
+    position:relative;
+  }
+
+  .form-wrap::before{
+    /* subtle stone grain */
+    content:"";
+    position:absolute; inset:0;
+    background-image:url("data:image/svg+xml;utf8,<svg xmlns='http://www.w3.org/2000/svg' width='200' height='200'><filter id='n'><feTurbulence type='fractalNoise' baseFrequency='1.2' numOctaves='2'/><feColorMatrix values='0 0 0 0 0.21  0 0 0 0 0.14  0 0 0 0 0.09  0 0 0 0.1 0'/></filter><rect width='100%' height='100%' filter='url(%23n)'/></svg>");
+    opacity:.45;
+    pointer-events:none;
+  }
+
+  .form-card{
+    width:100%;
+    max-width:420px;
+    position:relative; z-index:2;
+    opacity:0; transform:translateY(16px);
+    animation: rise .9s .3s ease-out forwards;
+  }
+
+  .form-eyebrow{
+    font-family:'Rajdhani', sans-serif;
+    font-weight:600;
+    font-size:11px;
+    letter-spacing:.3em;
+    text-transform:uppercase;
+    color:var(--olive);
+    margin-bottom:14px;
+    display:flex; align-items:center; gap:10px;
+  }
+  .form-eyebrow::before{
+    content:"";
+    width:20px; height:1px;
+    background:var(--olive);
+  }
+
+  .form-title{
+    font-family:'Rajdhani', sans-serif;
+    font-weight:700;
+    font-size:30px;
+    color:var(--brown);
+    line-height:1;
+    letter-spacing:-.005em;
+    margin-bottom:10px;
+  }
+  .form-sub{
+    color:var(--olive);
+    font-size:14px;
+    margin-bottom:36px;
+  }
+
+  .field{
+    margin-bottom:18px;
+  }
+  .field label{
+    display:block;
+    font-family:'Rajdhani', sans-serif;
+    font-weight:600;
+    font-size:11px;
+    letter-spacing:.2em;
+    text-transform:uppercase;
+    color:var(--olive);
+    margin-bottom:8px;
+  }
+  .input-wrap{
+    position:relative;
+  }
+  .input-wrap svg.ic{
+    position:absolute;
+    left:16px; top:50%;
+    transform:translateY(-50%);
+    width:16px; height:16px;
+    color:var(--olive);
+    opacity:.55;
+  }
+  .field input{
+    width:100%;
+    background:rgba(255,255,255,.65);
+    border:1px solid var(--line);
+    border-radius:2px;
+    padding:16px 16px 16px 46px;
+    font-family:'Manrope', sans-serif;
+    font-size:14.5px;
+    color:var(--brown);
+    transition: all .2s ease;
+    outline:none;
+  }
+  .field input::placeholder{color:rgba(54,36,24,.35)}
+  .field input:hover{border-color:rgba(54,36,24,.25)}
+  .field input:focus{
+    border-color:var(--brown);
+    background:#fff;
+    box-shadow:0 0 0 4px rgba(234,187,135,.22);
+  }
+
+  .row-extra{
+    display:flex; align-items:center; justify-content:space-between;
+    margin-top:4px; margin-bottom:28px;
+    font-size:13px;
+  }
+  .check{
+    display:flex; align-items:center; gap:8px;
+    color:var(--olive); cursor:pointer;
+    user-select:none;
+  }
+  .check input{
+    appearance:none;
+    width:16px; height:16px;
+    border:1.5px solid rgba(54,36,24,.35);
+    border-radius:2px;
+    display:grid; place-items:center;
+    cursor:pointer;
+    transition: all .15s ease;
+  }
+  .check input:checked{
+    background:var(--brown);
+    border-color:var(--brown);
+  }
+  .check input:checked::after{
+    content:"";
+    width:8px; height:8px;
+    background:url("data:image/svg+xml;utf8,<svg xmlns='http://www.w3.org/2000/svg' viewBox='0 0 16 16' fill='none' stroke='%23EABB87' stroke-width='3' stroke-linecap='round' stroke-linejoin='round'><polyline points='3 8 7 12 13 4'/></svg>") center/contain no-repeat;
+  }
+  .row-extra a{
+    color:var(--brown);
+    text-decoration:none;
+    font-weight:600;
+    border-bottom:1px solid transparent;
+    transition:border-color .15s;
+  }
+  .row-extra a:hover{border-color:var(--brown)}
+
+  .btn{
+    width:100%;
+    border:none;
+    padding:16px 20px;
+    font-family:'Rajdhani', sans-serif;
+    font-weight:700;
+    font-size:15px;
+    letter-spacing:.25em;
+    text-transform:uppercase;
+    color:var(--cream);
+    background: linear-gradient(135deg, #4a321f 0%, var(--brown) 55%, var(--brown-deep) 100%);
+    cursor:pointer;
+    position:relative;
+    overflow:hidden;
+    border-radius:2px;
+    transition: transform .15s ease, box-shadow .2s ease;
+    box-shadow: 0 10px 24px -12px rgba(54,36,24,.55);
+    display:flex; align-items:center; justify-content:center; gap:14px;
+  }
+  .btn::after{
+    content:"";
+    position:absolute; inset:0;
+    background: linear-gradient(120deg, transparent 0%, rgba(234,187,135,.35) 50%, transparent 100%);
+    transform:translateX(-100%);
+    transition: transform .6s ease;
+  }
+  .btn:hover{
+    transform:translateY(-1px);
+    box-shadow: 0 14px 30px -10px rgba(54,36,24,.6);
+  }
+  .btn:hover::after{ transform:translateX(100%) }
+  .btn:active{ transform:translateY(0) }
+  .btn svg{ width:16px; height:16px; transition:transform .2s }
+  .btn:hover svg{ transform:translateX(4px) }
+
+  /* demo credentials */
+  .demo{
+    margin-top:32px;
+    padding:18px 20px;
+    background:rgba(91,80,56,.06);
+    border:1px dashed rgba(91,80,56,.25);
+    border-radius:2px;
+    position:relative;
+  }
+  .demo-title{
+    font-family:'Rajdhani', sans-serif;
+    font-weight:600;
+    font-size:10px;
+    letter-spacing:.3em;
+    text-transform:uppercase;
+    color:var(--olive);
+    margin-bottom:10px;
+  }
+  .cred{
+    display:flex; justify-content:space-between;
+    font-size:12.5px;
+    padding:4px 0;
+    font-family:'Manrope', monospace;
+  }
+  .cred + .cred{ border-top:1px dashed rgba(91,80,56,.2)}
+  .cred .role{
+    font-weight:700;
+    color:var(--brown);
+    letter-spacing:.04em;
+  }
+  .cred .val{
+    color:var(--olive);
+    font-family:ui-monospace, 'SF Mono', Menlo, monospace;
+    font-size:11.5px;
+  }
+  .cred button.fill{
+    background:none; border:none; cursor:pointer;
+    color:var(--brown); opacity:.5;
+    font-family:'Rajdhani', sans-serif;
+    font-size:10px; letter-spacing:.2em;
+    text-transform:uppercase;
+    font-weight:600;
+    transition:opacity .15s;
+    padding:0 0 0 10px;
+  }
+  .cred button.fill:hover{ opacity:1 }
+
+  .foot{
+    margin-top:36px;
+    display:flex;
+    align-items:center;
+    justify-content:space-between;
+    font-family:'Rajdhani', sans-serif;
+    font-size:10.5px;
+    letter-spacing:.22em;
+    text-transform:uppercase;
+    color:rgba(91,80,56,.55);
+  }
+  .foot span strong{
+    color:var(--brown); font-weight:700;
+  }
+
+  /* ---------- ANIMATION ---------- */
+  @keyframes rise{
+    to{opacity:1; transform:translateY(0)}
+  }
+
+  /* ---------- RESPONSIVE — MOBILE-FIRST ---------- */
+  /* ≥960px: split-screen desktop layout */
+  @media (min-width: 960px){
+    .shell{ display:grid; grid-template-columns: 1.15fr 1fr }
+    .brand{ padding: 56px 64px }
+    .brand::after{
+      width:auto; height:auto; right:auto; bottom:auto;
+    }
+    .brand-center{ padding: 40px 0 16px }
+    .meta-grid{
+      grid-template-columns:repeat(3,minmax(0,1fr));
+      gap:28px;
+      padding-top:28px;
+    }
+    .meta-grid > div:nth-child(3){ display:block }
+    h1.hero{ font-size: clamp(40px, 5vw, 64px) }
+    .quote{ font-size:15px }
+    .form-wrap{ padding:56px }
+    .form-title{ font-size:40px }
+  }
+
+/* Eagle Stone logo (real brand mark) */
+.es-logo{display:inline-block;color:currentColor;vertical-align:middle;fill:currentColor}
+.es-logo svg{display:block;width:100%;height:100%;fill:currentColor}
+.es-logo-sm{width:72px;height:24px}
+.es-logo-md{width:116px;height:40px}
+.es-logo-lg{width:200px;height:69px}
+.es-logo-xl{width:320px;height:110px}
+.es-logo-xxl{width:420px;height:145px}
+
+</style>
+</head>
+<body>
+<svg aria-hidden="true" style="position:absolute;width:0;height:0;overflow:hidden" xmlns="http://www.w3.org/2000/svg"><symbol id="es-logo" viewBox="0 0 1947.991258 672.000000" preserveAspectRatio="xMidYMid meet"><g transform="translate(-68.008742,672.000000) scale(0.100000,-0.100000)" fill="currentColor" stroke="none"><path d="M19680 3360 l0-3360 240 0 240 0 0 3360 0 3360-240 0-240 0 0-3360z"/><path d="M6200 6100 c-8-16-21-20-58-20-42 0-51-4-82-40-21-24-44-40-58-40-15 0-52-30-112-90-60-60-90-97-90-112 0-14-16-37-40-58-36-31-40-40-40-82 0-37-4-50-20-58-17-9-20-21-20-80 0-59-3-71-20-80-18-10-20-21-20-120 0-99 2-110 20-120 18-9 20-21 20-100 0-79 2-91 20-100 16-8 20-21 20-60 0-39 4-52 20-60 13-7 20-21 20-40 0-19 7-33 20-40 13-7 20-21 20-40 0-19 7-33 20-40 13-7 20-21 20-40 0-19 7-33 20-40 13-7 20-21 20-40 0-19 7-33 20-40 13-7 20-21 20-40 0-19 7-33 20-40 13-7 20-21 20-40 0-19 7-33 20-40 13-7 20-21 20-40 0-19 7-33 20-40 16-8 20-21 20-58 0-42 4-51 40-82 28-25 40-43 40-62 0-17 8-31 20-38 19-10 21-19 18-83 l-3-72-52-3 c-40-2-55-8-63-23-8-15-21-19-60-19-39 0-52-4-60-20-7-13-21-20-40-20-19 0-33-7-40-20-8-16-21-20-60-20-39 0-52-4-60-20-7-13-21-20-40-20-19 0-33-7-40-20-7-13-21-20-40-20-19 0-33-7-40-20-7-13-21-20-40-20-19 0-33-7-40-20-8-16-21-20-60-20-39 0-52-4-60-20-8-16-21-20-60-20-39 0-52-4-60-20-7-13-21-20-40-20-19 0-33-7-40-20-8-16-21-20-60-20-39 0-52-4-60-20-7-13-21-20-40-20-19 0-33-7-40-20-6-12-21-20-36-20-34 0-124-90-124-124 0-15-8-30-20-36-12-7-20-21-20-38 0-19-12-37-40-62-28-25-40-43-40-62 0-17-8-31-20-38-12-7-20-21-20-38 0-19-12-37-40-62-28-25-40-43-40-62 0-17-8-31-20-38-12-7-20-21-20-38 0-19-12-37-40-62-26-23-40-44-40-60 0-16-14-37-40-60-28-25-40-43-40-62 0-17-8-31-20-38-12-7-20-21-20-38 0-19-12-37-40-62-28-25-40-43-40-62 0-17-8-31-21-38-15-9-19-19-17-43 3-31 5-32 55-35 44-3 53 0 63 17 7 14 21 21 40 21 19 0 33 7 40 20 7 13 21 20 40 20 19 0 33 7 40 20 8 16 21 20 60 20 39 0 52 4 60 20 8 16 21 20 60 20 39 0 52 4 60 20 7 13 21 20 40 20 19 0 33 7 40 20 7 13 21 20 40 20 19 0 33 7 40 20 8 16 21 20 60 20 39 0 52 4 60 20 7 13 21 20 40 20 19 0 33 7 40 20 7 13 21 20 40 20 19 0 33 7 40 20 8 16 21 20 60 20 39 0 52 4 60 20 8 16 21 20 60 20 39 0 52 4 60 20 7 13 21 20 40 20 19 0 33 7 40 20 7 13 21 20 40 20 19 0 33 7 40 20 8 16 21 20 60 20 39 0 52 4 60 20 8 16 21 20 60 20 39 0 52 4 60 20 7 13 21 20 40 20 19 0 33 7 40 20 7 13 21 20 40 20 19 0 33 7 40 20 8 16 21 20 60 20 39 0 52 4 60 20 8 16 21 20 60 20 39 0 52 4 60 20 7 13 21 20 40 20 19 0 33 7 40 20 7 13 21 20 40 20 19 0 33 7 40 20 7 13 21 20 40 20 19 0 33 7 40 20 8 16 21 20 60 20 39 0 52 4 60 20 7 13 21 20 40 20 19 0 33 7 40 20 8 16 21 20 60 20 39 0 52 4 60 20 8 16 21 20 60 20 39 0 52 4 60 20 7 13 21 20 40 20 19 0 33 7 40 20 7 13 21 20 40 20 19 0 33 7 40 20 8 16 21 20 60 20 39 0 52 4 60 20 8 16 21 20 60 20 39 0 52 4 60 20 7 13 21 20 40 20 19 0 33 7 40 20 7 13 21 20 40 20 19 0 33 7 40 20 8 16 21 20 60 20 39 0 52 4 60 20 8 16 21 20 60 20 39 0 52 4 60 20 9 17 21 20 80 20 59 0 71 3 80 20 10 18 23 20 163 22 l152 3 3 72 c3 64 1 73-18 83-16 9-20 21-20 60 0 39-4 52-20 60-12 6-20 21-20 36 0 18-29 53-110 134-81 81-116 110-134 110-15 0-30 8-36 20-7 13-21 20-40 20-19 0-33 7-40 20-10 19-21 20-240 20-221 0-230-1-240-21-9-15-19-19-43-17-28 3-32 7-35 35-2 20-11 37-23 43-12 7-19 21-19 40 0 19-7 33-20 40-13 7-20 21-20 40 0 19-7 33-20 40-13 7-20 21-20 40 0 19-7 33-20 40-13 7-20 21-20 40 0 19-7 33-20 40-13 7-20 21-20 40 0 19-7 33-20 40-13 7-20 21-20 40 0 19-7 33-20 40-12 7-20 21-20 38 0 19-12 37-40 62-36 31-40 40-40 82 0 37-4 50-20 58-13 7-20 21-20 40 0 19-7 33-20 40-13 7-20 21-20 40 0 19-7 33-20 40-13 7-20 21-20 40 0 19-7 33-20 40-13 7-20 21-20 40 0 19-7 33-20 40-16 8-20 21-20 58 0 42-4 51-40 82-28 25-40 43-40 62 0 17-8 31-20 38-13 7-20 21-20 40 0 19-7 33-20 40-16 8-20 21-20 58 0 42-4 51-40 82-28 25-40 43-40 62 0 17-8 31-20 38-12 6-20 21-20 36 0 15-12 38-29 55-35 34-75 38-91 9z"/><path d="M9360 6100 c-9-17-21-20-80-20-59 0-71-3-80-20-8-16-21-20-60-20-39 0-52-4-60-20-7-12-21-20-38-20-19 0-37-12-62-40-21-24-44-40-58-40-33 0-242-211-242-244 0-15-8-30-20-36-13-7-20-21-20-40 0-19-7-33-20-40-13-7-20-21-20-40 0-19-7-33-20-40-16-8-20-21-20-60 0-39-4-52-20-60-17-9-20-21-20-80 0-59-3-71-20-80-20-11-20-21-20-1020 0-999 0-1009 20-1020 18-9 20-21 20-100 0-79 2-91 20-100 13-7 20-21 20-40 0-19 7-33 20-40 13-7 20-21 20-40 0-19 7-33 20-40 13-7 20-21 20-40 0-19 7-33 20-40 12-6 20-21 20-36 0-35 249-284 284-284 15 0 30-8 36-20 7-13 21-20 40-20 19 0 33-7 40-20 7-13 21-20 40-20 19 0 33-7 40-20 9-17 21-20 80-20 59 0 71-3 80-20 11-20 21-20 980-20 959 0 969 0 980 20 9 17 21 20 78 20 66 0 68 1 102 40 25 28 43 40 62 40 17 0 31 8 38 20 6 12 21 20 36 20 19 0 43 17 84 60 36 37 66 60 80 60 29 0 80 52 80 82 0 14 15 36 40 58 26 23 40 44 40 60 0 16 14 37 40 60 36 31 40 40 40 82 0 37 4 50 20 58 18 9 20 21 20 100 0 79 2 91 20 100 20 11 20 19 18 723 l-3 712-1015 0-1015 0-3-368-2-368 29-30 c35-34 75-38 91-9 7 13 21 20 40 20 19 0 33-7 40-20 7-13 21-20 40-20 19 0 33 7 40 20 9 17 21 20 80 20 59 0 71-3 80-20 10-19 21-20 160-20 139 0 150 1 160 20 7 13 21 20 40 20 20 0 31-6 35-20 3-11 13-20 20-20 8 0 19 9 25 20 6 11 17 20 25 20 7 0 17-9 20-20 9-27 52-26 76 3 l19 22 18-22 c11-12 32-23 48-25 24-2 29-8 32-35 2-21 10-34 23-38 25-8 24-29-3-49 l-23-16 23-16 c27-20 28-41 2-49-18-6-20-15-20-115 0-99-2-110-20-120-12-6-20-21-20-36 0-33-90-124-122-124-14 0-36-15-58-40 l-35-40-487 0 c-477 0-488 0-498-20-7-13-21-20-40-20-19 0-33 7-40 20-9 17-21 20-80 20-59 0-71 3-80 20-6 12-21 20-36 20-35 0-204 169-204 204 0 15-8 30-20 36-20 11-20 21-20 798 l0 787 40 35 c24 21 40 44 40 58 0 15 24 47 70 92 65 66 72 70 114 70 35 0 48 5 56 20 11 20 23 20 1063 22 l1052 3 0 435 0 435-1232 3 c-1224 2-1232 2-1243-18z"/><path d="M12428 6090 l-28-29 0-1465 c0-1455 0-1465 20-1476 18-9 20-21 20-100 0-79 2-91 20-100 16-8 20-21 20-58 0-42 4-51 40-82 26-23 40-44 40-60 0-16 14-37 40-60 25-22 40-44 40-58 0-31 91-122 122-122 14 0 36-15 58-40 23-26 44-40 60-40 16 0 37-14 60-40 25-28 43-40 62-40 17 0 31-8 38-20 9-17 21-20 80-20 59 0 71-3 80-20 11-20 19-20 1203-18 l1192 3 3 408 2 408-29 30-29 29-966 0 c-955 0-965 0-976 20-8 15-21 20-56 20-41 0-50 5-94 50-31 30-50 58-50 72 0 14-15 36-40 58-36 31-40 40-40 82 0 37-4 50-20 58-18 10-20 21-20 120 0 99 2 110 20 120 16 8 20 21 20 60 0 39-4 52-20 60-19 10-20 21-20 160 0 139 1 150 20 160 13 7 20 21 20 40 0 19-7 33-20 40-19 10-20 21-20 160 0 139 1 150 20 160 13 7 20 21 20 40 0 19-7 33-20 40-16 8-20 21-20 60 0 39 4 52 20 60 18 9 20 21 20 100 0 79-2 91-20 100-19 10-20 21-20 220 0 199 1 210 20 220 18 10 20 21 20 120 0 99-2 110-20 120-13 7-20 21-20 40 0 19 7 33 20 40 18 10 20 21 20 120 0 98-2 110-20 120-16 8-20 23-22 83 l-3 72-410 2-410 2-27-29z"/><path d="M16520 6100 c-8-16-21-20-60-20-39 0-52-4-60-20-7-13-21-20-40-20-19 0-33-7-40-20-6-12-21-20-36-20-35 0-204-169-204-204 0-15-8-30-20-36-13-7-20-21-20-40 0-19-7-33-20-40-20-11-20-21-20-1520 0-1499 0-1509 20-1520 12-6 20-21 20-36 0-35 249-284 284-284 15 0 30-8 36-20 8-16 21-20 60-20 39 0 52-4 60-20 11-20 19-20 1363-18 l1352 3 3 408 2 408-29 30-29 29-1046 0 c-1035 0-1045 0-1056 20-6 12-21 20-36 20-33 0-84 51-84 84 0 15-8 30-20 36-20 11-20 21-20 585 0 454 3 575 13 575 20 0 67-56 67-80 0-14 22-44 60-80 40-38 60-66 60-81 0-15 15-37 40-59 26-23 40-44 40-60 0-16 14-37 40-60 24-21 40-44 40-58 0-15 30-52 90-112 l89-90 721 0 722 0 29 29 29 30-2 348-3 348-1015 5-1015 5-3 272 c-2 264-2 272 18 283 12 6 20 21 20 36 0 33 51 84 84 84 15 0 30 8 36 20 11 20 21 20 1056 20 l1046 0 29 29 29 29 0 382 0 382-29 29-29 29-1306 0 c-1295 0-1305 0-1316-20z"/><path d="M3758 6060 c-13-20-24-20-1320-20-1297 0-1307 0-1318-20-7-13-21-20-40-20-19 0-33-7-40-20-6-12-21-20-36-20-33 0-244-209-244-242 0-14-16-37-40-58 l-40-35 0-1427 c0-1417 0-1427 20-1438 16-8 20-21 20-60 0-39 4-52 20-60 13-7 20-21 20-40 0-19 7-33 20-40 12-6 20-21 20-36 0-33 129-164 162-164 14 0 37-16 58-40 31-36 40-40 82-40 37 0 50-4 58-20 11-20 19-20 1343-18 l1332 3 3 408 2 408-29 30-29 29-1042 0-1041 0-49 50 c-34 33-50 57-50 74 0 15-8 30-20 36-20 11-20 19-18 543 l3 532 28 3 c33 4 87-45 87-78 0-14 23-44 60-80 43-41 60-65 60-84 0-15 8-30 20-36 12-6 20-21 20-36 0-19 17-43 60-84 37-36 60-66 60-79 0-13 21-43 50-72 l49-49 768 2 768 3 3 328 2 328-29 30-29 29-862 0-862 0-19-22-19-23-19 23 c-16 18-29 22-81 22-55 0-65 3-91 29 l-29 29 0 226 c0 215 1 226 20 236 12 6 20 21 20 36 0 34 90 124 124 124 15 0 30 8 36 20 11 20 23 20 1043 22 l1032 3 3 408 2 409-27 29 c-33 34-39 35-55 9z"/><path d="M7558 3300 c-10-15-24-20-60-20-37 0-50-4-58-20-7-13-21-20-40-20-19 0-33-7-40-20-8-16-21-20-60-20-39 0-52-4-60-20-8-16-21-20-60-20-39 0-52-4-60-20-7-13-21-20-40-20-19 0-33-7-40-20-7-13-21-20-40-20-19 0-33-7-40-20-7-13-21-20-40-20-19 0-33-7-40-20-8-15-21-20-56-20-41 0-50-5-96-51 l-50-50 41-38 c37-34 41-43 41-84 0-36 4-49 20-57 12-7 20-21 20-38 0-19 12-37 40-62 36-31 40-40 40-82 0-37 4-50 20-58 13-7 20-21 20-40 0-19 7-33 20-40 12-6 20-21 20-36 0-17 16-41 50-75 l49-49 528 2 528 3 3 48 c3 46 1 51-37 86-28 26-41 46-41 64 0 16-8 30-20 37-16 8-20 21-20 60 0 39-4 52-20 60-12 7-20 21-20 38 0 19-12 37-40 62-28 25-40 43-40 62 0 17-8 31-20 38-16 8-20 21-20 60 0 39-4 52-20 60-12 7-20 21-20 38 0 19-12 37-40 62-36 31-40 40-40 82 0 37-4 50-20 58-12 6-20 21-20 36 0 16-17 42-48 74-27 28-52 50-55 50-4 0-12-9-19-20z"/><path d="M2600 1420 c-8-16-21-20-60-20-39 0-52-4-60-20-6-12-21-20-36-20-33 0-84-51-84-84 0-15-8-30-20-36-17-9-20-21-20-80 0-59 3-71 20-80 12-6 20-21 20-36 0-17 16-41 50-74 49-50 49-50 114-50 55 0 67-3 76-20 9-17 21-20 76-20 59 0 68-3 95-29 16-16 29-39 29-51 0-12-13-35-29-51 l-29-29-143 0-142 0-38 42-38 43-50-52 c-29-30-51-62-51-73 0-30 53-80 84-80 15 0 30-8 36-20 10-19 21-20 220-20 197 0 210 1 220 19 6 12 23 21 43 23 28 3 32 7 35 35 2 20 11 37 23 43 12 7 19 21 19 40 0 19 7 33 20 40 13 7 20 21 20 40 0 19-7 33-20 40-15 8-20 21-20 56 0 37-6 51-29 75-17 17-40 29-55 29-15 0-30 8-36 20-9 18-21 20-100 20-79 0-91 2-100 20-6 12-21 20-36 20-26 0-124 86-124 108 0 7 15 12 35 12 24 0 37 6 45 20 10 18 21 20 120 20 100 0 110-2 120-21 10-17 19-20 63-17 51 3 52 4 55 35 2 20 11 37 23 44 15 8 19 19 17 42-3 31-5 32-55 35-40 2-55 8-63 23-7 12-21 19-40 19-19 0-33 7-40 20-9 17-21 20-80 20-59 0-71-3-80-20z"/><path d="M9760 1420 c-9-17-21-20-80-20-58 0-71-3-80-19-6-12-23-21-43-23-27-3-32-7-35-33-3-19-18-43-43-66 l-39-36 0-242 0-242 90-89 89-90 161 0 161 0 89 90 90 89 0 225 c0 215-1 226-20 236-12 6-20 21-20 36 0 17-21 45-70 94-65 66-72 70-114 70-35 0-48 5-56 20-7 13-21 20-40 20-19 0-33-7-40-20zm131-209 l29-29 0-202 0-202-30-29 c-29-29-31-30-117-27 l-88 3-3 32 c-2 20-11 37-23 43-18 10-19 23-19 196 l0 185 28 29 c25 27 32 29 110 30 79 0 85-2 113-29z"/><path d="M5868 1370 c-36-37-35-64 1-101 28-27 34-29 111-29 77 0 83-2 111-29 l29-29 2-309 3-308 75 0 75 0 5 335 5 335 109 3 c104 3 109 4 137 32 37 36 37 64 0 101 l-29 29-304 0-303-1-27-29z"/><path d="M13147 1370 l-27-29 2-388 3-388 75 0 75 0 3 152 c2 140 4 153 22 163 27 15 27 66-1 80-17 10-20 19-17 63 l3 52 35 0 c32 0 35-3 38-32 2-20 11-37 23-43 12-7 19-21 19-40 0-19 7-33 20-40 12-7 20-21 20-38 0-19 12-37 40-62 28-25 40-43 40-62 0-17 8-31 20-38 13-7 20-21 20-40 0-19 7-33 19-40 12-6 21-23 23-43 l3-32 115 0 115 0 0 415 0 415-75 0-75 0-3-277 c-2-213-5-278-15-278-21 0-67 57-67 84 0 15-8 30-20 36-13 7-20 21-20 40 0 19-7 33-20 40-13 7-20 21-20 40 0 19-7 33-20 40-12 7-20 21-20 38 0 19-12 37-40 62-35 31-40 40-40 78 0 35-6 50-29 73-28 27-34 29-113 29-78-1-85-3-111-30z"/><path d="M16907 1370 l-27-29 2-388 3-388 315 0 315 0 3 48 c3 41-1 51-26 77 l-30 30-189 2-188 3 0 75 0 75 149 3 148 3 30 29 c25 26 29 36 26 77 l-3 48-175 5-175 5 0 95 0 95 188 3 189 2 29 29 c37 37 37 65 0 102 l-29 29-264 0-263-1-28-29z"/></g></symbol></svg>
+
+
+<div class="shell">
+
+  <!-- LEFT: BRAND -->
+  <aside class="brand">
+    <div class="brand-top">
+      <div class="eyebrow"><span class="dot"></span> Field Operations Portal</div>
+      <div class="vtag">v 2.0</div>
+    </div>
+
+    <div class="brand-center">
+      <!-- Real Eagle Stone logo -->
+      <div class="logo" style="margin-bottom:28px">
+        <span class="es-logo es-logo-xl" style="color:var(--tan)"><svg><use href="#es-logo"/></svg></span>
+      </div>
+
+      <h1 class="hero">
+        <span class="thin">Masterpieces</span><br>
+        carved in <em>legacy.</em>
+      </h1>
+
+      <div class="quote">
+        Where strength meets identity — <strong>Eagle Stone</strong> isn't just a name, it's a statement in marble, granite, and every surface we leave behind.
+      </div>
+    </div>
+
+    <div class="brand-bottom">
+      <span>&copy; Eagle Stone / Helios Stones</span>
+      <span>Secure access · <a href="#">eagle.in</a></span>
+    </div>
+  </aside>
+
+  <!-- RIGHT: FORM -->
+  <main class="form-wrap">
+    <div class="form-card">
+      <div class="form-eyebrow">Sign in</div>
+      <h2 class="form-title">Welcome back.</h2>
+      <p class="form-sub">Access the field operations and ERP dashboard.</p>
+
+      <div class="field">
+        <label for="email">Email address</label>
+        <div class="input-wrap">
+          <svg class="ic" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.8" stroke-linecap="round" stroke-linejoin="round"><rect x="3" y="5" width="18" height="14" rx="2"/><path d="m3 7 9 6 9-6"/></svg>
+          <input id="email" type="email" placeholder="you@eaglestone.in" autocomplete="email"/>
+        </div>
+      </div>
+
+      <div class="field">
+        <label for="pwd">Password</label>
+        <div class="input-wrap">
+          <svg class="ic" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.8" stroke-linecap="round" stroke-linejoin="round"><rect x="4" y="11" width="16" height="10" rx="2"/><path d="M8 11V7a4 4 0 0 1 8 0v4"/></svg>
+          <input id="pwd" type="password" placeholder="••••••••••" autocomplete="current-password"/>
+        </div>
+      </div>
+
+      <div class="row-extra">
+        <label class="check">
+          <input type="checkbox" checked>
+          Keep me signed in
+        </label>
+        <a href="#">Forgot password?</a>
+      </div>
+
+      <button class="btn" onclick="handleSignIn()">
+        Sign In
+        <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><path d="M5 12h14"/><path d="m12 5 7 7-7 7"/></svg>
+      </button>
+
+      <div class="demo">
+        <div class="demo-title">Demo Credentials</div>
+        <div class="cred">
+          <span class="role">Admin</span>
+          <span class="val">admin@eaglestone.in / admin123</span>
+          <button class="fill" onclick="fillDemo('admin@eaglestone.in','admin123')">Use</button>
+        </div>
+        <div class="cred">
+          <span class="role">Operator</span>
+          <span class="val">operator@eaglestone.in / operator123</span>
+          <button class="fill" onclick="fillDemo('operator@eaglestone.in','operator123')">Use</button>
+        </div>
+      </div>
+
+      <div class="foot">
+        <span>Need help? <strong>support@eaglestone.in</strong></span>
+        <span>IN · VIZAG</span>
+      </div>
+    </div>
+  </main>
+
+</div>
+
+<script>
+  function fillDemo(email, pwd){
+    document.getElementById('email').value = email;
+    document.getElementById('pwd').value = pwd;
+    document.getElementById('email').focus();
+    document.getElementById('pwd').focus();
+  }
+  function handleSignIn(){
+    const btn = document.querySelector('.btn');
+    btn.style.pointerEvents = 'none';
+    btn.innerHTML = 'Authenticating…';
+    setTimeout(()=>{ btn.innerHTML = 'Signed in ✓'; btn.style.background='linear-gradient(135deg,#5B5038,#2C3A2A)'; }, 900);
+  }
+</script>
+</body>
+</html>

@@ -14,13 +14,15 @@ export default function DashboardLayout({
   const [sidebarOpen, setSidebarOpen] = useState(false);
 
   return (
-    <div className="min-h-screen bg-stone-50">
+    <div className="min-h-screen bg-bg">
       <Sidebar open={sidebarOpen} onClose={() => setSidebarOpen(false)} />
       <Header onMenuClick={() => setSidebarOpen(true)} />
       <div className="lg:ml-64">
         <ConnectivityBanner />
       </div>
-      <main className="mt-16 p-4 pb-24 sm:p-6 sm:pb-24 lg:ml-64">{children}</main>
+      <main className="mt-16 p-4 pb-28 sm:p-6 sm:pb-28 lg:ml-64 lg:p-8 lg:pb-8">
+        {children}
+      </main>
       <FloatingActionButton />
     </div>
   );
