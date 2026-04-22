@@ -50,3 +50,8 @@ next-env.d.ts
 backend/node_modules
 backend/dist
 backend/.env
+
+# Playwright
+/playwright-report/
+/test-results/
+/tests/.auth/user.json
