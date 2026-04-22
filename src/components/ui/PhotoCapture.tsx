@@ -116,11 +116,11 @@ export default function PhotoCapture({ visitId, onPhotoAdded }: PhotoCaptureProp
         type="button"
         onClick={openCamera}
         disabled={uploading}
-        className="flex w-full items-center justify-center gap-2 rounded-lg border-2 border-dashed border-stone-300 py-3 text-sm font-medium text-stone-600 hover:border-amber-400 hover:bg-amber-50 hover:text-amber-700 disabled:cursor-not-allowed disabled:opacity-60 transition-colors"
+        className="flex w-full items-center justify-center gap-2 rounded-sm border-2 border-dashed border-brand-brown/20 py-3 text-sm font-medium text-brand-olive/70 hover:border-brand-tan hover:bg-brand-tan/8 hover:text-brand-brown disabled:cursor-not-allowed disabled:opacity-60 transition-colors"
       >
         {uploading ? (
           <>
-            <div className="h-4 w-4 animate-spin rounded-full border-2 border-amber-500 border-t-transparent" />
+            <div className="h-4 w-4 animate-spin rounded-full border-2 border-brand-tan border-t-transparent" />
             Uploading photo…
           </>
         ) : (
@@ -150,7 +150,7 @@ export default function PhotoCapture({ visitId, onPhotoAdded }: PhotoCaptureProp
 
       {/* Upload error */}
       {uploadError && (
-        <p className="rounded-lg bg-red-50 px-3 py-2 text-xs text-red-600">
+        <p className="rounded-sm bg-danger/10 px-3 py-2 text-xs text-danger">
           {uploadError}
         </p>
       )}
@@ -166,8 +166,8 @@ export default function PhotoCapture({ visitId, onPhotoAdded }: PhotoCaptureProp
                 alt={`Visit photo ${idx + 1}`}
                 className={`h-16 w-16 rounded-lg object-cover ring-2 ${
                   item.serverUrl
-                    ? "cursor-pointer ring-stone-200 hover:ring-amber-400"
-                    : "ring-amber-300 opacity-70"
+                    ? "cursor-pointer ring-brand-brown/20 hover:ring-brand-tan"
+                    : "ring-brand-tan/60 opacity-70"
                 } transition-all`}
                 onClick={() => {
                   if (item.serverUrl) {
@@ -207,7 +207,7 @@ export default function PhotoCapture({ visitId, onPhotoAdded }: PhotoCaptureProp
             />
             <button
               onClick={() => setLightboxUrl(null)}
-              className="absolute -right-3 -top-3 flex h-8 w-8 items-center justify-center rounded-full bg-white text-stone-700 shadow-lg hover:bg-stone-100"
+              className="absolute -right-3 -top-3 flex h-8 w-8 items-center justify-center rounded-full bg-white text-brand-olive shadow-1 hover:bg-brand-brown/5"
             >
               <svg className="h-4 w-4" fill="none" viewBox="0 0 24 24" strokeWidth={2} stroke="currentColor">
                 <path strokeLinecap="round" strokeLinejoin="round" d="M6 18L18 6M6 6l12 12" />
@@ -217,7 +217,7 @@ export default function PhotoCapture({ visitId, onPhotoAdded }: PhotoCaptureProp
               href={lightboxUrl}
               target="_blank"
               rel="noopener noreferrer"
-              className="absolute -bottom-3 left-1/2 -translate-x-1/2 flex items-center gap-1.5 rounded-full bg-white px-3 py-1.5 text-xs font-medium text-stone-700 shadow-lg hover:bg-stone-100"
+              className="absolute -bottom-3 left-1/2 -translate-x-1/2 flex items-center gap-1.5 rounded-full bg-white px-3 py-1.5 text-xs font-medium text-brand-olive shadow-1 hover:bg-brand-brown/5"
               onClick={(e) => e.stopPropagation()}
             >
               <svg className="h-3.5 w-3.5" fill="none" viewBox="0 0 24 24" strokeWidth={2} stroke="currentColor">

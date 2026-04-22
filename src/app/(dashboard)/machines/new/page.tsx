@@ -4,6 +4,9 @@ import { useState } from "react";
 import { useRouter } from "next/navigation";
 import { Card, CardHeader, CardContent } from "@/components/ui/Card";
 
+const INPUT_CLS = "w-full rounded-sm border border-brand-brown/20 px-3 py-2 text-sm text-brand-brown bg-white focus:border-brand-tan focus:outline-none focus:ring-1 focus:ring-brand-tan/20";
+const LABEL_CLS = "mb-1 block font-display text-[11px] font-semibold tracking-[.12em] text-brand-olive/50 uppercase";
+
 export default function NewMachinePage() {
   const router = useRouter();
   const [loading, setLoading] = useState(false);
@@ -13,87 +16,46 @@ export default function NewMachinePage() {
     e.preventDefault();
     setLoading(true);
     setError("");
-
     const formData = new FormData(e.currentTarget);
     const body: Record<string, unknown> = {};
-    formData.forEach((value, key) => {
-      body[key] = value;
-    });
-
+    formData.forEach((value, key) => { body[key] = value; });
     try {
-      const res = await fetch("/api/machines", {
-        method: "POST",
-        headers: { "Content-Type": "application/json" },
-        body: JSON.stringify(body),
-      });
-
-      if (!res.ok) {
-        const data = await res.json();
-        setError(data.error || "Failed to create machine");
-        return;
-      }
-
+      const res = await fetch("/api/machines", { method: "POST", headers: { "Content-Type": "application/json" }, body: JSON.stringify(body) });
+      if (!res.ok) { const data = await res.json(); setError(data.error || "Failed to create machine"); return; }
       router.push("/machines");
-    } catch {
-      setError("Network error");
-    } finally {
-      setLoading(false);
-    }
+    } catch { setError("Network error"); }
+    finally { setLoading(false); }
   };
 
   return (
     <div>
       <div className="mb-6">
-        <h1 className="text-2xl font-bold text-stone-900">Add New Machine</h1>
-        <p className="text-sm text-stone-500">Register a new factory machine</p>
+        <h1 className="font-display text-[28px] font-bold leading-tight text-brand-brown">Add New Machine</h1>
+        <p className="text-sm text-brand-olive/60">Register a new factory machine</p>
       </div>
 
       <form onSubmit={handleSubmit}>
         {error && (
-          <div className="mb-4 rounded-lg bg-red-50 p-3 text-sm text-red-600">
-            {error}
-          </div>
+          <div className="mb-4 rounded-sm bg-danger/10 p-3 text-sm text-danger">{error}</div>
         )}
 
         <Card className="max-w-xl">
           <CardHeader>
-            <h2 className="font-semibold text-stone-900">Machine Details</h2>
+            <h2 className="font-display text-[15px] font-bold text-brand-brown">Machine Details</h2>
           </CardHeader>
           <CardContent>
             <div className="space-y-4">
               <div>
-                <label className="mb-1 block text-sm font-medium text-stone-700">
-                  Machine Name *
-                </label>
-                <input
-                  type="text"
-                  name="name"
-                  required
-                  placeholder="e.g., Gang Saw 1"
-                  className="w-full rounded-lg border border-stone-300 px-3 py-2 text-sm focus:border-amber-500 focus:outline-none focus:ring-1 focus:ring-amber-500"
-                />
+                <label className={LABEL_CLS}>Machine Name *</label>
+                <input type="text" name="name" required placeholder="e.g., Gang Saw 1" className={INPUT_CLS} />
               </div>
               <div>
-                <label className="mb-1 block text-sm font-medium text-stone-700">
-                  Machine Code *
-                </label>
-                <input
-                  type="text"
-                  name="code"
-                  required
-                  placeholder="e.g., GS-01"
-                  className="w-full rounded-lg border border-stone-300 px-3 py-2 text-sm focus:border-amber-500 focus:outline-none focus:ring-1 focus:ring-amber-500"
-                />
+                <label className={LABEL_CLS}>Machine Code *</label>
+                <input type="text" name="code" required placeholder="e.g., GS-01" className={INPUT_CLS} />
               </div>
               <div>
-                <label className="mb-1 block text-sm font-medium text-stone-700">
-                  Machine Type *
-                </label>
-                <select
-                  name="type"
-                  required
-                  className="w-full rounded-lg border border-stone-300 px-3 py-2 text-sm focus:border-amber-500 focus:outline-none focus:ring-1 focus:ring-amber-500"
-                >
+                <label className={LABEL_CLS}>Machine Type *</label>
+                <select name="type" required className={INPUT_CLS}>
                   <option value="">Select type</option>
                   <option value="GANG_SAW">Gang Saw</option>
                   <option value="EPOXY_LINE">Epoxy / Vacuum Line</option>
@@ -101,45 +63,20 @@ export default function NewMachinePage() {
                 </select>
               </div>
               <div>
-                <label className="mb-1 block text-sm font-medium text-stone-700">
-                  Manufacturer
-                </label>
-                <input
-                  type="text"
-                  name="manufacturer"
-                  className="w-full rounded-lg border border-stone-300 px-3 py-2 text-sm focus:border-amber-500 focus:outline-none focus:ring-1 focus:ring-amber-500"
-                />
+                <label className={LABEL_CLS}>Manufacturer</label>
+                <input type="text" name="manufacturer" className={INPUT_CLS} />
               </div>
               <div>
-                <label className="mb-1 block text-sm font-medium text-stone-700">
-                  Model
-                </label>
-                <input
-                  type="text"
-                  name="model"
-                  className="w-full rounded-lg border border-stone-300 px-3 py-2 text-sm focus:border-amber-500 focus:outline-none focus:ring-1 focus:ring-amber-500"
-                />
+                <label className={LABEL_CLS}>Model</label>
+                <input type="text" name="model" className={INPUT_CLS} />
               </div>
               <div>
-                <label className="mb-1 block text-sm font-medium text-stone-700">
-                  Location (Factory Floor)
-                </label>
-                <input
-                  type="text"
-                  name="location"
-                  placeholder="e.g., Section A, Bay 3"
-                  className="w-full rounded-lg border border-stone-300 px-3 py-2 text-sm focus:border-amber-500 focus:outline-none focus:ring-1 focus:ring-amber-500"
-                />
+                <label className={LABEL_CLS}>Location (Factory Floor)</label>
+                <input type="text" name="location" placeholder="e.g., Section A, Bay 3" className={INPUT_CLS} />
               </div>
               <div>
-                <label className="mb-1 block text-sm font-medium text-stone-700">
-                  Notes
-                </label>
-                <textarea
-                  name="notes"
-                  rows={3}
-                  className="w-full rounded-lg border border-stone-300 px-3 py-2 text-sm focus:border-amber-500 focus:outline-none focus:ring-1 focus:ring-amber-500"
-                />
+                <label className={LABEL_CLS}>Notes</label>
+                <textarea name="notes" rows={3} className={INPUT_CLS + " resize-none"} />
               </div>
             </div>
           </CardContent>
@@ -149,14 +86,14 @@ export default function NewMachinePage() {
           <button
             type="button"
             onClick={() => router.back()}
-            className="rounded-lg border border-stone-300 px-6 py-2 text-sm font-medium text-stone-700 hover:bg-stone-50"
+            className="rounded-sm border border-brand-brown/20 px-6 py-2 text-sm font-medium text-brand-olive hover:bg-brand-brown/5"
           >
             Cancel
           </button>
           <button
             type="submit"
             disabled={loading}
-            className="rounded-lg bg-amber-500 px-6 py-2 text-sm font-medium text-white hover:bg-amber-600 disabled:opacity-50"
+            className="rounded-sm bg-brand-brown px-6 py-2 font-display text-[13px] font-bold tracking-wide text-white hover:bg-brand-brown/90 disabled:opacity-50"
           >
             {loading ? "Saving..." : "Save Machine"}
           </button>

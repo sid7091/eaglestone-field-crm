@@ -28,6 +28,8 @@ interface Block {
   _count: { slabs: number; gangSawEntries: number };
 }
 
+const INPUT_CLS = "rounded-sm border border-brand-brown/20 px-4 py-2 text-sm text-brand-brown bg-white focus:border-brand-tan focus:outline-none focus:ring-1 focus:ring-brand-tan/20";
+
 export default function BlocksPage() {
   const router = useRouter();
   const [blocks, setBlocks] = useState<Block[]>([]);
@@ -39,7 +41,6 @@ export default function BlocksPage() {
     const params = new URLSearchParams();
     if (statusFilter) params.set("status", statusFilter);
     if (search) params.set("search", search);
-
     fetch(`/api/blocks?${params}`)
       .then((res) => res.json())
       .then((data) => setBlocks(data.blocks || []))
@@ -47,73 +48,45 @@ export default function BlocksPage() {
       .finally(() => setLoading(false));
   };
 
-  useEffect(() => {
-    fetchBlocks();
-  }, [statusFilter]);
+  useEffect(() => { fetchBlocks(); }, [statusFilter]);
 
-  const handleSearch = (e: React.FormEvent) => {
-    e.preventDefault();
-    fetchBlocks();
-  };
+  const handleSearch = (e: React.FormEvent) => { e.preventDefault(); fetchBlocks(); };
 
   const columns = [
     {
       header: "Block #",
-      accessor: (row: Block) => (
-        <span className="font-medium text-amber-700">{row.blockNumber}</span>
-      ),
+      accessor: (row: Block) => <span className="font-mono font-medium text-brand-tan-dark">{row.blockNumber}</span>,
     },
     {
       header: "Variety",
       accessor: (row: Block) => (
         <div>
-          <p className="font-medium">{row.variety}</p>
-          <p className="text-xs text-stone-500">{row.type}</p>
+          <p className="font-medium text-brand-brown">{row.variety}</p>
+          <p className="text-xs text-brand-olive/60">{row.type}</p>
         </div>
       ),
     },
     { header: "Color", accessor: "color" as keyof Block },
     { header: "Origin", accessor: "origin" as keyof Block },
-    {
-      header: "Dimensions (cm)",
-      accessor: (row: Block) => `${row.lengthCm} x ${row.widthCm} x ${row.heightCm}`,
-    },
-    {
-      header: "Weight",
-      accessor: (row: Block) => `${row.weightKg} kg`,
-    },
+    { header: "Dimensions (cm)", accessor: (row: Block) => `${row.lengthCm} x ${row.widthCm} x ${row.heightCm}` },
+    { header: "Weight", accessor: (row: Block) => `${row.weightKg} kg` },
     { header: "Grade", accessor: "grade" as keyof Block },
-    {
-      header: "Slabs",
-      accessor: (row: Block) => row._count.slabs,
-    },
-    {
-      header: "Cost",
-      accessor: (row: Block) =>
-        row.landedCostINR ? formatCurrency(row.landedCostINR) : "-",
-    },
-    {
-      header: "Status",
-      accessor: (row: Block) => <StatusBadge status={row.status} />,
-    },
-    {
-      header: "Arrival",
-      accessor: (row: Block) => formatDate(row.arrivalDate),
-    },
+    { header: "Slabs", accessor: (row: Block) => row._count.slabs },
+    { header: "Cost", accessor: (row: Block) => row.landedCostINR ? formatCurrency(row.landedCostINR) : "—" },
+    { header: "Status", accessor: (row: Block) => <StatusBadge status={row.status} /> },
+    { header: "Arrival", accessor: (row: Block) => formatDate(row.arrivalDate) },
   ];
 
   return (
     <div>
       <div className="mb-6 flex flex-col gap-3 sm:flex-row sm:items-center sm:justify-between">
         <div>
-          <h1 className="text-2xl font-bold text-stone-900">Raw Blocks</h1>
-          <p className="text-sm text-stone-500">
-            Manage imported marble blocks
-          </p>
+          <h1 className="font-display text-[28px] font-bold leading-tight text-brand-brown">Raw Blocks</h1>
+          <p className="text-sm text-brand-olive/60">Manage imported marble blocks</p>
         </div>
         <Link
           href="/blocks/new"
-          className="w-fit rounded-lg bg-amber-500 px-4 py-2 font-medium text-white transition-colors hover:bg-amber-600"
+          className="w-fit rounded-sm bg-brand-brown px-4 py-2 font-display text-[13px] font-bold tracking-wide text-white transition-colors hover:bg-brand-brown/90"
         >
           + Add Block
         </Link>
@@ -127,19 +100,16 @@ export default function BlocksPage() {
             placeholder="Search blocks..."
             value={search}
             onChange={(e) => setSearch(e.target.value)}
-            className="rounded-lg border border-stone-300 px-4 py-2 text-sm focus:border-amber-500 focus:outline-none focus:ring-1 focus:ring-amber-500"
+            className={INPUT_CLS}
           />
-          <button
-            type="submit"
-            className="rounded-lg bg-stone-100 px-4 py-2 text-sm font-medium text-stone-700 hover:bg-stone-200"
-          >
+          <button type="submit" className="rounded-sm bg-brand-brown/8 px-4 py-2 text-sm font-medium text-brand-olive hover:bg-brand-brown/15 transition-colors">
             Search
           </button>
         </form>
         <select
           value={statusFilter}
           onChange={(e) => setStatusFilter(e.target.value)}
-          className="rounded-lg border border-stone-300 px-3 py-2 text-sm focus:border-amber-500 focus:outline-none"
+          className={INPUT_CLS}
         >
           <option value="">All Status</option>
           <option value="RECEIVED">Received</option>
@@ -150,11 +120,10 @@ export default function BlocksPage() {
         </select>
       </div>
 
-      {/* Table */}
       <Card>
         {loading ? (
           <div className="flex h-64 items-center justify-center">
-            <div className="h-8 w-8 animate-spin rounded-full border-4 border-amber-500 border-t-transparent" />
+            <div className="h-8 w-8 animate-spin rounded-full border-4 border-brand-tan border-t-transparent" />
           </div>
         ) : (
           <DataTable

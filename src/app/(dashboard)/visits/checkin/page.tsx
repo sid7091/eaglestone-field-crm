@@ -33,6 +33,12 @@ interface GeofenceResult {
 
 type Phase = "locate" | "confirming" | "checkedin" | "inprogress" | "checkout" | "done";
 
+const INPUT_CLS =
+  "mt-1 w-full rounded-sm border border-brand-brown/20 px-3 py-2 text-sm text-brand-brown bg-white focus:border-brand-tan focus:outline-none focus:ring-1 focus:ring-brand-tan/20";
+
+const MICRO_LABEL_CLS =
+  "font-display text-[10px] font-semibold tracking-[.12em] text-brand-olive/50 uppercase";
+
 export default function CheckinPageWrapper() {
   return (
     <Suspense fallback={
@@ -62,27 +68,17 @@ function CheckinPage() {
   const timerRef = useRef<ReturnType<typeof setInterval> | null>(null);
   const watchRef = useRef<number | null>(null);
 
-  // Fetch visit details
   useEffect(() => {
     if (!visitId) return;
     api.get<Visit>(`/visits/${visitId}`).then(setVisit).catch(() => {});
   }, [visitId]);
 
-  // GPS watch
   const startGpsWatch = useCallback(() => {
-    if (!navigator.geolocation) {
-      setGpsError("Geolocation not supported by this browser");
-      return;
-    }
+    if (!navigator.geolocation) { setGpsError("Geolocation not supported by this browser"); return; }
     setGpsError(null);
     watchRef.current = navigator.geolocation.watchPosition(
       (pos) => {
-        setPosition({
-          latitude: pos.coords.latitude,
-          longitude: pos.coords.longitude,
-          accuracy: pos.coords.accuracy,
-          altitude: pos.coords.altitude,
-        });
+        setPosition({ latitude: pos.coords.latitude, longitude: pos.coords.longitude, accuracy: pos.coords.accuracy, altitude: pos.coords.altitude });
         setGpsError(null);
       },
       (err) => {
@@ -104,18 +100,12 @@ function CheckinPage() {
     };
   }, [startGpsWatch]);
 
-  // Timer for visit duration
   function startTimer() {
-    timerRef.current = setInterval(() => {
-      setTimer((prev) => prev + 1);
-    }, 1000);
+    timerRef.current = setInterval(() => setTimer((prev) => prev + 1), 1000);
   }
 
   function stopTimer() {
-    if (timerRef.current) {
-      clearInterval(timerRef.current);
-      timerRef.current = null;
-    }
+    if (timerRef.current) { clearInterval(timerRef.current); timerRef.current = null; }
   }
 
   const formatTimer = (seconds: number) => {
@@ -124,39 +114,22 @@ function CheckinPage() {
     return `${m.toString().padStart(2, "0")}:${s.toString().padStart(2, "0")}`;
   };
 
-  // Check-in action
   async function handleCheckin() {
     if (!visitId || !position) return;
     setLoading(true);
     try {
       const res = await api.post<{ visitId: string; status: string; geofence: GeofenceResult }>("/visits/checkin", {
         visitId,
-        location: {
-          latitude: position.latitude,
-          longitude: position.longitude,
-          accuracy: position.accuracy,
-          altitude: position.altitude,
-          timestamp: new Date().toISOString(),
-        },
+        location: { latitude: position.latitude, longitude: position.longitude, accuracy: position.accuracy, altitude: position.altitude, timestamp: new Date().toISOString() },
       });
       setGeofence(res.geofence);
-      if (res.geofence.isValid) {
-        setPhase("checkedin");
-        startTimer();
-      } else {
-        setPhase("confirming");
-      }
+      if (res.geofence.isValid) { setPhase("checkedin"); startTimer(); }
+      else { setPhase("confirming"); }
     } catch (err) {
       if (err instanceof NetworkError) {
-        // Offline — queue for later sync
-        await addToPendingQueue("pending-visits", {
-          type: "checkin",
-          visitId,
-          location: { latitude: position.latitude, longitude: position.longitude, accuracy: position.accuracy, timestamp: new Date().toISOString() },
-        });
+        await addToPendingQueue("pending-visits", { type: "checkin", visitId, location: { latitude: position.latitude, longitude: position.longitude, accuracy: position.accuracy, timestamp: new Date().toISOString() } });
         await requestBackgroundSync("sync-visits");
-        setPhase("checkedin");
-        startTimer();
+        setPhase("checkedin"); startTimer();
       } else {
         alert("Check-in failed. Please try again.");
       }
@@ -165,7 +138,6 @@ function CheckinPage() {
     }
   }
 
-  // Check-out action
   async function handleCheckout() {
     if (!visitId || !position) return;
     setLoading(true);
@@ -173,13 +145,7 @@ function CheckinPage() {
     try {
       const res = await api.post<{ visitId: string; status: string; durationMinutes: number; geofence: GeofenceResult | null }>("/visits/checkout", {
         visitId,
-        location: {
-          latitude: position.latitude,
-          longitude: position.longitude,
-          accuracy: position.accuracy,
-          altitude: position.altitude,
-          timestamp: new Date().toISOString(),
-        },
+        location: { latitude: position.latitude, longitude: position.longitude, accuracy: position.accuracy, altitude: position.altitude, timestamp: new Date().toISOString() },
         summary: summary || undefined,
         actionItems: actionItems || undefined,
         orderValueINR: orderValue ? parseFloat(orderValue) : undefined,
@@ -188,14 +154,7 @@ function CheckinPage() {
       setPhase("done");
     } catch (err) {
       if (err instanceof NetworkError) {
-        await addToPendingQueue("pending-visits", {
-          type: "checkout",
-          visitId,
-          location: { latitude: position.latitude, longitude: position.longitude, accuracy: position.accuracy, timestamp: new Date().toISOString() },
-          summary,
-          actionItems,
-          orderValueINR: orderValue ? parseFloat(orderValue) : undefined,
-        });
+        await addToPendingQueue("pending-visits", { type: "checkout", visitId, location: { latitude: position.latitude, longitude: position.longitude, accuracy: position.accuracy, timestamp: new Date().toISOString() }, summary, actionItems, orderValueINR: orderValue ? parseFloat(orderValue) : undefined });
         await requestBackgroundSync("sync-visits");
         setPhase("done");
       } else {
@@ -208,8 +167,22 @@ function CheckinPage() {
   }
 
   if (!visitId) {
-    return <Card><div className="p-8 text-center text-stone-500">No visit ID specified. Go to <button onClick={() => router.push("/visits")} className="text-brand-tan underline">Visits</button> to select one.</div></Card>;
+    return (
+      <Card>
+        <div className="p-8 text-center text-brand-olive/60">
+          No visit ID specified. Go to{" "}
+          <button onClick={() => router.push("/visits")} className="text-brand-tan underline">
+            Visits
+          </button>{" "}
+          to select one.
+        </div>
+      </Card>
+    );
   }
+
+  const gpsDotColor = position
+    ? position.accuracy <= 50 ? "bg-success" : "bg-warning"
+    : "bg-danger";
 
   return (
     <div className="mx-auto max-w-lg space-y-6">
@@ -219,8 +192,8 @@ function CheckinPage() {
           <div className="p-4">
             <div className="flex items-center justify-between">
               <div>
-                <h2 className="text-lg font-semibold text-stone-900">{visit.customer.businessName}</h2>
-                <p className="text-sm text-stone-500">{visit.purpose.replace(/_/g, " ")}</p>
+                <h2 className="font-display text-[18px] font-bold text-brand-brown">{visit.customer.businessName}</h2>
+                <p className="text-sm text-brand-olive/60">{visit.purpose.replace(/_/g, " ")}</p>
               </div>
               <StatusBadge status={visit.status} />
             </div>
@@ -232,21 +205,21 @@ function CheckinPage() {
       <Card>
         <div className="p-4">
           <div className="flex items-center gap-3">
-            <div className={`h-3 w-3 rounded-full ${position ? (position.accuracy <= 50 ? "bg-green-500" : "bg-amber-500") : "bg-red-500"} animate-pulse`} />
+            <div className={`h-3 w-3 rounded-full ${gpsDotColor} animate-pulse`} />
             <div>
-              <p className="text-sm font-medium text-stone-900">
+              <p className="text-sm font-medium text-brand-brown">
                 {!position ? "Acquiring GPS signal..." : `GPS locked (±${Math.round(position.accuracy)}m)`}
               </p>
               {position && (
-                <p className="text-xs text-stone-500">
+                <p className="text-xs text-brand-olive/60">
                   {position.latitude.toFixed(6)}, {position.longitude.toFixed(6)}
                 </p>
               )}
-              {gpsError && <p className="text-xs text-red-500 mt-1">{gpsError}</p>}
+              {gpsError && <p className="text-xs text-danger mt-1">{gpsError}</p>}
             </div>
           </div>
           {position && position.accuracy > 50 && (
-            <div className="mt-3 rounded-lg bg-amber-50 p-3 text-xs text-amber-800">
+            <div className="mt-3 rounded-sm bg-warning/10 p-3 text-xs text-warning">
               GPS accuracy is low ({Math.round(position.accuracy)}m). Move to an open area for better accuracy. Geofence validation requires ≤50m accuracy.
             </div>
           )}
@@ -256,9 +229,9 @@ function CheckinPage() {
       {/* Geofence Status */}
       {geofence && (
         <Card>
-          <div className={`p-4 rounded-xl ${geofence.isValid ? "bg-green-50" : "bg-red-50"}`}>
+          <div className={`p-4 rounded-lg ${geofence.isValid ? "bg-success/10" : "bg-danger/10"}`}>
             <div className="flex items-center gap-3">
-              <div className={`flex h-10 w-10 items-center justify-center rounded-full ${geofence.isValid ? "bg-green-100 text-green-600" : "bg-red-100 text-red-600"}`}>
+              <div className={`flex h-10 w-10 items-center justify-center rounded-full ${geofence.isValid ? "bg-success/20 text-success" : "bg-danger/20 text-danger"}`}>
                 {geofence.isValid ? (
                   <svg className="h-6 w-6" fill="none" viewBox="0 0 24 24" strokeWidth={2} stroke="currentColor">
                     <path strokeLinecap="round" strokeLinejoin="round" d="M9 12.75L11.25 15 15 9.75M21 12a9 9 0 11-18 0 9 9 0 0118 0z" />
@@ -270,10 +243,10 @@ function CheckinPage() {
                 )}
               </div>
               <div>
-                <p className={`font-semibold ${geofence.isValid ? "text-green-800" : "text-red-800"}`}>
+                <p className={`font-semibold ${geofence.isValid ? "text-success" : "text-danger"}`}>
                   {geofence.isValid ? "Geofence Verified" : "Outside Geofence"}
                 </p>
-                <p className={`text-sm ${geofence.isValid ? "text-green-600" : "text-red-600"}`}>
+                <p className={`text-sm ${geofence.isValid ? "text-success/80" : "text-danger/80"}`}>
                   {Math.round(geofence.distanceMeters)}m from customer location
                 </p>
               </div>
@@ -281,7 +254,7 @@ function CheckinPage() {
             {geofence.flags.length > 0 && (
               <div className="mt-3 space-y-1">
                 {geofence.flags.map((flag, i) => (
-                  <p key={i} className="text-xs text-red-600">{flag}</p>
+                  <p key={i} className="text-xs text-danger">{flag}</p>
                 ))}
               </div>
             )}
@@ -293,48 +266,46 @@ function CheckinPage() {
       {(phase === "checkedin" || phase === "inprogress" || phase === "checkout") && (
         <Card>
           <div className="p-6 text-center">
-            <p className="text-xs uppercase tracking-wider text-stone-500">Visit Duration</p>
-            <p className="mt-2 text-4xl font-mono font-bold text-stone-900">{formatTimer(timer)}</p>
+            <p className={`${MICRO_LABEL_CLS} tracking-wider`}>Visit Duration</p>
+            <p className="mt-2 font-mono text-4xl font-bold text-brand-brown">{formatTimer(timer)}</p>
           </div>
         </Card>
       )}
 
       {/* Action Buttons */}
       <div className="space-y-3">
-        {/* Phase: Locate — Ready to check in */}
+        {/* Phase: Locate */}
         {phase === "locate" && (
           <button
             onClick={handleCheckin}
             disabled={!position || loading}
-            className="w-full rounded-xl bg-green-600 py-4 text-lg font-bold text-white shadow-lg hover:bg-green-700 disabled:opacity-50 disabled:cursor-not-allowed"
+            className="w-full rounded-sm bg-success py-4 font-display text-lg font-bold text-white shadow-2 hover:bg-success/90 disabled:opacity-50 disabled:cursor-not-allowed"
           >
             {loading ? (
               <span className="flex items-center justify-center gap-2">
                 <div className="h-5 w-5 animate-spin rounded-full border-2 border-white border-t-transparent" />
                 Verifying Location...
               </span>
-            ) : (
-              "Check In"
-            )}
+            ) : "Check In"}
           </button>
         )}
 
-        {/* Phase: Confirming — Outside geofence, ask to proceed anyway */}
+        {/* Phase: Confirming — outside geofence */}
         {phase === "confirming" && (
           <>
-            <div className="rounded-lg bg-red-50 p-4 text-sm text-red-800">
+            <div className="rounded-sm bg-danger/10 p-4 text-sm text-danger">
               You appear to be outside the 100m geofence radius. This visit will be flagged for review. Continue anyway?
             </div>
             <div className="flex gap-3">
               <button
                 onClick={() => { setPhase("checkedin"); startTimer(); }}
-                className="flex-1 rounded-xl bg-amber-500 py-3 font-bold text-white hover:bg-amber-600"
+                className="flex-1 rounded-sm bg-warning py-3 font-display font-bold text-white hover:bg-warning/90"
               >
                 Continue Anyway
               </button>
               <button
                 onClick={() => { setPhase("locate"); setGeofence(null); }}
-                className="flex-1 rounded-xl border border-stone-300 py-3 font-bold text-stone-700 hover:bg-stone-50"
+                className="flex-1 rounded-sm border border-brand-brown/20 py-3 font-display font-bold text-brand-olive hover:bg-brand-brown/5"
               >
                 Retry Location
               </button>
@@ -342,71 +313,66 @@ function CheckinPage() {
           </>
         )}
 
-        {/* Phase: Checked in — visit in progress */}
+        {/* Phase: Checked in */}
         {(phase === "checkedin" || phase === "inprogress") && (
           <button
             onClick={() => setPhase("checkout")}
-            className="w-full rounded-xl bg-blue-600 py-4 text-lg font-bold text-white shadow-lg hover:bg-blue-700"
+            className="w-full rounded-sm bg-brand-brown py-4 font-display text-lg font-bold text-white shadow-2 hover:bg-brand-brown/90"
           >
             Ready to Check Out
           </button>
         )}
 
-        {/* Phase: Checkout — fill summary then submit */}
+        {/* Phase: Checkout — fill summary */}
         {phase === "checkout" && (
           <Card>
             <div className="p-4 space-y-4">
-              <h3 className="font-semibold text-stone-900">Visit Summary</h3>
+              <h3 className="font-display text-[15px] font-bold text-brand-brown">Visit Summary</h3>
               <div>
-                <label className="text-xs font-medium uppercase text-stone-500">Summary</label>
+                <label className={MICRO_LABEL_CLS}>Summary</label>
                 <textarea
                   value={summary}
                   onChange={(e) => setSummary(e.target.value)}
                   placeholder="What was discussed? Key outcomes..."
                   rows={3}
-                  className="mt-1 w-full rounded-lg border border-stone-300 px-3 py-2 text-sm"
+                  className={INPUT_CLS + " resize-none"}
                 />
               </div>
               <div>
-                <label className="text-xs font-medium uppercase text-stone-500">Action Items</label>
+                <label className={MICRO_LABEL_CLS}>Action Items</label>
                 <textarea
                   value={actionItems}
                   onChange={(e) => setActionItems(e.target.value)}
                   placeholder="Follow-up tasks, samples to send..."
                   rows={2}
-                  className="mt-1 w-full rounded-lg border border-stone-300 px-3 py-2 text-sm"
+                  className={INPUT_CLS + " resize-none"}
                 />
               </div>
               <div>
-                <label className="text-xs font-medium uppercase text-stone-500">Order Value (INR)</label>
+                <label className={MICRO_LABEL_CLS}>Order Value (INR)</label>
                 <input
                   type="number"
                   value={orderValue}
                   onChange={(e) => setOrderValue(e.target.value)}
                   placeholder="0"
-                  className="mt-1 w-full rounded-lg border border-stone-300 px-3 py-2 text-sm"
+                  className={INPUT_CLS}
                 />
               </div>
-              {/* Photo capture */}
               <div>
-                <label className="mb-2 block text-xs font-medium uppercase text-stone-500">
-                  Site Photos
-                </label>
-                {visitId && (
-                  <PhotoCapture visitId={visitId} />
-                )}
+                <label className={`mb-2 block ${MICRO_LABEL_CLS}`}>Site Photos</label>
+                {visitId && <PhotoCapture visitId={visitId} />}
               </div>
               <div className="flex gap-3">
                 <button
                   onClick={handleCheckout}
                   disabled={loading}
-                  className="flex-1 rounded-xl bg-red-600 py-3 font-bold text-white hover:bg-red-700 disabled:opacity-50"
+                  className="flex-1 rounded-sm bg-danger py-3 font-display font-bold text-white hover:bg-danger/90 disabled:opacity-50"
                 >
                   {loading ? "Checking out..." : "Check Out"}
                 </button>
                 <button
                   onClick={() => setPhase("inprogress")}
-                  className="rounded-xl border border-stone-300 px-4 py-3 text-sm text-stone-700"
+                  className="rounded-sm border border-brand-brown/20 px-4 py-3 text-sm text-brand-olive hover:bg-brand-brown/5"
                 >
                   Back
                 </button>
@@ -420,24 +386,24 @@ function CheckinPage() {
           <Card>
             <div className="p-6 text-center space-y-4">
               <div className="flex justify-center">
-                <div className="flex h-16 w-16 items-center justify-center rounded-full bg-green-100">
-                  <svg className="h-8 w-8 text-green-600" fill="none" viewBox="0 0 24 24" strokeWidth={2} stroke="currentColor">
+                <div className="flex h-16 w-16 items-center justify-center rounded-full bg-success/15">
+                  <svg className="h-8 w-8 text-success" fill="none" viewBox="0 0 24 24" strokeWidth={2} stroke="currentColor">
                     <path strokeLinecap="round" strokeLinejoin="round" d="M9 12.75L11.25 15 15 9.75M21 12a9 9 0 11-18 0 9 9 0 0118 0z" />
                   </svg>
                 </div>
               </div>
-              <h3 className="text-lg font-semibold text-stone-900">Visit Completed!</h3>
-              <p className="text-sm text-stone-500">Duration: {formatTimer(timer)}</p>
+              <h3 className="font-display text-[18px] font-bold text-brand-brown">Visit Completed!</h3>
+              <p className="text-sm text-brand-olive/60">Duration: {formatTimer(timer)}</p>
               <div className="flex gap-3">
                 <button
                   onClick={() => router.push(`/visits/${visitId}`)}
-                  className="flex-1 rounded-lg bg-brand-tan py-2 text-sm font-medium text-white"
+                  className="flex-1 rounded-sm bg-brand-tan py-2 font-display text-[13px] font-bold text-brand-brown hover:bg-brand-tan-dark"
                 >
                   View Details
                 </button>
                 <button
                   onClick={() => router.push("/visits")}
-                  className="flex-1 rounded-lg border border-stone-300 py-2 text-sm text-stone-700"
+                  className="flex-1 rounded-sm border border-brand-brown/20 py-2 text-sm text-brand-olive hover:bg-brand-brown/5"
                 >
                   All Visits
                 </button>
@@ -451,9 +417,9 @@ function CheckinPage() {
       {position && visit?.customer.location && (
         <Card>
           <div className="p-4">
-            <div className="flex h-40 items-center justify-center rounded-lg bg-stone-100 text-sm text-stone-400">
+            <div className="flex h-40 items-center justify-center rounded-sm bg-brand-brown/5 text-sm text-brand-olive/40">
               <div className="text-center">
-                <p>Map View (Phase 3.3)</p>
+                <p>Map View</p>
                 <p className="mt-1 text-xs">
                   You: {position.latitude.toFixed(4)}, {position.longitude.toFixed(4)} |
                   Customer: {visit.customer.location.latitude.toFixed(4)}, {visit.customer.location.longitude.toFixed(4)}

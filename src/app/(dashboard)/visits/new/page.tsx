@@ -6,8 +6,6 @@ import Link from "next/link";
 import { Card, CardHeader, CardContent } from "@/components/ui/Card";
 import { api } from "@/lib/api-client";
 
-// ─── Types ────────────────────────────────────────────────────────────────────
-
 interface CustomerOption {
   id: string;
   businessName: string;
@@ -20,7 +18,6 @@ interface CustomerSearchResponse {
   data: CustomerOption[];
 }
 
-// Keep in sync with backend VisitPurpose enum
 const VISIT_PURPOSES = [
   { value: "SALES_PITCH", label: "Sales Pitch" },
   { value: "SAMPLE_DELIVERY", label: "Sample Delivery" },
@@ -31,19 +28,21 @@ const VISIT_PURPOSES = [
   { value: "SITE_SURVEY", label: "Site Survey" },
 ] as const;
 
-// Keep in sync with backend RegionCode enum (abbreviated list for UI)
 const REGION_CODES = [
   "AP", "AR", "AS", "BR", "CG", "GA", "GJ", "HR", "HP", "JH",
   "KA", "KL", "MP", "MH", "MN", "ML", "MZ", "NL", "OD", "PB",
   "RJ", "SK", "TN", "TG", "TR", "UP", "UK", "WB", "DL", "JK",
 ] as const;
 
-// ─── Page ─────────────────────────────────────────────────────────────────────
+const INPUT_CLS =
+  "w-full rounded-sm border border-brand-brown/20 px-4 py-2 text-sm text-brand-brown bg-white focus:border-brand-tan focus:outline-none focus:ring-1 focus:ring-brand-tan/20";
+
+const LABEL_CLS =
+  "mb-1.5 block font-display text-[11px] font-semibold tracking-[.12em] text-brand-olive/50 uppercase";
 
 export default function NewVisitPage() {
   const router = useRouter();
 
-  // Customer search
   const [customerQuery, setCustomerQuery] = useState("");
   const [customerOptions, setCustomerOptions] = useState<CustomerOption[]>([]);
   const [selectedCustomer, setSelectedCustomer] = useState<CustomerOption | null>(null);
@@ -51,7 +50,6 @@ export default function NewVisitPage() {
   const [searchLoading, setSearchLoading] = useState(false);
   const dropdownRef = useRef<HTMLDivElement>(null);
 
-  // Form fields
   const [visitDate, setVisitDate] = useState(new Date().toISOString().slice(0, 10));
   const [purpose, setPurpose] = useState<string>("SALES_PITCH");
   const [regionCode, setRegionCode] = useState<string>("");
@@ -59,23 +57,15 @@ export default function NewVisitPage() {
   const [nextSteps, setNextSteps] = useState("");
   const [followUpDate, setFollowUpDate] = useState("");
 
-  // Submit state
   const [submitting, setSubmitting] = useState(false);
   const [submitError, setSubmitError] = useState("");
 
-  // When a customer is selected, pre-fill regionCode
   useEffect(() => {
-    if (selectedCustomer) {
-      setRegionCode(selectedCustomer.regionCode);
-    }
+    if (selectedCustomer) setRegionCode(selectedCustomer.regionCode);
   }, [selectedCustomer]);
 
-  // Debounced customer search
   const searchCustomers = useCallback(async (q: string) => {
-    if (q.trim().length < 2) {
-      setCustomerOptions([]);
-      return;
-    }
+    if (q.trim().length < 2) { setCustomerOptions([]); return; }
     setSearchLoading(true);
     try {
       const params = new URLSearchParams({ search: q, limit: "10" });
@@ -98,7 +88,6 @@ export default function NewVisitPage() {
     return () => clearTimeout(timer);
   }, [customerQuery, selectedCustomer, searchCustomers]);
 
-  // Close dropdown on outside click
   useEffect(() => {
     function handleClickOutside(e: MouseEvent) {
       if (dropdownRef.current && !dropdownRef.current.contains(e.target as Node)) {
@@ -117,37 +106,21 @@ export default function NewVisitPage() {
 
   const handleCustomerInputChange = (e: React.ChangeEvent<HTMLInputElement>) => {
     setCustomerQuery(e.target.value);
-    if (selectedCustomer) {
-      setSelectedCustomer(null);
-      setRegionCode("");
-    }
+    if (selectedCustomer) { setSelectedCustomer(null); setRegionCode(""); }
   };
 
   const handleSubmit = async (e: React.FormEvent) => {
     e.preventDefault();
     setSubmitError("");
-
-    if (!selectedCustomer) {
-      setSubmitError("Please select a customer from the dropdown.");
-      return;
-    }
-    if (!regionCode) {
-      setSubmitError("Region code is required.");
-      return;
-    }
+    if (!selectedCustomer) { setSubmitError("Please select a customer from the dropdown."); return; }
+    if (!regionCode) { setSubmitError("Region code is required."); return; }
 
     setSubmitting(true);
     try {
-      const body: Record<string, unknown> = {
-        customerId: selectedCustomer.id,
-        visitDate,
-        purpose,
-        regionCode,
-      };
+      const body: Record<string, unknown> = { customerId: selectedCustomer.id, visitDate, purpose, regionCode };
       if (notes.trim()) body.notes = notes.trim();
       if (nextSteps.trim()) body.nextSteps = nextSteps.trim();
       if (followUpDate) body.followUpDate = followUpDate;
-
       await api.post("/visits", body);
       router.push("/visits");
     } catch (err: unknown) {
@@ -163,7 +136,7 @@ export default function NewVisitPage() {
       <div className="mb-6 flex items-center gap-3">
         <Link
           href="/visits"
-          className="rounded-lg p-1.5 text-stone-400 hover:bg-stone-100 hover:text-stone-700"
+          className="rounded-sm p-1.5 text-brand-olive/40 hover:bg-brand-brown/5 hover:text-brand-olive"
           aria-label="Back to visits"
         >
           <svg className="h-5 w-5" fill="none" viewBox="0 0 24 24" strokeWidth={2} stroke="currentColor">
@@ -171,48 +144,46 @@ export default function NewVisitPage() {
           </svg>
         </Link>
         <div>
-          <h1 className="text-2xl font-bold text-stone-900">Plan a Visit</h1>
-          <p className="text-sm text-stone-500">Schedule a new field visit for today or a future date</p>
+          <h1 className="font-display text-[28px] font-bold leading-tight text-brand-brown">Plan a Visit</h1>
+          <p className="text-sm text-brand-olive/60">Schedule a new field visit for today or a future date</p>
         </div>
       </div>
 
       <form onSubmit={handleSubmit}>
         <Card>
           <CardHeader>
-            <h2 className="text-base font-semibold text-stone-800">Visit Details</h2>
+            <h2 className="font-display text-[15px] font-bold text-brand-brown">Visit Details</h2>
           </CardHeader>
           <CardContent className="space-y-5">
             {/* Customer selector */}
             <div className="relative" ref={dropdownRef}>
-              <label className="mb-1.5 block text-sm font-medium text-stone-700">
-                Customer <span className="text-red-500">*</span>
+              <label className={LABEL_CLS}>
+                Customer <span className="text-danger">*</span>
               </label>
               <input
                 type="text"
                 value={customerQuery}
                 onChange={handleCustomerInputChange}
-                onFocus={() => {
-                  if (customerOptions.length > 0 && !selectedCustomer) setDropdownOpen(true);
-                }}
+                onFocus={() => { if (customerOptions.length > 0 && !selectedCustomer) setDropdownOpen(true); }}
                 placeholder="Search by business name..."
-                className="w-full rounded-lg border border-stone-300 px-4 py-2 text-sm focus:border-amber-500 focus:outline-none focus:ring-1 focus:ring-amber-500"
+                className={INPUT_CLS}
                 autoComplete="off"
               />
               {searchLoading && (
                 <div className="absolute right-3 top-9">
-                  <div className="h-4 w-4 animate-spin rounded-full border-2 border-amber-500 border-t-transparent" />
+                  <div className="h-4 w-4 animate-spin rounded-full border-2 border-brand-tan border-t-transparent" />
                 </div>
               )}
               {dropdownOpen && customerOptions.length > 0 && (
-                <ul className="absolute z-20 mt-1 w-full rounded-lg border border-stone-200 bg-white shadow-lg">
+                <ul className="absolute z-20 mt-1 w-full rounded-sm border border-brand-brown/10 bg-white shadow-2">
                   {customerOptions.map((c) => (
                     <li
                       key={c.id}
                       onClick={() => handleSelectCustomer(c)}
-                      className="cursor-pointer px-4 py-2.5 hover:bg-amber-50"
+                      className="cursor-pointer px-4 py-2.5 hover:bg-brand-tan/8 border-b border-brand-brown/6 last:border-0"
                     >
-                      <p className="text-sm font-medium text-stone-900">{c.businessName}</p>
-                      <p className="text-xs text-stone-500">
+                      <p className="text-sm font-medium text-brand-brown">{c.businessName}</p>
+                      <p className="text-xs text-brand-olive/60">
                         {c.city ? `${c.city}, ` : ""}{c.district} · {c.regionCode}
                       </p>
                     </li>
@@ -220,12 +191,12 @@ export default function NewVisitPage() {
                 </ul>
               )}
               {dropdownOpen && !searchLoading && customerQuery.length >= 2 && customerOptions.length === 0 && (
-                <div className="absolute z-20 mt-1 w-full rounded-lg border border-stone-200 bg-white px-4 py-3 text-sm text-stone-500 shadow-lg">
+                <div className="absolute z-20 mt-1 w-full rounded-sm border border-brand-brown/10 bg-white px-4 py-3 text-sm text-brand-olive/50 shadow-2">
                   No customers found for &ldquo;{customerQuery}&rdquo;
                 </div>
               )}
               {selectedCustomer && (
-                <p className="mt-1.5 text-xs text-green-700">
+                <p className="mt-1.5 text-xs text-success">
                   ✓ Selected: {selectedCustomer.businessName} ({selectedCustomer.regionCode})
                 </p>
               )}
@@ -233,8 +204,8 @@ export default function NewVisitPage() {
 
             {/* Visit date */}
             <div>
-              <label className="mb-1.5 block text-sm font-medium text-stone-700">
-                Visit Date <span className="text-red-500">*</span>
+              <label className={LABEL_CLS}>
+                Visit Date <span className="text-danger">*</span>
               </label>
               <input
                 type="date"
@@ -242,49 +213,45 @@ export default function NewVisitPage() {
                 min={new Date().toISOString().slice(0, 10)}
                 onChange={(e) => setVisitDate(e.target.value)}
                 required
-                className="w-full rounded-lg border border-stone-300 px-4 py-2 text-sm focus:border-amber-500 focus:outline-none focus:ring-1 focus:ring-amber-500"
+                className={INPUT_CLS}
               />
             </div>
 
             {/* Purpose */}
             <div>
-              <label className="mb-1.5 block text-sm font-medium text-stone-700">
-                Purpose <span className="text-red-500">*</span>
+              <label className={LABEL_CLS}>
+                Purpose <span className="text-danger">*</span>
               </label>
               <select
                 value={purpose}
                 onChange={(e) => setPurpose(e.target.value)}
                 required
-                className="w-full rounded-lg border border-stone-300 px-4 py-2 text-sm focus:border-amber-500 focus:outline-none focus:ring-1 focus:ring-amber-500"
+                className={INPUT_CLS}
               >
                 {VISIT_PURPOSES.map((p) => (
-                  <option key={p.value} value={p.value}>
-                    {p.label}
-                  </option>
+                  <option key={p.value} value={p.value}>{p.label}</option>
                 ))}
               </select>
             </div>
 
             {/* Region code */}
             <div>
-              <label className="mb-1.5 block text-sm font-medium text-stone-700">
-                Region <span className="text-red-500">*</span>
+              <label className={LABEL_CLS}>
+                Region <span className="text-danger">*</span>
               </label>
               <select
                 value={regionCode}
                 onChange={(e) => setRegionCode(e.target.value)}
                 required
-                className="w-full rounded-lg border border-stone-300 px-4 py-2 text-sm focus:border-amber-500 focus:outline-none focus:ring-1 focus:ring-amber-500"
+                className={INPUT_CLS}
               >
                 <option value="">Select region…</option>
                 {REGION_CODES.map((r) => (
-                  <option key={r} value={r}>
-                    {r}
-                  </option>
+                  <option key={r} value={r}>{r}</option>
                 ))}
               </select>
               {selectedCustomer && (
-                <p className="mt-1 text-xs text-stone-500">
+                <p className="mt-1 text-xs text-brand-olive/50">
                   Pre-filled from customer region. Change only if different.
                 </p>
               )}
@@ -292,65 +259,57 @@ export default function NewVisitPage() {
 
             {/* Notes */}
             <div>
-              <label className="mb-1.5 block text-sm font-medium text-stone-700">
-                Notes / Agenda
-              </label>
+              <label className={LABEL_CLS}>Notes / Agenda</label>
               <textarea
                 value={notes}
                 onChange={(e) => setNotes(e.target.value)}
                 rows={3}
                 placeholder="What do you plan to discuss or accomplish during this visit?"
-                className="w-full resize-none rounded-lg border border-stone-300 px-4 py-2 text-sm focus:border-amber-500 focus:outline-none focus:ring-1 focus:ring-amber-500"
+                className={INPUT_CLS + " resize-none"}
               />
             </div>
 
             {/* Next steps */}
             <div>
-              <label className="mb-1.5 block text-sm font-medium text-stone-700">
-                Next Steps (optional)
-              </label>
+              <label className={LABEL_CLS}>Next Steps (optional)</label>
               <textarea
                 value={nextSteps}
                 onChange={(e) => setNextSteps(e.target.value)}
                 rows={2}
                 placeholder="Pre-planned next steps after this visit…"
-                className="w-full resize-none rounded-lg border border-stone-300 px-4 py-2 text-sm focus:border-amber-500 focus:outline-none focus:ring-1 focus:ring-amber-500"
+                className={INPUT_CLS + " resize-none"}
               />
             </div>
 
             {/* Follow-up date */}
             <div>
-              <label className="mb-1.5 block text-sm font-medium text-stone-700">
-                Follow-up Date (optional)
-              </label>
+              <label className={LABEL_CLS}>Follow-up Date (optional)</label>
               <input
                 type="date"
                 value={followUpDate}
                 min={visitDate || new Date().toISOString().slice(0, 10)}
                 onChange={(e) => setFollowUpDate(e.target.value)}
-                className="w-full rounded-lg border border-stone-300 px-4 py-2 text-sm focus:border-amber-500 focus:outline-none focus:ring-1 focus:ring-amber-500"
+                className={INPUT_CLS}
               />
             </div>
 
-            {/* Error */}
             {submitError && (
-              <div className="rounded-lg bg-red-50 p-3 text-sm text-red-600">
+              <div className="rounded-sm bg-danger/10 p-3 text-sm text-danger">
                 {submitError}
               </div>
             )}
 
-            {/* Actions */}
             <div className="flex gap-3 pt-2">
               <button
                 type="submit"
                 disabled={submitting}
-                className="flex-1 rounded-lg bg-amber-500 px-4 py-2 font-medium text-white transition-colors hover:bg-amber-600 disabled:opacity-60"
+                className="flex-1 rounded-sm bg-brand-brown px-4 py-2 font-display text-[13px] font-bold tracking-wide text-white transition-colors hover:bg-brand-brown/90 disabled:opacity-60"
               >
                 {submitting ? "Scheduling…" : "Schedule Visit"}
               </button>
               <Link
                 href="/visits"
-                className="rounded-lg border border-stone-300 px-4 py-2 text-sm font-medium text-stone-700 hover:bg-stone-50"
+                className="rounded-sm border border-brand-brown/20 px-4 py-2 text-sm font-medium text-brand-olive hover:bg-brand-brown/5"
               >
                 Cancel
               </Link>

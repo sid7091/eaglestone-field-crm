@@ -16,6 +16,9 @@ interface Machine {
   code: string;
 }
 
+const INPUT_CLS = "w-full rounded-sm border border-brand-brown/20 px-3 py-2 text-sm text-brand-brown bg-white focus:border-brand-tan focus:outline-none focus:ring-1 focus:ring-brand-tan/20";
+const LABEL_CLS = "mb-1 block font-display text-[11px] font-semibold tracking-[.12em] text-brand-olive/50 uppercase";
+
 export default function NewEpoxyEntryPage() {
   const router = useRouter();
   const [slabs, setSlabs] = useState<Slab[]>([]);
@@ -37,141 +40,72 @@ export default function NewEpoxyEntryPage() {
     e.preventDefault();
     setLoading(true);
     setError("");
-
     const formData = new FormData(e.currentTarget);
     const body: Record<string, unknown> = {};
-    formData.forEach((value, key) => {
-      if (key === "meshApplied") {
-        body[key] = value === "on";
-      } else {
-        body[key] = value;
-      }
-    });
-
+    formData.forEach((value, key) => { body[key] = key === "meshApplied" ? value === "on" : value; });
     try {
-      const res = await fetch("/api/production/epoxy", {
-        method: "POST",
-        headers: { "Content-Type": "application/json" },
-        body: JSON.stringify(body),
-      });
-
-      if (!res.ok) {
-        const data = await res.json();
-        setError(data.error || "Failed to create entry");
-        return;
-      }
-
+      const res = await fetch("/api/production/epoxy", { method: "POST", headers: { "Content-Type": "application/json" }, body: JSON.stringify(body) });
+      if (!res.ok) { const data = await res.json(); setError(data.error || "Failed to create entry"); return; }
       router.push("/production/epoxy");
-    } catch {
-      setError("Network error");
-    } finally {
-      setLoading(false);
-    }
+    } catch { setError("Network error"); }
+    finally { setLoading(false); }
   };
 
   return (
     <div>
       <div className="mb-6">
-        <h1 className="text-2xl font-bold text-stone-900">
-          New Epoxy / Vacuum Entry
-        </h1>
-        <p className="text-sm text-stone-500">
-          Record epoxy infusion and vacuum sealing details
-        </p>
+        <h1 className="font-display text-[28px] font-bold leading-tight text-brand-brown">New Epoxy / Vacuum Entry</h1>
+        <p className="text-sm text-brand-olive/60">Record epoxy infusion and vacuum sealing details</p>
       </div>
 
       <form onSubmit={handleSubmit}>
-        {error && (
-          <div className="mb-4 rounded-lg bg-red-50 p-3 text-sm text-red-600">
-            {error}
-          </div>
-        )}
+        {error && <div className="mb-4 rounded-sm bg-danger/10 p-3 text-sm text-danger">{error}</div>}
 
         <div className="grid grid-cols-1 gap-6 lg:grid-cols-2">
           <Card>
-            <CardHeader>
-              <h2 className="font-semibold text-stone-900">Slab & Machine</h2>
-            </CardHeader>
+            <CardHeader><h2 className="font-display text-[15px] font-bold text-brand-brown">Slab & Machine</h2></CardHeader>
             <CardContent>
               <div className="space-y-4">
                 <div>
-                  <label className="mb-1 block text-sm font-medium text-stone-700">
-                    Select Slab *
-                  </label>
-                  <select
-                    name="slabId"
-                    required
-                    className="w-full rounded-lg border border-stone-300 px-3 py-2 text-sm focus:border-purple-500 focus:outline-none focus:ring-1 focus:ring-purple-500"
-                  >
+                  <label className={LABEL_CLS}>Select Slab *</label>
+                  <select name="slabId" required className={INPUT_CLS}>
                     <option value="">Choose a slab</option>
                     {slabs.map((slab) => (
                       <option key={slab.id} value={slab.id}>
-                        {slab.slabNumber} - {slab.block.variety} ({slab.block.color})
+                        {slab.slabNumber} — {slab.block.variety} ({slab.block.color})
                       </option>
                     ))}
                   </select>
                   {slabs.length === 0 && (
-                    <p className="mt-1 text-xs text-amber-600">
-                      No slabs ready for epoxy. Cut blocks in Gang Saw first.
-                    </p>
+                    <p className="mt-1 text-xs text-warning">No slabs ready for epoxy. Cut blocks in Gang Saw first.</p>
                   )}
                 </div>
                 <div>
-                  <label className="mb-1 block text-sm font-medium text-stone-700">
-                    Machine *
-                  </label>
-                  <select
-                    name="machineId"
-                    required
-                    className="w-full rounded-lg border border-stone-300 px-3 py-2 text-sm focus:border-purple-500 focus:outline-none focus:ring-1 focus:ring-purple-500"
-                  >
+                  <label className={LABEL_CLS}>Machine *</label>
+                  <select name="machineId" required className={INPUT_CLS}>
                     <option value="">Select machine</option>
-                    {machines.map((m) => (
-                      <option key={m.id} value={m.id}>
-                        {m.name} ({m.code})
-                      </option>
-                    ))}
+                    {machines.map((m) => <option key={m.id} value={m.id}>{m.name} ({m.code})</option>)}
                   </select>
                 </div>
                 <div>
-                  <label className="mb-1 block text-sm font-medium text-stone-700">
-                    Start Time *
-                  </label>
-                  <input
-                    type="datetime-local"
-                    name="startTime"
-                    required
-                    className="w-full rounded-lg border border-stone-300 px-3 py-2 text-sm focus:border-purple-500 focus:outline-none focus:ring-1 focus:ring-purple-500"
-                  />
+                  <label className={LABEL_CLS}>Start Time *</label>
+                  <input type="datetime-local" name="startTime" required className={INPUT_CLS} />
                 </div>
                 <div>
-                  <label className="mb-1 block text-sm font-medium text-stone-700">
-                    End Time
-                  </label>
-                  <input
-                    type="datetime-local"
-                    name="endTime"
-                    className="w-full rounded-lg border border-stone-300 px-3 py-2 text-sm focus:border-purple-500 focus:outline-none focus:ring-1 focus:ring-purple-500"
-                  />
+                  <label className={LABEL_CLS}>End Time</label>
+                  <input type="datetime-local" name="endTime" className={INPUT_CLS} />
                 </div>
               </div>
             </CardContent>
           </Card>
 
           <Card>
-            <CardHeader>
-              <h2 className="font-semibold text-stone-900">Epoxy Details</h2>
-            </CardHeader>
+            <CardHeader><h2 className="font-display text-[15px] font-bold text-brand-brown">Epoxy Details</h2></CardHeader>
             <CardContent>
               <div className="space-y-4">
                 <div>
-                  <label className="mb-1 block text-sm font-medium text-stone-700">
-                    Epoxy Type
-                  </label>
-                  <select
-                    name="epoxyType"
-                    className="w-full rounded-lg border border-stone-300 px-3 py-2 text-sm focus:border-purple-500 focus:outline-none focus:ring-1 focus:ring-purple-500"
-                  >
+                  <label className={LABEL_CLS}>Epoxy Type</label>
+                  <select name="epoxyType" className={INPUT_CLS}>
                     <option value="">Select type</option>
                     <option value="Standard">Standard</option>
                     <option value="Premium">Premium</option>
@@ -181,67 +115,28 @@ export default function NewEpoxyEntryPage() {
                   </select>
                 </div>
                 <div>
-                  <label className="mb-1 block text-sm font-medium text-stone-700">
-                    Epoxy Quantity (ml)
-                  </label>
-                  <input
-                    type="number"
-                    name="epoxyQuantityMl"
-                    step="0.1"
-                    className="w-full rounded-lg border border-stone-300 px-3 py-2 text-sm focus:border-purple-500 focus:outline-none focus:ring-1 focus:ring-purple-500"
-                  />
+                  <label className={LABEL_CLS}>Epoxy Quantity (ml)</label>
+                  <input type="number" name="epoxyQuantityMl" step="0.1" className={INPUT_CLS} />
                 </div>
                 <div>
-                  <label className="mb-1 block text-sm font-medium text-stone-700">
-                    Vacuum Pressure (bar)
-                  </label>
-                  <input
-                    type="number"
-                    name="vacuumPressure"
-                    step="0.01"
-                    className="w-full rounded-lg border border-stone-300 px-3 py-2 text-sm focus:border-purple-500 focus:outline-none focus:ring-1 focus:ring-purple-500"
-                  />
+                  <label className={LABEL_CLS}>Vacuum Pressure (bar)</label>
+                  <input type="number" name="vacuumPressure" step="0.01" className={INPUT_CLS} />
                 </div>
                 <div>
-                  <label className="mb-1 block text-sm font-medium text-stone-700">
-                    Curing Time (minutes)
-                  </label>
-                  <input
-                    type="number"
-                    name="curingTimeMin"
-                    className="w-full rounded-lg border border-stone-300 px-3 py-2 text-sm focus:border-purple-500 focus:outline-none focus:ring-1 focus:ring-purple-500"
-                  />
+                  <label className={LABEL_CLS}>Curing Time (minutes)</label>
+                  <input type="number" name="curingTimeMin" className={INPUT_CLS} />
                 </div>
                 <div>
-                  <label className="mb-1 block text-sm font-medium text-stone-700">
-                    Temperature (°C)
-                  </label>
-                  <input
-                    type="number"
-                    name="temperatureC"
-                    step="0.1"
-                    className="w-full rounded-lg border border-stone-300 px-3 py-2 text-sm focus:border-purple-500 focus:outline-none focus:ring-1 focus:ring-purple-500"
-                  />
+                  <label className={LABEL_CLS}>Temperature (°C)</label>
+                  <input type="number" name="temperatureC" step="0.1" className={INPUT_CLS} />
                 </div>
                 <div className="flex items-center gap-2">
-                  <input
-                    type="checkbox"
-                    name="meshApplied"
-                    id="meshApplied"
-                    className="rounded border-stone-300 text-purple-600"
-                  />
-                  <label htmlFor="meshApplied" className="text-sm text-stone-700">
-                    Fiber mesh applied
-                  </label>
+                  <input type="checkbox" name="meshApplied" id="meshApplied" className="rounded border-brand-brown/20 text-brand-tan" />
+                  <label htmlFor="meshApplied" className="text-sm text-brand-olive/80">Fiber mesh applied</label>
                 </div>
                 <div>
-                  <label className="mb-1 block text-sm font-medium text-stone-700">
-                    Status
-                  </label>
-                  <select
-                    name="status"
-                    className="w-full rounded-lg border border-stone-300 px-3 py-2 text-sm focus:border-purple-500 focus:outline-none focus:ring-1 focus:ring-purple-500"
-                  >
+                  <label className={LABEL_CLS}>Status</label>
+                  <select name="status" className={INPUT_CLS}>
                     <option value="IN_PROGRESS">In Progress</option>
                     <option value="CURING">Curing</option>
                     <option value="COMPLETED">Completed</option>
@@ -249,27 +144,16 @@ export default function NewEpoxyEntryPage() {
                   </select>
                 </div>
                 <div>
-                  <label className="mb-1 block text-sm font-medium text-stone-700">
-                    Quality Check
-                  </label>
-                  <select
-                    name="qualityCheck"
-                    className="w-full rounded-lg border border-stone-300 px-3 py-2 text-sm focus:border-purple-500 focus:outline-none focus:ring-1 focus:ring-purple-500"
-                  >
+                  <label className={LABEL_CLS}>Quality Check</label>
+                  <select name="qualityCheck" className={INPUT_CLS}>
                     <option value="">Pending</option>
                     <option value="PASS">Pass</option>
                     <option value="FAIL">Fail</option>
                   </select>
                 </div>
                 <div>
-                  <label className="mb-1 block text-sm font-medium text-stone-700">
-                    Notes
-                  </label>
-                  <textarea
-                    name="notes"
-                    rows={3}
-                    className="w-full rounded-lg border border-stone-300 px-3 py-2 text-sm focus:border-purple-500 focus:outline-none focus:ring-1 focus:ring-purple-500"
-                  />
+                  <label className={LABEL_CLS}>Notes</label>
+                  <textarea name="notes" rows={3} className={INPUT_CLS + " resize-none"} />
                 </div>
               </div>
             </CardContent>
@@ -277,18 +161,8 @@ export default function NewEpoxyEntryPage() {
         </div>
 
         <div className="mt-6 flex justify-end gap-3">
-          <button
-            type="button"
-            onClick={() => router.back()}
-            className="rounded-lg border border-stone-300 px-6 py-2 text-sm font-medium text-stone-700 hover:bg-stone-50"
-          >
-            Cancel
-          </button>
-          <button
-            type="submit"
-            disabled={loading}
-            className="rounded-lg bg-purple-600 px-6 py-2 text-sm font-medium text-white hover:bg-purple-700 disabled:opacity-50"
-          >
+          <button type="button" onClick={() => router.back()} className="rounded-sm border border-brand-brown/20 px-6 py-2 text-sm font-medium text-brand-olive hover:bg-brand-brown/5">Cancel</button>
+          <button type="submit" disabled={loading} className="rounded-sm bg-brand-brown px-6 py-2 font-display text-[13px] font-bold tracking-wide text-white hover:bg-brand-brown/90 disabled:opacity-50">
             {loading ? "Saving..." : "Save Entry"}
           </button>
         </div>

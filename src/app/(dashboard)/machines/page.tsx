@@ -2,7 +2,7 @@
 
 import { useEffect, useState } from "react";
 import Link from "next/link";
-import { Card, CardHeader, CardContent } from "@/components/ui/Card";
+import { Card, CardContent } from "@/components/ui/Card";
 import StatusBadge from "@/components/ui/StatusBadge";
 import { formatDate } from "@/lib/utils";
 
@@ -27,9 +27,9 @@ const machineTypeLabels: Record<string, string> = {
 };
 
 const machineTypeColors: Record<string, string> = {
-  GANG_SAW: "bg-blue-50 border-blue-200",
-  EPOXY_LINE: "bg-purple-50 border-purple-200",
-  POLISHING_MACHINE: "bg-indigo-50 border-indigo-200",
+  GANG_SAW: "border-brand-brown/20 bg-brand-brown/5",
+  EPOXY_LINE: "border-brand-tan/30 bg-brand-tan/8",
+  POLISHING_MACHINE: "border-success/20 bg-success/8",
 };
 
 export default function MachinesPage() {
@@ -47,32 +47,27 @@ export default function MachinesPage() {
   if (loading) {
     return (
       <div className="flex h-64 items-center justify-center">
-        <div className="h-8 w-8 animate-spin rounded-full border-4 border-amber-500 border-t-transparent" />
+        <div className="h-8 w-8 animate-spin rounded-full border-4 border-brand-tan border-t-transparent" />
       </div>
     );
   }
 
-  const groupedMachines = machines.reduce(
-    (acc, machine) => {
-      if (!acc[machine.type]) acc[machine.type] = [];
-      acc[machine.type].push(machine);
-      return acc;
-    },
-    {} as Record<string, Machine[]>
-  );
+  const groupedMachines = machines.reduce((acc, machine) => {
+    if (!acc[machine.type]) acc[machine.type] = [];
+    acc[machine.type].push(machine);
+    return acc;
+  }, {} as Record<string, Machine[]>);
 
   return (
     <div>
       <div className="mb-6 flex flex-col gap-3 sm:flex-row sm:items-center sm:justify-between">
         <div>
-          <h1 className="text-2xl font-bold text-stone-900">Machines</h1>
-          <p className="text-sm text-stone-500">
-            Manage factory machines and equipment
-          </p>
+          <h1 className="font-display text-[28px] font-bold leading-tight text-brand-brown">Machines</h1>
+          <p className="text-sm text-brand-olive/60">Manage factory machines and equipment</p>
         </div>
         <Link
           href="/machines/new"
-          className="w-fit rounded-lg bg-amber-500 px-4 py-2 font-medium text-white transition-colors hover:bg-amber-600"
+          className="w-fit rounded-sm bg-brand-brown px-4 py-2 font-display text-[13px] font-bold tracking-wide text-white transition-colors hover:bg-brand-brown/90"
         >
           + Add Machine
         </Link>
@@ -80,29 +75,23 @@ export default function MachinesPage() {
 
       {/* Stats */}
       <div className="mb-6 grid grid-cols-1 gap-4 sm:grid-cols-3">
-        <div className="rounded-xl border border-stone-200 bg-white p-4">
-          <p className="text-sm text-stone-500">Total Machines</p>
-          <p className="text-2xl font-bold text-stone-900">{machines.length}</p>
-        </div>
-        <div className="rounded-xl border border-stone-200 bg-white p-4">
-          <p className="text-sm text-stone-500">Active</p>
-          <p className="text-2xl font-bold text-green-600">
-            {machines.filter((m) => m.status === "ACTIVE").length}
-          </p>
-        </div>
-        <div className="rounded-xl border border-stone-200 bg-white p-4">
-          <p className="text-sm text-stone-500">Under Maintenance</p>
-          <p className="text-2xl font-bold text-yellow-600">
-            {machines.filter((m) => m.status === "MAINTENANCE").length}
-          </p>
-        </div>
+        {[
+          { label: "Total Machines", value: machines.length, cls: "text-brand-brown" },
+          { label: "Active", value: machines.filter((m) => m.status === "ACTIVE").length, cls: "text-success" },
+          { label: "Under Maintenance", value: machines.filter((m) => m.status === "MAINTENANCE").length, cls: "text-warning" },
+        ].map(({ label, value, cls }) => (
+          <div key={label} className="rounded-sm border border-brand-brown/10 bg-surface p-4 shadow-1">
+            <p className="text-sm text-brand-olive/60">{label}</p>
+            <p className={`text-2xl font-bold ${cls}`}>{value}</p>
+          </div>
+        ))}
       </div>
 
       {/* Machines by Type */}
       {Object.entries(groupedMachines).length === 0 ? (
         <Card>
           <CardContent>
-            <p className="py-8 text-center text-stone-500">
+            <p className="py-8 text-center text-brand-olive/60">
               No machines registered yet. Add your first machine to get started.
             </p>
           </CardContent>
@@ -111,52 +100,32 @@ export default function MachinesPage() {
         <div className="space-y-6">
           {Object.entries(groupedMachines).map(([type, typeMachines]) => (
             <div key={type}>
-              <h2 className="mb-3 text-lg font-semibold text-stone-900">
+              <h2 className="mb-3 font-display text-[15px] font-bold text-brand-brown">
                 {machineTypeLabels[type] || type}
               </h2>
               <div className="grid grid-cols-1 gap-4 md:grid-cols-2 lg:grid-cols-3">
                 {typeMachines.map((machine) => (
-                  <Card
-                    key={machine.id}
-                    className={machineTypeColors[type] || ""}
-                  >
+                  <Card key={machine.id} className={machineTypeColors[type] || ""}>
                     <CardContent>
                       <div className="flex items-start justify-between">
                         <div>
-                          <h3 className="text-lg font-semibold text-stone-900">
-                            {machine.name}
-                          </h3>
-                          <p className="text-sm text-stone-500">
-                            Code: {machine.code}
-                          </p>
+                          <h3 className="font-display text-[16px] font-bold text-brand-brown">{machine.name}</h3>
+                          <p className="font-mono text-xs text-brand-olive/60">Code: {machine.code}</p>
                         </div>
                         <StatusBadge status={machine.status} />
                       </div>
-                      <div className="mt-4 space-y-2 text-sm">
+                      <div className="mt-4 space-y-2 text-sm text-brand-olive/80">
                         {machine.manufacturer && (
-                          <p className="text-stone-600">
-                            <span className="font-medium">Make:</span>{" "}
-                            {machine.manufacturer}
-                            {machine.model ? ` - ${machine.model}` : ""}
-                          </p>
+                          <p><span className="font-medium text-brand-olive">Make:</span> {machine.manufacturer}{machine.model ? ` — ${machine.model}` : ""}</p>
                         )}
                         {machine.location && (
-                          <p className="text-stone-600">
-                            <span className="font-medium">Location:</span>{" "}
-                            {machine.location}
-                          </p>
+                          <p><span className="font-medium text-brand-olive">Location:</span> {machine.location}</p>
                         )}
                         {machine.lastMaintenance && (
-                          <p className="text-stone-600">
-                            <span className="font-medium">Last Maintenance:</span>{" "}
-                            {formatDate(machine.lastMaintenance)}
-                          </p>
+                          <p><span className="font-medium text-brand-olive">Last Service:</span> {formatDate(machine.lastMaintenance)}</p>
                         )}
                         {machine.nextMaintenance && (
-                          <p className="text-stone-600">
-                            <span className="font-medium">Next Maintenance:</span>{" "}
-                            {formatDate(machine.nextMaintenance)}
-                          </p>
+                          <p><span className="font-medium text-brand-olive">Next Service:</span> {formatDate(machine.nextMaintenance)}</p>
                         )}
                       </div>
                     </CardContent>

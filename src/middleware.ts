@@ -17,7 +17,7 @@ export function middleware(request: NextRequest) {
 
   // Redirect to dashboard if already logged in and on login page
   if (token && isLoginPage) {
-    return NextResponse.redirect(new URL("/", request.url));
+    return NextResponse.redirect(new URL("/field-dashboard", request.url));
   }
 
   return NextResponse.next();

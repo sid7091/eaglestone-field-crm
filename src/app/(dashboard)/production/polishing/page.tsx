@@ -40,64 +40,40 @@ export default function PolishingPage() {
     {
       header: "Entry #",
       accessor: (row: PolishingEntry) => (
-        <span className="font-medium text-indigo-700">{row.entryNumber}</span>
+        <span className="font-mono font-medium text-brand-tan-dark">{row.entryNumber}</span>
       ),
     },
     {
       header: "Slab",
       accessor: (row: PolishingEntry) => (
         <div>
-          <p className="font-medium">{row.slab.slabNumber}</p>
-          <p className="text-xs text-stone-500">
-            {row.slab.block.variety} - {row.slab.block.color}
-          </p>
+          <p className="font-medium text-brand-brown">{row.slab.slabNumber}</p>
+          <p className="text-xs text-brand-olive/60">{row.slab.block.variety} — {row.slab.block.color}</p>
         </div>
       ),
     },
-    {
-      header: "Machine",
-      accessor: (row: PolishingEntry) => row.machine.name,
-    },
-    {
-      header: "Operator",
-      accessor: (row: PolishingEntry) => row.operator.name,
-    },
-    {
-      header: "Finish",
-      accessor: (row: PolishingEntry) => row.finishType,
-    },
-    {
-      header: "Gloss",
-      accessor: (row: PolishingEntry) =>
-        row.glossLevel !== null ? `${row.glossLevel}%` : "-",
-    },
-    {
-      header: "Start",
-      accessor: (row: PolishingEntry) => formatDateTime(row.startTime),
-    },
+    { header: "Machine", accessor: (row: PolishingEntry) => row.machine.name },
+    { header: "Operator", accessor: (row: PolishingEntry) => row.operator.name },
+    { header: "Finish", accessor: (row: PolishingEntry) => row.finishType },
+    { header: "Gloss", accessor: (row: PolishingEntry) => row.glossLevel !== null ? `${row.glossLevel}%` : "—" },
+    { header: "Start", accessor: (row: PolishingEntry) => formatDateTime(row.startTime) },
     {
       header: "QC",
-      accessor: (row: PolishingEntry) =>
-        row.qualityCheck ? <StatusBadge status={row.qualityCheck} /> : "-",
+      accessor: (row: PolishingEntry) => row.qualityCheck ? <StatusBadge status={row.qualityCheck} /> : "—",
     },
-    {
-      header: "Status",
-      accessor: (row: PolishingEntry) => <StatusBadge status={row.status} />,
-    },
+    { header: "Status", accessor: (row: PolishingEntry) => <StatusBadge status={row.status} /> },
   ];
 
   return (
     <div>
       <div className="mb-6 flex flex-col gap-3 sm:flex-row sm:items-center sm:justify-between">
         <div>
-          <h1 className="text-2xl font-bold text-stone-900">Polishing</h1>
-          <p className="text-sm text-stone-500">
-            Stage 3: Polish slabs to desired finish
-          </p>
+          <h1 className="font-display text-[28px] font-bold leading-tight text-brand-brown">Polishing</h1>
+          <p className="text-sm text-brand-olive/60">Stage 3: Polish slabs to desired finish</p>
         </div>
         <Link
           href="/production/polishing/new"
-          className="w-fit rounded-lg bg-indigo-600 px-4 py-2 font-medium text-white transition-colors hover:bg-indigo-700"
+          className="w-fit rounded-sm bg-brand-brown px-4 py-2 font-display text-[13px] font-bold tracking-wide text-white transition-colors hover:bg-brand-brown/90"
         >
           + New Entry
         </Link>
@@ -106,14 +82,10 @@ export default function PolishingPage() {
       <Card>
         {loading ? (
           <div className="flex h-64 items-center justify-center">
-            <div className="h-8 w-8 animate-spin rounded-full border-4 border-indigo-500 border-t-transparent" />
+            <div className="h-8 w-8 animate-spin rounded-full border-4 border-brand-tan border-t-transparent" />
           </div>
         ) : (
-          <DataTable
-            columns={columns}
-            data={entries}
-            emptyMessage="No polishing entries yet."
-          />
+          <DataTable columns={columns} data={entries} emptyMessage="No polishing entries yet." />
         )}
       </Card>
     </div>

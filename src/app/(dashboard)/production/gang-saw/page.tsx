@@ -37,68 +37,36 @@ export default function GangSawPage() {
   const columns = [
     {
       header: "Entry #",
-      accessor: (row: GangSawEntry) => (
-        <span className="font-medium text-blue-700">{row.entryNumber}</span>
-      ),
+      accessor: (row: GangSawEntry) => <span className="font-mono font-medium text-brand-tan-dark">{row.entryNumber}</span>,
     },
     {
       header: "Block",
       accessor: (row: GangSawEntry) => (
         <div>
-          <p className="font-medium">{row.block.blockNumber}</p>
-          <p className="text-xs text-stone-500">
-            {row.block.variety} - {row.block.color}
-          </p>
+          <p className="font-medium text-brand-brown">{row.block.blockNumber}</p>
+          <p className="text-xs text-brand-olive/60">{row.block.variety} — {row.block.color}</p>
         </div>
       ),
     },
-    {
-      header: "Machine",
-      accessor: (row: GangSawEntry) => row.machine.name,
-    },
-    {
-      header: "Operator",
-      accessor: (row: GangSawEntry) => row.operator.name,
-    },
-    {
-      header: "Slabs",
-      accessor: (row: GangSawEntry) => (
-        <span className="font-semibold">{row.numberOfSlabs}</span>
-      ),
-    },
-    {
-      header: "Thickness",
-      accessor: (row: GangSawEntry) => `${row.slabThicknessMm} mm`,
-    },
-    {
-      header: "Wastage",
-      accessor: (row: GangSawEntry) =>
-        row.wastageKg ? `${row.wastageKg} kg` : "-",
-    },
-    {
-      header: "Start Time",
-      accessor: (row: GangSawEntry) => formatDateTime(row.startTime),
-    },
-    {
-      header: "Status",
-      accessor: (row: GangSawEntry) => <StatusBadge status={row.status} />,
-    },
+    { header: "Machine", accessor: (row: GangSawEntry) => row.machine.name },
+    { header: "Operator", accessor: (row: GangSawEntry) => row.operator.name },
+    { header: "Slabs", accessor: (row: GangSawEntry) => <span className="font-semibold text-brand-brown">{row.numberOfSlabs}</span> },
+    { header: "Thickness", accessor: (row: GangSawEntry) => `${row.slabThicknessMm} mm` },
+    { header: "Wastage", accessor: (row: GangSawEntry) => row.wastageKg ? `${row.wastageKg} kg` : "—" },
+    { header: "Start Time", accessor: (row: GangSawEntry) => formatDateTime(row.startTime) },
+    { header: "Status", accessor: (row: GangSawEntry) => <StatusBadge status={row.status} /> },
   ];
 
   return (
     <div>
       <div className="mb-6 flex flex-col gap-3 sm:flex-row sm:items-center sm:justify-between">
         <div>
-          <h1 className="text-2xl font-bold text-stone-900">
-            Gang Saw - Block Cutting
-          </h1>
-          <p className="text-sm text-stone-500">
-            Stage 1: Cut raw blocks into slabs
-          </p>
+          <h1 className="font-display text-[28px] font-bold leading-tight text-brand-brown">Gang Saw — Block Cutting</h1>
+          <p className="text-sm text-brand-olive/60">Stage 1: Cut raw blocks into slabs</p>
         </div>
         <Link
           href="/production/gang-saw/new"
-          className="w-fit rounded-lg bg-blue-600 px-4 py-2 font-medium text-white transition-colors hover:bg-blue-700"
+          className="w-fit rounded-sm bg-brand-brown px-4 py-2 font-display text-[13px] font-bold tracking-wide text-white transition-colors hover:bg-brand-brown/90"
         >
           + New Entry
         </Link>
@@ -107,14 +75,10 @@ export default function GangSawPage() {
       <Card>
         {loading ? (
           <div className="flex h-64 items-center justify-center">
-            <div className="h-8 w-8 animate-spin rounded-full border-4 border-blue-500 border-t-transparent" />
+            <div className="h-8 w-8 animate-spin rounded-full border-4 border-brand-tan border-t-transparent" />
           </div>
         ) : (
-          <DataTable
-            columns={columns}
-            data={entries}
-            emptyMessage="No gang saw entries yet. Start by cutting a block."
-          />
+          <DataTable columns={columns} data={entries} emptyMessage="No gang saw entries yet. Start by cutting a block." />
         )}
       </Card>
     </div>

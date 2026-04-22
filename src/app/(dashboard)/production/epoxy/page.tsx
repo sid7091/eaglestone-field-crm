@@ -43,70 +43,41 @@ export default function EpoxyPage() {
     {
       header: "Entry #",
       accessor: (row: EpoxyEntry) => (
-        <span className="font-medium text-purple-700">{row.entryNumber}</span>
+        <span className="font-mono font-medium text-brand-tan-dark">{row.entryNumber}</span>
       ),
     },
     {
       header: "Slab",
       accessor: (row: EpoxyEntry) => (
         <div>
-          <p className="font-medium">{row.slab.slabNumber}</p>
-          <p className="text-xs text-stone-500">
-            {row.slab.block.variety} - {row.slab.block.color}
-          </p>
+          <p className="font-medium text-brand-brown">{row.slab.slabNumber}</p>
+          <p className="text-xs text-brand-olive/60">{row.slab.block.variety} — {row.slab.block.color}</p>
         </div>
       ),
     },
-    {
-      header: "Machine",
-      accessor: (row: EpoxyEntry) => row.machine.name,
-    },
-    {
-      header: "Operator",
-      accessor: (row: EpoxyEntry) => row.operator.name,
-    },
-    {
-      header: "Epoxy Type",
-      accessor: (row: EpoxyEntry) => row.epoxyType || "-",
-    },
-    {
-      header: "Mesh",
-      accessor: (row: EpoxyEntry) => (row.meshApplied ? "Yes" : "No"),
-    },
-    {
-      header: "Curing",
-      accessor: (row: EpoxyEntry) =>
-        row.curingTimeMin ? `${row.curingTimeMin} min` : "-",
-    },
-    {
-      header: "Start",
-      accessor: (row: EpoxyEntry) => formatDateTime(row.startTime),
-    },
+    { header: "Machine", accessor: (row: EpoxyEntry) => row.machine.name },
+    { header: "Operator", accessor: (row: EpoxyEntry) => row.operator.name },
+    { header: "Epoxy Type", accessor: (row: EpoxyEntry) => row.epoxyType || "—" },
+    { header: "Mesh", accessor: (row: EpoxyEntry) => (row.meshApplied ? "Yes" : "No") },
+    { header: "Curing", accessor: (row: EpoxyEntry) => row.curingTimeMin ? `${row.curingTimeMin} min` : "—" },
+    { header: "Start", accessor: (row: EpoxyEntry) => formatDateTime(row.startTime) },
     {
       header: "QC",
-      accessor: (row: EpoxyEntry) =>
-        row.qualityCheck ? <StatusBadge status={row.qualityCheck} /> : "-",
+      accessor: (row: EpoxyEntry) => row.qualityCheck ? <StatusBadge status={row.qualityCheck} /> : "—",
     },
-    {
-      header: "Status",
-      accessor: (row: EpoxyEntry) => <StatusBadge status={row.status} />,
-    },
+    { header: "Status", accessor: (row: EpoxyEntry) => <StatusBadge status={row.status} /> },
   ];
 
   return (
     <div>
       <div className="mb-6 flex flex-col gap-3 sm:flex-row sm:items-center sm:justify-between">
         <div>
-          <h1 className="text-2xl font-bold text-stone-900">
-            Epoxy / Vacuum Line
-          </h1>
-          <p className="text-sm text-stone-500">
-            Stage 2: Strengthen slabs with epoxy infusion and vacuum sealing
-          </p>
+          <h1 className="font-display text-[28px] font-bold leading-tight text-brand-brown">Epoxy / Vacuum Line</h1>
+          <p className="text-sm text-brand-olive/60">Stage 2: Strengthen slabs with epoxy infusion and vacuum sealing</p>
         </div>
         <Link
           href="/production/epoxy/new"
-          className="w-fit rounded-lg bg-purple-600 px-4 py-2 font-medium text-white transition-colors hover:bg-purple-700"
+          className="w-fit rounded-sm bg-brand-brown px-4 py-2 font-display text-[13px] font-bold tracking-wide text-white transition-colors hover:bg-brand-brown/90"
         >
           + New Entry
         </Link>
@@ -115,14 +86,10 @@ export default function EpoxyPage() {
       <Card>
         {loading ? (
           <div className="flex h-64 items-center justify-center">
-            <div className="h-8 w-8 animate-spin rounded-full border-4 border-purple-500 border-t-transparent" />
+            <div className="h-8 w-8 animate-spin rounded-full border-4 border-brand-tan border-t-transparent" />
           </div>
         ) : (
-          <DataTable
-            columns={columns}
-            data={entries}
-            emptyMessage="No epoxy entries yet."
-          />
+          <DataTable columns={columns} data={entries} emptyMessage="No epoxy entries yet." />
         )}
       </Card>
     </div>

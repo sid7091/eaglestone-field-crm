@@ -66,13 +66,13 @@ export default function BlockDetailPage() {
   if (loading) {
     return (
       <div className="flex h-64 items-center justify-center">
-        <div className="h-8 w-8 animate-spin rounded-full border-4 border-amber-500 border-t-transparent" />
+        <div className="h-8 w-8 animate-spin rounded-full border-4 border-brand-tan border-t-transparent" />
       </div>
     );
   }
 
   if (!block) {
-    return <div className="text-center text-stone-500">Block not found</div>;
+    return <div className="text-center text-brand-olive/60">Block not found</div>;
   }
 
   return (
@@ -80,18 +80,14 @@ export default function BlockDetailPage() {
       <div className="mb-6 flex flex-col gap-3 sm:flex-row sm:items-center sm:justify-between">
         <div>
           <div className="flex items-center gap-3">
-            <h1 className="text-2xl font-bold text-stone-900">
-              {block.blockNumber}
-            </h1>
+            <h1 className="font-display text-[28px] font-bold leading-tight text-brand-brown">{block.blockNumber}</h1>
             <StatusBadge status={block.status} />
           </div>
-          <p className="text-sm text-stone-500">
-            {block.variety} - {block.color} | {block.type}
-          </p>
+          <p className="text-sm text-brand-olive/60">{block.variety} — {block.color} | {block.type}</p>
         </div>
         <Link
           href="/blocks"
-          className="w-fit rounded-lg border border-stone-300 px-4 py-2 text-sm font-medium text-stone-700 hover:bg-stone-50"
+          className="w-fit rounded-sm border border-brand-brown/20 px-4 py-2 text-sm font-medium text-brand-olive hover:bg-brand-brown/5"
         >
           Back to Blocks
         </Link>
@@ -101,7 +97,7 @@ export default function BlockDetailPage() {
         {/* Block Info */}
         <Card>
           <CardHeader>
-            <h2 className="font-semibold text-stone-900">Block Information</h2>
+            <h2 className="font-display text-[15px] font-bold text-brand-brown">Block Information</h2>
           </CardHeader>
           <CardContent>
             <dl className="space-y-3">
@@ -110,64 +106,54 @@ export default function BlockDetailPage() {
                 ["Variety", block.variety],
                 ["Color", block.color],
                 ["Origin", block.origin],
-                ["Quarry", block.quarryName || "-"],
+                ["Quarry", block.quarryName || "—"],
                 ["Grade", block.grade],
                 ["Supplier", block.supplierName],
                 ["Arrival", formatDate(block.arrivalDate)],
-                ["Vehicle", block.vehicleNumber || "-"],
-                ["Batch No", block.importBatchNo || "-"],
+                ["Vehicle", block.vehicleNumber || "—"],
+                ["Batch No", block.importBatchNo || "—"],
               ].map(([label, value]) => (
                 <div key={label} className="flex justify-between">
-                  <dt className="text-sm text-stone-500">{label}</dt>
-                  <dd className="text-sm font-medium text-stone-900">{value}</dd>
+                  <dt className="text-sm text-brand-olive/60">{label}</dt>
+                  <dd className="text-sm font-medium text-brand-brown">{value}</dd>
                 </div>
               ))}
             </dl>
           </CardContent>
         </Card>
 
-        {/* Dimensions */}
+        {/* Dimensions & Cost */}
         <Card>
           <CardHeader>
-            <h2 className="font-semibold text-stone-900">Dimensions & Cost</h2>
+            <h2 className="font-display text-[15px] font-bold text-brand-brown">Dimensions & Cost</h2>
           </CardHeader>
           <CardContent>
             <dl className="space-y-3">
               <div className="flex justify-between">
-                <dt className="text-sm text-stone-500">Dimensions</dt>
-                <dd className="text-sm font-medium text-stone-900">
-                  {block.lengthCm} x {block.widthCm} x {block.heightCm} cm
-                </dd>
+                <dt className="text-sm text-brand-olive/60">Dimensions</dt>
+                <dd className="text-sm font-medium text-brand-brown">{block.lengthCm} x {block.widthCm} x {block.heightCm} cm</dd>
               </div>
               <div className="flex justify-between">
-                <dt className="text-sm text-stone-500">Volume</dt>
-                <dd className="text-sm font-medium text-stone-900">
-                  {((block.lengthCm * block.widthCm * block.heightCm) / 1000000).toFixed(2)} m³
-                </dd>
+                <dt className="text-sm text-brand-olive/60">Volume</dt>
+                <dd className="text-sm font-medium text-brand-brown">{((block.lengthCm * block.widthCm * block.heightCm) / 1000000).toFixed(2)} m³</dd>
               </div>
               <div className="flex justify-between">
-                <dt className="text-sm text-stone-500">Weight</dt>
-                <dd className="text-sm font-medium text-stone-900">
-                  {block.weightKg} kg ({(block.weightKg / 1000).toFixed(2)} tons)
-                </dd>
+                <dt className="text-sm text-brand-olive/60">Weight</dt>
+                <dd className="text-sm font-medium text-brand-brown">{block.weightKg} kg ({(block.weightKg / 1000).toFixed(2)} tons)</dd>
               </div>
               <div className="flex justify-between">
-                <dt className="text-sm text-stone-500">Landed Cost</dt>
-                <dd className="text-sm font-medium text-stone-900">
-                  {block.landedCostINR ? formatCurrency(block.landedCostINR) : "-"}
-                </dd>
+                <dt className="text-sm text-brand-olive/60">Landed Cost</dt>
+                <dd className="text-sm font-medium text-brand-brown">{block.landedCostINR ? formatCurrency(block.landedCostINR) : "—"}</dd>
               </div>
               <div className="flex justify-between">
-                <dt className="text-sm text-stone-500">Total Slabs</dt>
-                <dd className="text-sm font-bold text-amber-600">
-                  {block.slabs.length}
-                </dd>
+                <dt className="text-sm text-brand-olive/60">Total Slabs</dt>
+                <dd className="text-sm font-bold text-brand-tan-dark">{block.slabs.length}</dd>
               </div>
             </dl>
             {block.notes && (
-              <div className="mt-4 rounded-lg bg-stone-50 p-3">
-                <p className="text-xs font-medium text-stone-500">Notes</p>
-                <p className="mt-1 text-sm text-stone-700">{block.notes}</p>
+              <div className="mt-4 rounded-sm bg-brand-brown/5 p-3">
+                <p className="font-display text-[10px] font-semibold tracking-[.12em] text-brand-olive/50 uppercase">Notes</p>
+                <p className="mt-1 text-sm text-brand-olive">{block.notes}</p>
               </div>
             )}
           </CardContent>
@@ -176,29 +162,21 @@ export default function BlockDetailPage() {
         {/* Gang Saw History */}
         <Card>
           <CardHeader>
-            <h2 className="font-semibold text-stone-900">Gang Saw Entries</h2>
+            <h2 className="font-display text-[15px] font-bold text-brand-brown">Gang Saw Entries</h2>
           </CardHeader>
           <CardContent className="p-0">
             {block.gangSawEntries.length === 0 ? (
-              <p className="p-6 text-center text-sm text-stone-500">
-                No gang saw entries yet
-              </p>
+              <p className="p-6 text-center text-sm text-brand-olive/60">No gang saw entries yet</p>
             ) : (
-              <div className="divide-y divide-stone-100">
+              <div className="divide-y divide-brand-brown/8">
                 {block.gangSawEntries.map((entry) => (
                   <div key={entry.id} className="px-6 py-3">
                     <div className="flex items-center justify-between">
-                      <span className="font-medium text-stone-900">
-                        {entry.entryNumber}
-                      </span>
+                      <span className="font-mono text-sm font-medium text-brand-brown">{entry.entryNumber}</span>
                       <StatusBadge status={entry.status} />
                     </div>
-                    <p className="mt-1 text-xs text-stone-500">
-                      {entry.numberOfSlabs} slabs | {entry.machine.name} | {entry.operator.name}
-                    </p>
-                    <p className="text-xs text-stone-400">
-                      {formatDateTime(entry.startTime)}
-                    </p>
+                    <p className="mt-1 text-xs text-brand-olive/60">{entry.numberOfSlabs} slabs | {entry.machine.name} | {entry.operator.name}</p>
+                    <p className="text-xs text-brand-olive/40">{formatDateTime(entry.startTime)}</p>
                   </div>
                 ))}
               </div>
@@ -210,47 +188,33 @@ export default function BlockDetailPage() {
       {/* Slabs Table */}
       <Card className="mt-6">
         <CardHeader>
-          <h2 className="font-semibold text-stone-900">
-            Slabs from this Block ({block.slabs.length})
-          </h2>
+          <h2 className="font-display text-[15px] font-bold text-brand-brown">Slabs from this Block ({block.slabs.length})</h2>
         </CardHeader>
         <CardContent className="p-0">
           {block.slabs.length === 0 ? (
-            <p className="p-6 text-center text-sm text-stone-500">
+            <p className="p-6 text-center text-sm text-brand-olive/60">
               No slabs produced yet. Send this block to the Gang Saw to start cutting.
             </p>
           ) : (
             <div className="overflow-x-auto">
               <table className="w-full">
                 <thead>
-                  <tr className="border-b border-stone-200">
-                    <th className="px-4 py-3 text-left text-xs font-semibold uppercase text-stone-500">Slab #</th>
-                    <th className="px-4 py-3 text-left text-xs font-semibold uppercase text-stone-500">Dimensions</th>
-                    <th className="px-4 py-3 text-left text-xs font-semibold uppercase text-stone-500">Thickness</th>
-                    <th className="px-4 py-3 text-left text-xs font-semibold uppercase text-stone-500">Grade</th>
-                    <th className="px-4 py-3 text-left text-xs font-semibold uppercase text-stone-500">Finish</th>
-                    <th className="px-4 py-3 text-left text-xs font-semibold uppercase text-stone-500">Stage</th>
-                    <th className="px-4 py-3 text-left text-xs font-semibold uppercase text-stone-500">Status</th>
+                  <tr className="border-b border-brand-brown/10">
+                    {["Slab #", "Dimensions", "Thickness", "Grade", "Finish", "Stage", "Status"].map((h) => (
+                      <th key={h} className="px-4 py-3 text-left font-display text-[10px] font-semibold tracking-[.12em] text-brand-olive/50 uppercase">{h}</th>
+                    ))}
                   </tr>
                 </thead>
-                <tbody className="divide-y divide-stone-100">
+                <tbody className="divide-y divide-brand-brown/8">
                   {block.slabs.map((slab) => (
-                    <tr key={slab.id} className="hover:bg-stone-50">
-                      <td className="px-4 py-3 text-sm font-medium text-amber-700">
-                        {slab.slabNumber}
-                      </td>
-                      <td className="px-4 py-3 text-sm">
-                        {slab.lengthCm} x {slab.widthCm} cm
-                      </td>
-                      <td className="px-4 py-3 text-sm">{slab.thicknessMm} mm</td>
-                      <td className="px-4 py-3 text-sm">{slab.grade}</td>
-                      <td className="px-4 py-3 text-sm">{slab.finishType || "-"}</td>
-                      <td className="px-4 py-3">
-                        <StatusBadge status={slab.currentStage} />
-                      </td>
-                      <td className="px-4 py-3">
-                        <StatusBadge status={slab.status} />
-                      </td>
+                    <tr key={slab.id} className="hover:bg-brand-brown/3">
+                      <td className="px-4 py-3 font-mono text-sm font-medium text-brand-tan-dark">{slab.slabNumber}</td>
+                      <td className="px-4 py-3 text-sm text-brand-brown">{slab.lengthCm} x {slab.widthCm} cm</td>
+                      <td className="px-4 py-3 text-sm text-brand-brown">{slab.thicknessMm} mm</td>
+                      <td className="px-4 py-3 text-sm text-brand-brown">{slab.grade}</td>
+                      <td className="px-4 py-3 text-sm text-brand-brown">{slab.finishType || "—"}</td>
+                      <td className="px-4 py-3"><StatusBadge status={slab.currentStage} /></td>
+                      <td className="px-4 py-3"><StatusBadge status={slab.status} /></td>
                     </tr>
                   ))}
                 </tbody>

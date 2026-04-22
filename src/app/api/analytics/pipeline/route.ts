@@ -17,7 +17,7 @@ export async function GET() {
     return {
       status,
       count: matching.length,
-      totalPotentialINR: matching.reduce((sum, c) => sum + c.annualPotentialINR, 0),
+      totalPotentialINR: matching.reduce((sum, c) => sum + (c.annualPotentialINR ?? 0), 0),
     };
   });
 
