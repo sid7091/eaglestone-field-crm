@@ -9,7 +9,7 @@ export default defineConfig({
   reporter: [["html", { outputFolder: "playwright-report" }], ["list"]],
   globalSetup: require.resolve("./tests/global-setup.ts"),
   use: {
-    baseURL: "http://localhost:3000",
+    baseURL: "http://localhost:3001",
     trace: "on-first-retry",
     screenshot: "only-on-failure",
     video: "on-first-retry",
@@ -37,8 +37,8 @@ export default defineConfig({
     },
   ],
   webServer: {
-    command: "npm run dev",
-    url: "http://localhost:3000",
+    command: "PORT=3001 npm run dev",
+    url: "http://localhost:3001",
     reuseExistingServer: !process.env.CI,
     timeout: 120_000,
     stdout: "ignore",
