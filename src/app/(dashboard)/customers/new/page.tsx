@@ -207,7 +207,7 @@ export default function NewCustomerPage() {
 
 
 
-  // ── GPS capture ────────────────────────────────────────────────────────────
+  // ── GPS capture + reverse geocode ───────────────────────────────────────────
 
   const captureLocation = () => {
     if (!navigator.geolocation) {
@@ -217,13 +217,41 @@ export default function NewCustomerPage() {
     setGpsLoading(true);
     setGpsError("");
     navigator.geolocation.getCurrentPosition(
-      (pos) => {
+      async (pos) => {
+        const lat = String(pos.coords.latitude);
+        const lng = String(pos.coords.longitude);
+        const accuracy = String(Math.round(pos.coords.accuracy));
+
         setForm((prev) => ({
           ...prev,
-          locationLatitude: String(pos.coords.latitude),
-          locationLongitude: String(pos.coords.longitude),
-          locationAccuracy: String(Math.round(pos.coords.accuracy)),
+          locationLatitude: lat,
+          locationLongitude: lng,
+          locationAccuracy: accuracy,
         }));
+
+        try {
+          const res = await fetch(`/api/places/reverse-geocode?lat=${lat}&lng=${lng}`);
+          const data = await res.json();
+          if (data.address) {
+            let regionCode = "";
+            if (data.state) {
+              const match = REGION_CODES.find(
+                (r) => r.label.toLowerCase() === data.state.toLowerCase()
+              );
+              if (match) regionCode = match.value;
+            }
+            setForm((prev) => ({
+              ...prev,
+              address: data.address,
+              city: data.city || prev.city,
+              district: data.district || prev.district,
+              regionCode: regionCode || prev.regionCode,
+              pincode: data.pincode || prev.pincode,
+            }));
+          }
+        } catch {
+          // GPS coords still captured even if reverse geocode fails
+        }
         setGpsLoading(false);
       },
       (err) => {
@@ -543,16 +571,41 @@ export default function NewCustomerPage() {
                       value={form.address}
                       onChange={handleAddressInput}
                       onFocus={() => { if (suggestions.length > 0) setShowSuggestions(true); }}
-                      className={INPUT_CLS}
-                      placeholder="Type 3+ characters to search..."
+                      className={INPUT_CLS + " pr-10"}
+                      placeholder="Type to search or tap location icon"
                       autoComplete="off"
                     />
-                    {addressSearching && (
-                      <div className="absolute right-3 top-1/2 -translate-y-1/2">
+                    <button
+                      type="button"
+                      onClick={captureLocation}
+                      disabled={gpsLoading}
+                      className="absolute right-1.5 top-1/2 -translate-y-1/2 rounded-sm p-1.5 text-brand-olive/40 transition-colors hover:bg-brand-tan/10 hover:text-brand-tan-dark disabled:opacity-50"
+                      title="Use current GPS location"
+                    >
+                      {gpsLoading ? (
+                        <div className="h-4 w-4 animate-spin rounded-full border-2 border-brand-tan border-t-transparent" />
+                      ) : (
+                        <svg className="h-4 w-4" fill="none" viewBox="0 0 24 24" strokeWidth={1.5} stroke="currentColor">
+                          <path strokeLinecap="round" strokeLinejoin="round" d="M15 10.5a3 3 0 11-6 0 3 3 0 016 0z" />
+                          <path strokeLinecap="round" strokeLinejoin="round" d="M19.5 10.5c0 7.142-7.5 11.25-7.5 11.25S4.5 17.642 4.5 10.5a7.5 7.5 0 1115 0z" />
+                        </svg>
+                      )}
+                    </button>
+                    {addressSearching && !gpsLoading && (
+                      <div className="absolute right-10 top-1/2 -translate-y-1/2">
                         <div className="h-4 w-4 animate-spin rounded-full border-2 border-brand-tan border-t-transparent" />
                       </div>
                     )}
                   </div>
+                  {gpsError && (
+                    <p className="mt-1 text-[11px] text-danger">{gpsError}</p>
+                  )}
+                  {form.locationLatitude && form.locationLongitude && (
+                    <p className="mt-1 font-mono text-[11px] text-success">
+                      GPS: {parseFloat(form.locationLatitude).toFixed(6)}, {parseFloat(form.locationLongitude).toFixed(6)}
+                      {form.locationAccuracy && <span className="text-success/70"> (±{form.locationAccuracy}m)</span>}
+                    </p>
+                  )}
 
                   {/* Floating suggestions menu */}
                   {showSuggestions && suggestions.length > 0 && (
@@ -641,34 +694,17 @@ export default function NewCustomerPage() {
             </CardContent>
           </Card>
 
-          {/* ── GPS Location ───────────────────────────────────────────────── */}
+          {/* ── GPS Coordinates (manual override) ─────────────────────────── */}
           <Card>
             <CardHeader>
-              <h2 className="font-display text-[15px] font-bold text-brand-brown">GPS Location</h2>
+              <h2 className="font-display text-[15px] font-bold text-brand-brown">GPS Coordinates</h2>
             </CardHeader>
             <CardContent>
               <p className="mb-3 text-[11px] text-brand-olive/50">
-                Capture the customer&apos;s GPS coordinates for geofence-based visit validation.
+                Auto-filled when you tap the location icon in the address field. Override manually if needed.
               </p>
-              <button
-                type="button"
-                onClick={captureLocation}
-                disabled={gpsLoading}
-                className="flex items-center gap-2 rounded-sm border border-brand-tan/30 bg-brand-tan/10 px-4 py-2.5 font-display text-[13px] font-semibold text-brand-tan-dark transition-colors hover:bg-brand-tan/20 disabled:opacity-50"
-              >
-                <svg className="h-4 w-4" fill="none" viewBox="0 0 24 24" strokeWidth={1.5} stroke="currentColor">
-                  <path strokeLinecap="round" strokeLinejoin="round" d="M15 10.5a3 3 0 11-6 0 3 3 0 016 0z" />
-                  <path strokeLinecap="round" strokeLinejoin="round" d="M19.5 10.5c0 7.142-7.5 11.25-7.5 11.25S4.5 17.642 4.5 10.5a7.5 7.5 0 1115 0z" />
-                </svg>
-                {gpsLoading ? "Getting location..." : "Capture Current Location"}
-              </button>
-
-              {gpsError && (
-                <p className="mt-2 text-[11px] text-danger">{gpsError}</p>
-              )}
-
               {form.locationLatitude && form.locationLongitude && (
-                <div className="mt-3 rounded-sm border border-success/30 bg-success/8 px-4 py-3">
+                <div className="mb-4 rounded-sm border border-success/30 bg-success/8 px-4 py-3">
                   <p className="font-display text-[10px] font-semibold tracking-wide text-success">LOCATION CAPTURED</p>
                   <p className="mt-1 font-mono text-[13px] text-success">
                     {parseFloat(form.locationLatitude).toFixed(6)}, {parseFloat(form.locationLongitude).toFixed(6)}
@@ -678,32 +714,28 @@ export default function NewCustomerPage() {
                   )}
                 </div>
               )}
-
-              <div className="mt-4 space-y-3">
-                <p className="font-display text-[10px] font-semibold tracking-wide text-brand-olive/40">OR ENTER MANUALLY</p>
-                <div className="grid grid-cols-2 gap-3">
-                  <div>
-                    <label className={LABEL_CLS}>Latitude</label>
-                    <input
-                      type="number"
-                      step="any"
-                      value={form.locationLatitude}
-                      onChange={setField("locationLatitude")}
-                      className={INPUT_CLS}
-                      placeholder="26.9124"
-                    />
-                  </div>
-                  <div>
-                    <label className={LABEL_CLS}>Longitude</label>
-                    <input
-                      type="number"
-                      step="any"
-                      value={form.locationLongitude}
-                      onChange={setField("locationLongitude")}
-                      className={INPUT_CLS}
-                      placeholder="75.7873"
-                    />
-                  </div>
+              <div className="grid grid-cols-2 gap-3">
+                <div>
+                  <label className={LABEL_CLS}>Latitude</label>
+                  <input
+                    type="number"
+                    step="any"
+                    value={form.locationLatitude}
+                    onChange={setField("locationLatitude")}
+                    className={INPUT_CLS}
+                    placeholder="26.9124"
+                  />
+                </div>
+                <div>
+                  <label className={LABEL_CLS}>Longitude</label>
+                  <input
+                    type="number"
+                    step="any"
+                    value={form.locationLongitude}
+                    onChange={setField("locationLongitude")}
+                    className={INPUT_CLS}
+                    placeholder="75.7873"
+                  />
                 </div>
               </div>
             </CardContent>
