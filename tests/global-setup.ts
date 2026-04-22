@@ -12,7 +12,7 @@ export default async function globalSetup() {
     if (fs.existsSync(dbPath)) fs.unlinkSync(dbPath);
 
     // Push current schema directly (no migration gaps)
-    execSync("npx prisma db push --skip-generate", { cwd: root, stdio: "inherit" });
+    execSync("npx prisma db push", { cwd: root, stdio: "inherit" });
 
     // Seed
     execSync("npm run db:seed", { cwd: root, stdio: "inherit" });
