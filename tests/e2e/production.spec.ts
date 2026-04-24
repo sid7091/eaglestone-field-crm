@@ -4,15 +4,15 @@ test.describe("Production Hub", () => {
   test("production hub shows all 3 stages", async ({ page }) => {
     await page.goto("/production");
     await expect(page.locator("h1").filter({ hasText: /production/i })).toBeVisible();
-    await expect(page.getByText(/Gang Saw/i)).toBeVisible({ timeout: 8_000 });
-    await expect(page.getByText(/Epoxy/i)).toBeVisible();
-    await expect(page.getByText(/Polishing/i)).toBeVisible();
+    await expect(page.getByRole("heading", { name: /Gang Saw/i }).first()).toBeVisible({ timeout: 8_000 });
+    await expect(page.getByText(/Epoxy/i).first()).toBeVisible();
+    await expect(page.getByText(/Polishing/i).first()).toBeVisible();
   });
 
   test("production hub shows flow diagram with 5 stages", async ({ page }) => {
     await page.goto("/production");
-    await expect(page.getByText(/Raw Block/i)).toBeVisible({ timeout: 8_000 });
-    await expect(page.getByText(/Warehouse/i)).toBeVisible();
+    await expect(page.getByText("Raw Block", { exact: true })).toBeVisible({ timeout: 8_000 });
+    await expect(page.getByText("Warehouse", { exact: true })).toBeVisible();
   });
 
   test("navigate to gang saw from production hub", async ({ page }) => {
@@ -44,31 +44,32 @@ test.describe("Gang Saw", () => {
 
   test("gang saw list shows block numbers and status", async ({ page }) => {
     await page.goto("/production/gang-saw");
-    await expect(page.getByText(/BLK-2026-0001|Statuario/)).toBeVisible({ timeout: 8_000 });
-    await expect(page.getByText(/COMPLETED|IN_PROGRESS/)).toBeVisible();
+    await expect(page.getByText("BLK-2026-0001").first()).toBeVisible({ timeout: 8_000 });
+    await expect(page.getByText(/COMPLETED|IN_PROGRESS/).first()).toBeVisible();
   });
 
   test("new gang saw form renders", async ({ page }) => {
     await page.goto("/production/gang-saw/new");
     await expect(page.locator("h1").filter({ hasText: /Gang Saw/i })).toBeVisible();
     await expect(page.getByText("Block & Machine")).toBeVisible();
-    await expect(page.getByText("Cutting Details")).toBeVisible();
+    await expect(page.getByRole("heading", { name: "Cutting Details" })).toBeVisible();
   });
 
-  test("new gang saw form - required fields populated from seed", async ({ page }) => {
+  test("new gang saw form - block and machine selects populated", async ({ page }) => {
     await page.goto("/production/gang-saw/new");
-    // Blocks with RECEIVED or PARTIALLY_CUT status should appear
-    await expect(page.locator('select[name="blockId"] option').filter({ hasNotText: "Choose a block" }).first())
-      .toBeVisible({ timeout: 8_000 });
-    // Gang saw machines should appear
-    await expect(page.locator('select[name="machineId"] option').filter({ hasNotText: "Select machine" }).first())
-      .toBeVisible({ timeout: 5_000 });
+    const blockSelect = page.locator('select[name="blockId"]');
+    await expect(blockSelect).toBeVisible({ timeout: 8_000 });
+    const blockOptions = await blockSelect.locator("option").count();
+    expect(blockOptions).toBeGreaterThan(1);
+
+    const machineSelect = page.locator('select[name="machineId"]');
+    const machineOptions = await machineSelect.locator("option").count();
+    expect(machineOptions).toBeGreaterThan(1);
   });
 
   test("new gang saw - create entry", async ({ page }) => {
     await page.goto("/production/gang-saw/new");
 
-    // Select a block (BLK-2026-0003 or BLK-2026-0004 are RECEIVED)
     await page.locator('select[name="blockId"]').selectOption({ index: 1 });
     await page.locator('select[name="machineId"]').selectOption({ index: 1 });
 
@@ -92,14 +93,14 @@ test.describe("Epoxy / Vacuum", () => {
 
   test("epoxy list shows quality check status", async ({ page }) => {
     await page.goto("/production/epoxy");
-    await expect(page.getByText(/PASS|COMPLETED/i)).toBeVisible({ timeout: 8_000 });
+    await expect(page.getByText(/PASS|COMPLETED/i).first()).toBeVisible({ timeout: 8_000 });
   });
 
   test("new epoxy form renders", async ({ page }) => {
     await page.goto("/production/epoxy/new");
     await expect(page.locator("h1").filter({ hasText: /epoxy/i })).toBeVisible();
     await expect(page.getByText("Slab & Machine")).toBeVisible();
-    await expect(page.getByText("Epoxy Details")).toBeVisible();
+    await expect(page.getByRole("heading", { name: "Epoxy Details" })).toBeVisible();
   });
 
   test("new epoxy form - mesh applied checkbox exists", async ({ page }) => {
@@ -112,14 +113,13 @@ test.describe("Epoxy / Vacuum", () => {
     await page.goto("/production/epoxy/new");
     const typeSelect = page.locator('select[name="epoxyType"]');
     await expect(typeSelect).toBeVisible({ timeout: 5_000 });
-    await expect(typeSelect.locator('option[value="Premium"]')).toBeVisible();
-    await expect(typeSelect.locator('option[value="UV Resistant"]')).toBeVisible();
+    const options = await typeSelect.locator("option").allTextContents();
+    expect(options.some((o) => /Premium/i.test(o))).toBeTruthy();
+    expect(options.some((o) => /UV Resistant/i.test(o))).toBeTruthy();
   });
 
   test("new epoxy - no slabs ready shows warning hint", async ({ page }) => {
-    // After seeding, some slabs will be in EPOXY stage
     await page.goto("/production/epoxy/new");
-    // If slabs exist, dropdown is populated; if not, warning shown
     const dropdown = page.locator('select[name="slabId"]');
     await expect(dropdown).toBeVisible({ timeout: 5_000 });
   });
@@ -134,14 +134,14 @@ test.describe("Polishing", () => {
 
   test("polishing list shows finish type and gloss level", async ({ page }) => {
     await page.goto("/production/polishing");
-    await expect(page.getByText(/POLISHED/i)).toBeVisible({ timeout: 8_000 });
+    await expect(page.getByText(/POLISHED/i).first()).toBeVisible({ timeout: 8_000 });
     await expect(page.getByText(/85%/)).toBeVisible();
   });
 
   test("new polishing form renders", async ({ page }) => {
     await page.goto("/production/polishing/new");
     await expect(page.locator("h1").filter({ hasText: /polishing/i })).toBeVisible();
-    await expect(page.getByText("Polishing Details")).toBeVisible();
+    await expect(page.getByRole("heading", { name: "Polishing Details" })).toBeVisible();
   });
 
   test("new polishing form - finish type has all options", async ({ page }) => {
@@ -149,7 +149,6 @@ test.describe("Polishing", () => {
     const finishSelect = page.locator('select[name="finishType"]');
     await expect(finishSelect).toBeVisible({ timeout: 5_000 });
     const options = await finishSelect.locator("option").allTextContents();
-    // Should have at least Polished, Honed
     expect(options.some((o) => /polished/i.test(o))).toBeTruthy();
     expect(options.some((o) => /honed/i.test(o))).toBeTruthy();
   });

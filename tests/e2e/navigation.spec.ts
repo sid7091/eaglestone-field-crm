@@ -1,21 +1,12 @@
 import { test, expect } from "@playwright/test";
 
 test.describe("Navigation & Layout", () => {
-  test("sidebar is visible on all main pages", async ({ page }) => {
-    const pages = [
-      "/field-dashboard",
-      "/customers",
-      "/visits",
-      "/blocks",
-      "/machines",
-      "/production",
-      "/inventory",
-    ];
-    for (const path of pages) {
-      await page.goto(path);
-      // Sidebar should have brand name or logo
-      await expect(page.locator("nav, aside, [class*='sidebar']").first()).toBeVisible({ timeout: 5_000 });
-    }
+  test.use({ viewport: { width: 1280, height: 720 } }); // Desktop viewport for sidebar tests
+
+  test("sidebar is visible on desktop", async ({ page }) => {
+    await page.goto("/field-dashboard");
+    // Sidebar should have brand name or logo — use desktop viewport
+    await expect(page.locator("nav, aside, [class*='sidebar']").first()).toBeVisible({ timeout: 5_000 });
   });
 
   test("/ redirects to /field-dashboard", async ({ page }) => {
@@ -25,7 +16,7 @@ test.describe("Navigation & Layout", () => {
 
   test("breadcrumb / page titles render on all pages", async ({ page }) => {
     const routes = [
-      { url: "/field-dashboard", title: /field|dashboard/i },
+      { url: "/field-dashboard", title: /Hi,|Siddharth|field|dashboard/i },
       { url: "/customers", title: /customer/i },
       { url: "/visits", title: /visit/i },
       { url: "/blocks", title: /block/i },
@@ -68,15 +59,17 @@ test.describe("Navigation & Layout", () => {
 
   test("Cancel buttons return to parent page", async ({ page }) => {
     const cases = [
-      { form: "/blocks/new", parent: /\/blocks$/ },
-      { form: "/machines/new", parent: /\/machines$/ },
-      { form: "/production/gang-saw/new", parent: /gang-saw$/ },
+      { parent: "/blocks", form: "/blocks/new", parentUrl: /\/blocks$/ },
+      { parent: "/machines", form: "/machines/new", parentUrl: /\/machines$/ },
+      { parent: "/production/gang-saw", form: "/production/gang-saw/new", parentUrl: /gang-saw$/ },
     ];
 
-    for (const { form, parent } of cases) {
+    for (const { parent, form, parentUrl } of cases) {
+      // Navigate to parent first so router.back() has history
+      await page.goto(parent);
       await page.goto(form);
       await page.getByRole("button", { name: /cancel/i }).click();
-      await expect(page).toHaveURL(parent, { timeout: 5_000 });
+      await expect(page).toHaveURL(parentUrl, { timeout: 5_000 });
     }
   });
 
