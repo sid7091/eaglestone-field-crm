@@ -11,8 +11,8 @@ test.describe("Production Hub", () => {
 
   test("production hub shows flow diagram with 5 stages", async ({ page }) => {
     await page.goto("/production");
-    await expect(page.getByText("Raw Block", { exact: true })).toBeVisible({ timeout: 8_000 });
-    await expect(page.getByText("Warehouse", { exact: true })).toBeVisible();
+    await expect(page.getByText("Raw Block", { exact: true }).first()).toBeVisible({ timeout: 8_000 });
+    await expect(page.getByText("Warehouse", { exact: true }).first()).toBeVisible();
   });
 
   test("navigate to gang saw from production hub", async ({ page }) => {
@@ -135,7 +135,7 @@ test.describe("Polishing", () => {
   test("polishing list shows finish type and gloss level", async ({ page }) => {
     await page.goto("/production/polishing");
     await expect(page.getByText(/POLISHED/i).first()).toBeVisible({ timeout: 8_000 });
-    await expect(page.getByText(/85%/)).toBeVisible();
+    await expect(page.getByText(/85%/).first()).toBeVisible();
   });
 
   test("new polishing form renders", async ({ page }) => {
