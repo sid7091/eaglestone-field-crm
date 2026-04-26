@@ -51,7 +51,7 @@ export default function LoginPage() {
           onSubmit={handleSubmit}
           className="rounded-lg border border-white/10 bg-white/5 p-8 shadow-4 backdrop-blur"
         >
-          <p className="mb-6 text-center font-display text-[11px] font-semibold tracking-[.2em] text-brand-cream/50">
+          <p className="mb-6 text-center font-display text-[12px] font-semibold tracking-[.2em] text-brand-cream/70">
             SIGN IN TO YOUR ACCOUNT
           </p>
 
