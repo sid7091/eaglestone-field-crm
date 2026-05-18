@@ -1,0 +1,15 @@
+{
+  "name": "eagle-tasks",
+  "version": "1.0.0",
+  "private": true,
+  "description": "Standalone internal task-assignment app for Eaglestone. Self-contained: zero npm dependencies, own SQLite database, no impact on the parent CRM.",
+  "type": "module",
+  "engines": {
+    "node": ">=22.5.0"
+  },
+  "scripts": {
+    "start": "node --experimental-sqlite server.mjs",
+    "dev": "node --experimental-sqlite --watch server.mjs",
+    "seed": "node --experimental-sqlite src/seed.mjs"
+  }
+}
