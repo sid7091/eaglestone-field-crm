@@ -4,6 +4,10 @@ import { Customer } from "../entities/Customer";
 import { Visit } from "../entities/Visit";
 import { Inventory } from "../entities/Inventory";
 import { SyncQueue } from "../entities/SyncQueue";
+import { Task } from "../entities/Task";
+import { TaskTemplate } from "../entities/TaskTemplate";
+import { TaskTemplateStep } from "../entities/TaskTemplateStep";
+import { UserGamification } from "../entities/UserGamification";
 
 const isProduction = process.env.NODE_ENV === "production";
 
@@ -14,7 +18,17 @@ export const dataSourceOptions: DataSourceOptions = {
   database: process.env.DB_NAME || "eaglestone_crm",
   username: process.env.DB_USER || "eaglestone",
   password: process.env.DB_PASSWORD || "eaglestone_secret",
-  entities: [User, Customer, Visit, Inventory, SyncQueue],
+  entities: [
+    User,
+    Customer,
+    Visit,
+    Inventory,
+    SyncQueue,
+    Task,
+    TaskTemplate,
+    TaskTemplateStep,
+    UserGamification,
+  ],
   synchronize: false, // Schema is managed exclusively via migrations
   logging: isProduction ? ["error"] : ["query", "error"],
   migrations: ["src/migrations/*.ts", "dist/migrations/*.js"],

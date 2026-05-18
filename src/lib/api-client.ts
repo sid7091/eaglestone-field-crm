@@ -217,6 +217,20 @@ export const api = {
   },
 
   /**
+   * HTTP PATCH — partially update a resource.
+   *
+   * @example
+   *   const updated = await api.patch<Task>("/tasks/42", { status: "IN_PROGRESS" });
+   */
+  patch<T>(
+    endpoint: string,
+    body: Record<string, unknown> | unknown[],
+    options?: Omit<ApiClientOptions, "body" | "method">,
+  ): Promise<T> {
+    return apiClient<T>(endpoint, { ...options, method: "PATCH", body });
+  },
+
+  /**
    * HTTP DELETE — remove a resource.
    *
    * @example
