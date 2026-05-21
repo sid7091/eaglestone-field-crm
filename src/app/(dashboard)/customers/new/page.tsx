@@ -145,12 +145,6 @@ const LABEL_CLS =
 interface AddressSuggestion {
   place_id: string;
   description: string;
-  lat: string;
-  lng: string;
-  city: string;
-  district: string;
-  state: string;
-  pincode: string;
 }
 
 // ─── Component ────────────────────────────────────────────────────────────────
@@ -276,29 +270,68 @@ export default function NewCustomerPage() {
     debounceRef.current = setTimeout(() => fetchSuggestions(value), 400);
   };
 
-  const selectSuggestion = (s: AddressSuggestion) => {
+  const selectSuggestion = async (s: AddressSuggestion) => {
     setShowSuggestions(false);
     setSuggestions([]);
 
-    // Match state name to region code
-    let regionCode = "";
-    if (s.state) {
-      const match = REGION_CODES.find(
-        (r) => r.label.toLowerCase() === s.state.toLowerCase()
-      );
-      if (match) regionCode = match.value;
-    }
+    setAddressSearching(true);
+    setForm((prev) => ({ ...prev, address: s.description }));
 
-    setForm((prev) => ({
-      ...prev,
-      address: s.description,
-      city: s.city || prev.city,
-      district: s.district || prev.district,
-      regionCode: regionCode || prev.regionCode,
-      pincode: s.pincode || prev.pincode,
-      locationLatitude: s.lat || prev.locationLatitude,
-      locationLongitude: s.lng || prev.locationLongitude,
-    }));
+    try {
+      const res = await fetch(`/api/places/details?place_id=${s.place_id}`);
+      const data = await res.json();
+      const details = data.result;
+
+      if (!details) throw new Error("No details found");
+
+      let city = "";
+      let district = "";
+      let stateName = "";
+      let pincode = "";
+
+      // Parse Google address_components
+      if (details.address_components) {
+        // eslint-disable-next-line @typescript-eslint/no-explicit-any
+        for (const comp of details.address_components as any[]) {
+          const types = comp.types;
+          if (types.includes("locality") || types.includes("administrative_area_level_2")) {
+            if (!city) city = comp.long_name;
+          }
+          if (types.includes("administrative_area_level_3") || types.includes("administrative_area_level_2")) {
+            if (!district) district = comp.long_name;
+          }
+          if (types.includes("administrative_area_level_1")) {
+            stateName = comp.long_name;
+          }
+          if (types.includes("postal_code")) {
+            pincode = comp.long_name;
+          }
+        }
+      }
+
+      // Match state name to region code
+      let regionCode = "";
+      if (stateName) {
+        const match = REGION_CODES.find(
+          (r) => r.label.toLowerCase() === stateName.toLowerCase()
+        );
+        if (match) regionCode = match.value;
+      }
+
+      setForm((prev) => ({
+        ...prev,
+        city: city || prev.city,
+        district: district || prev.district,
+        regionCode: regionCode || prev.regionCode,
+        pincode: pincode || prev.pincode,
+        locationLatitude: details.geometry?.location?.lat ? String(details.geometry.location.lat) : prev.locationLatitude,
+        locationLongitude: details.geometry?.location?.lng ? String(details.geometry.location.lng) : prev.locationLongitude,
+      }));
+    } catch (err) {
+      console.error("Failed to fetch place details", err);
+    } finally {
+      setAddressSearching(false);
+    }
   };
 
   // ── Submit ─────────────────────────────────────────────────────────────────

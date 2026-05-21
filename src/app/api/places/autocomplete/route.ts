@@ -1,46 +1,44 @@
 import { NextRequest, NextResponse } from "next/server";
 
-// Use OpenStreetMap Nominatim for geocoding (free, no API key needed)
+const GOOGLE_API_KEY = process.env.GOOGLE_PLACES_API_KEY || "";
+
 export async function GET(request: NextRequest) {
   const input = request.nextUrl.searchParams.get("input");
   if (!input || input.length < 3) {
     return NextResponse.json({ predictions: [] });
   }
 
-  try {
-    const url = new URL("https://nominatim.openstreetmap.org/search");
-    url.searchParams.set("q", input);
-    url.searchParams.set("format", "json");
-    url.searchParams.set("addressdetails", "1");
-    url.searchParams.set("countrycodes", "in");
-    url.searchParams.set("limit", "5");
+  if (!GOOGLE_API_KEY) {
+    return NextResponse.json(
+      { predictions: [], error: "Google Places API key not configured" },
+      { status: 503 }
+    );
+  }
 
-    const res = await fetch(url.toString(), {
-      headers: { "User-Agent": "EaglestoneFieldCRM/1.0" },
-      cache: "no-store",
-    });
+  try {
+    const url = new URL("https://maps.googleapis.com/maps/api/place/autocomplete/json");
+    url.searchParams.set("input", input);
+    url.searchParams.set("key", GOOGLE_API_KEY);
+    // Restrict to India to match existing behavior
+    url.searchParams.set("components", "country:in");
+
+    const res = await fetch(url.toString(), { cache: "no-store" });
     const data = await res.json();
 
+    if (data.status !== "OK" && data.status !== "ZERO_RESULTS") {
+      console.error("Google Places API error:", data);
+      return NextResponse.json({ predictions: [], error: data.error_message || "API error" }, { status: 500 });
+    }
+
+    // eslint-disable-next-line @typescript-eslint/no-explicit-any
     return NextResponse.json({
-      predictions: data.map((item: {
-        place_id: number;
-        display_name: string;
-        lat: string;
-        lon: string;
-        address: Record<string, string>;
-      }) => ({
-        place_id: String(item.place_id),
-        description: item.display_name,
-        lat: item.lat,
-        lng: item.lon,
-        city: item.address?.city || item.address?.town || item.address?.village || "",
-        district: item.address?.state_district || item.address?.county || "",
-        state: item.address?.state || "",
-        pincode: item.address?.postcode || "",
+      predictions: (data.predictions || []).map((item: any) => ({
+        place_id: item.place_id,
+        description: item.description,
       })),
     });
   } catch (err) {
-    console.error("Nominatim fetch error:", err);
-    return NextResponse.json({ predictions: [], error: "Failed to fetch suggestions" });
+    console.error("Google Places autocomplete error:", err);
+    return NextResponse.json({ predictions: [], error: "Failed to fetch suggestions" }, { status: 500 });
   }
 }
