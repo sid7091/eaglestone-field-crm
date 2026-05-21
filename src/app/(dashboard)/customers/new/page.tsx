@@ -568,7 +568,7 @@ export default function NewCustomerPage() {
             </CardHeader>
             <CardContent>
               <div className="space-y-4">
-                <div ref={wrapperRef}>
+                <div ref={wrapperRef} className="relative">
                   <label className={LABEL_CLS}>Address *</label>
                   <div className="relative">
                     <input
