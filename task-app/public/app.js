@@ -1,11 +1,13 @@
-// Eagle Tasks — standalone SPA (vanilla, no build step)
+// Eagle Tasks — Material Design 3 mobile-first SPA (vanilla, no build step)
 const app = document.getElementById("app");
 const modalRoot = document.getElementById("modal-root");
+const snackRoot = document.getElementById("snackbar");
 
 let ME = null;
 let META = { roles: [], departments: [] };
+let shellReady = false;
 
-// ── API helper ────────────────────────────────────────────────────
+// ── helpers ────────────────────────────────────────────────────────
 async function api(path, method = "GET", body) {
   const res = await fetch("/api" + path, {
     method,
@@ -22,28 +24,38 @@ async function api(path, method = "GET", body) {
   }
   return data;
 }
-
 const esc = (s) =>
   String(s ?? "").replace(/[&<>"]/g, (c) => ({ "&": "&amp;", "<": "&lt;", ">": "&gt;", '"': "&quot;" }[c]));
-const fmt = (d) => (d ? new Date(d).toLocaleString() : "—");
-const badge = (t) =>
-  `<span class="badge b-${esc(t.overdue && !["COMPLETED", "CANCELLED"].includes(t.status) ? "overdue" : t.status)}">${
-    t.overdue && !["COMPLETED", "CANCELLED"].includes(t.status) ? "OVERDUE" : esc(t.status.replace(/_/g, " "))
-  }</span>`;
+const icon = (n) => `<span class="material-symbols-outlined">${n}</span>`;
+const fmtDate = (d) =>
+  d ? new Date(d).toLocaleString(undefined, { month: "short", day: "numeric", hour: "2-digit", minute: "2-digit" }) : "—";
+const isOverdue = (t) =>
+  t.overdue && !["COMPLETED", "CANCELLED"].includes(t.status);
+const statusKey = (t) => (isOverdue(t) ? "overdue" : t.status);
+const statusLabel = (t) => (isOverdue(t) ? "Overdue" : t.status.replace(/_/g, " "));
+const chip = (t) => `<span class="chip s-${statusKey(t)}">${esc(statusLabel(t))}</span>`;
+const canOriginate = () => ["ADMIN", "MANAGER", "SUPERVISOR"].includes(ME.role);
+const isSenior = () => ["ADMIN", "MANAGER"].includes(ME.role);
 
-function modal(html) {
-  modalRoot.innerHTML = `<div class="modal-bg"><div class="modal">${html}</div></div>`;
-  modalRoot.querySelector(".modal-bg").addEventListener("click", (e) => {
-    if (e.target.classList.contains("modal-bg")) closeModal();
+function snack(msg, isErr) {
+  snackRoot.innerHTML = `<div class="snack ${isErr ? "err" : ""}">${esc(msg)}</div>`;
+  setTimeout(() => (snackRoot.innerHTML = ""), 3200);
+}
+function dialog(html) {
+  modalRoot.innerHTML = `<div class="scrim"><div class="dialog"><div class="grabber"></div>${html}</div></div>`;
+  modalRoot.querySelector(".scrim").addEventListener("click", (e) => {
+    if (e.target.classList.contains("scrim")) closeDialog();
   });
 }
-const closeModal = () => (modalRoot.innerHTML = "");
+const closeDialog = () => (modalRoot.innerHTML = "");
+const $ = (sel) => document.querySelector(sel);
 
-// ── Auth ──────────────────────────────────────────────────────────
+// ── boot / auth ────────────────────────────────────────────────────
 async function boot() {
   try {
     META = await api("/meta");
     ME = await api("/me");
+    if (!location.hash) location.hash = "#/tasks";
     route();
   } catch {
     renderLogin();
@@ -51,35 +63,34 @@ async function boot() {
 }
 
 function renderLogin() {
+  shellReady = false;
   app.innerHTML = `
-    <div class="center"><div class="card login">
-      <h1>Eagle Tasks</h1>
-      <p class="sub">Internal task assignment</p>
+    <div class="login-screen"><div class="login-card">
+      <div class="logo">EAGLE&nbsp;TASKS</div>
+      <p class="tag">Internal task assignment</p>
       <form id="lf">
-        <label>Email</label><input name="email" value="admin@eaglestone.in" />
-        <label>Password</label><input name="password" type="password" value="password123" />
-        <div style="margin-top:14px"><button style="width:100%">Sign in</button></div>
-        <div class="err" id="le"></div>
+        <div class="field"><label>Email</label><input name="email" value="admin@eaglestone.in" autocomplete="username" /></div>
+        <div class="field"><label>Password</label><input name="password" type="password" value="password123" autocomplete="current-password" /></div>
+        <button class="btn block lg" type="submit">Sign in</button>
+        <div class="err-tile" id="le" style="display:none"></div>
       </form>
-      <p class="muted" style="margin-top:12px">Demo: admin@ / manager@ / supervisor@ / warehouse@ / accounts@ / dispatch@ eaglestone.in · password123</p>
+      <p class="muted" style="margin-top:14px;text-align:center">Demo · password123 · admin@ · manager@ · supervisor@ · warehouse@ · accounts@ · dispatch@ · viewer@ eaglestone.in</p>
     </div></div>`;
-  document.getElementById("lf").addEventListener("submit", async (e) => {
+  $("#lf").addEventListener("submit", async (e) => {
     e.preventDefault();
     const f = new FormData(e.target);
     try {
-      ME = await api("/login", "POST", {
-        email: f.get("email"),
-        password: f.get("password"),
-      });
+      ME = await api("/login", "POST", { email: f.get("email"), password: f.get("password") });
       META = await api("/meta");
       location.hash = "#/tasks";
       route();
     } catch (err) {
-      document.getElementById("le").textContent = err.message;
+      const el = $("#le");
+      el.style.display = "block";
+      el.textContent = err.message;
     }
   });
 }
-
 async function logout() {
   await api("/logout", "POST");
   ME = null;
@@ -87,171 +98,184 @@ async function logout() {
   renderLogin();
 }
 
-// ── Shell ─────────────────────────────────────────────────────────
-function shell(active, inner) {
-  const isAdmin = ME.role === "ADMIN";
-  const canTpl = ["ADMIN", "MANAGER", "SUPERVISOR"].includes(ME.role);
-  const link = (h, label) =>
-    `<a href="#/${h}" class="${active === h ? "active" : ""}">${label}</a>`;
-  app.innerHTML = `
-    <div class="topbar">
-      <span class="brand">EAGLE&nbsp;TASKS</span>
-      <nav>
-        ${link("tasks", "Tasks")}
-        ${link("leaderboard", "Leaderboard")}
-        ${canTpl ? link("templates", "Templates") : ""}
-        ${isAdmin ? link("org", "Org") : ""}
-        ${link("stats", "My Stats")}
-      </nav>
-      <span class="who">${esc(ME.name)} · ${esc(ME.role)} · ${esc(ME.regionCode)}</span>
-      <button class="ghost sm" id="lo">Logout</button>
-    </div>
-    <div class="wrap" id="view">${inner}</div>`;
-  document.getElementById("lo").addEventListener("click", logout);
+// ── app shell (app bar + content + bottom nav + FAB) ───────────────
+function navItems() {
+  const items = [{ key: "tasks", label: "Tasks", icon: "checklist" }];
+  items.push({ key: "leaderboard", label: "Board", icon: "emoji_events" });
+  if (canOriginate()) items.push({ key: "templates", label: "Templates", icon: "dashboard_customize" });
+  if (ME.role === "ADMIN") items.push({ key: "org", label: "Org", icon: "groups" });
+  items.push({ key: "me", label: "Me", icon: "person" });
+  return items;
 }
+function buildShell() {
+  app.innerHTML = `
+    <header class="app-bar">
+      <button class="icon-btn leading" id="backBtn" style="display:none">${icon("arrow_back")}</button>
+      <h1 id="barTitle">Tasks</h1>
+      <div class="actions"><button class="icon-btn" id="logoutBtn" title="Logout">${icon("logout")}</button></div>
+    </header>
+    <main class="content" id="content"></main>
+    <button class="fab" id="fab" style="display:none">${icon("add")}<span id="fabLabel">New</span></button>
+    <nav class="bottom-nav" id="bnav"></nav>`;
+  $("#logoutBtn").addEventListener("click", logout);
+  $("#bnav").innerHTML = navItems()
+    .map(
+      (n) => `<button data-nav="${n.key}"><span class="ind">${icon(n.icon)}</span>${n.label}</button>`
+    )
+    .join("");
+  $("#bnav")
+    .querySelectorAll("[data-nav]")
+    .forEach((b) => b.addEventListener("click", () => (location.hash = "#/" + b.dataset.nav)));
+  shellReady = true;
+}
+function setActiveNav(key) {
+  $("#bnav")
+    ?.querySelectorAll("[data-nav]")
+    .forEach((b) => b.classList.toggle("active", b.dataset.nav === key));
+}
+// view(title, html, {nav, back, fab:{label,onClick}})
+function view(title, html, opts = {}) {
+  if (!shellReady) buildShell();
+  $("#barTitle").textContent = title;
+  $("#content").innerHTML = html;
+  $("#content").scrollTop = 0;
+  window.scrollTo(0, 0);
+  setActiveNav(opts.nav || null);
+  const back = $("#backBtn");
+  back.style.display = opts.back ? "flex" : "none";
+  back.onclick = opts.back || null;
+  const fab = $("#fab");
+  if (opts.fab) {
+    fab.style.display = "inline-flex";
+    $("#fabLabel").textContent = opts.fab.label;
+    fab.onclick = opts.fab.onClick;
+  } else {
+    fab.style.display = "none";
+  }
+}
+const loading = (title, opts) => view(title, `<div class="spin">${icon("hourglass_empty")}<p>Loading…</p></div>`, opts);
 
-// ── Router ────────────────────────────────────────────────────────
+// ── router ─────────────────────────────────────────────────────────
 function route() {
   if (!ME) return renderLogin();
   const h = location.hash.replace(/^#\//, "") || "tasks";
   const [page, arg] = h.split("/");
-  if (page === "tasks") return viewTasks();
-  if (page === "task") return viewTask(arg);
-  if (page === "leaderboard") return viewLeaderboard();
-  if (page === "templates") return viewTemplates();
-  if (page === "org") return viewOrg();
-  if (page === "stats") return viewStats();
-  viewTasks();
+  ({
+    tasks: viewTasks,
+    task: () => viewTask(arg),
+    leaderboard: viewLeaderboard,
+    templates: viewTemplates,
+    org: viewOrg,
+    me: viewMe,
+  }[page] || viewTasks)();
 }
 window.addEventListener("hashchange", route);
 
-// ── Tasks list ────────────────────────────────────────────────────
-let taskFilter = { tab: "mine", status: "", priority: "", search: "" };
+// ── Tasks list ─────────────────────────────────────────────────────
+let taskTab = "mine";
+let statusFilter = "";
 
 async function viewTasks() {
-  shell("tasks", `<div class="spin">Loading…</div>`);
-  const canCreate = ["ADMIN", "MANAGER", "SUPERVISOR"].includes(ME.role);
+  loading("Tasks", { nav: "tasks", fab: canOriginate() ? { label: "New", onClick: createTaskModal } : null });
   const qp = new URLSearchParams();
-  if (taskFilter.tab === "mine") qp.set("mine", "true");
-  if (taskFilter.tab === "created") qp.set("assignedById", ME.id);
-  if (taskFilter.status) qp.set("status", taskFilter.status);
-  if (taskFilter.priority) qp.set("priority", taskFilter.priority);
-  if (taskFilter.search) qp.set("search", taskFilter.search);
+  if (taskTab === "mine") qp.set("mine", "true");
+  if (taskTab === "created") qp.set("assignedById", ME.id);
+  if (statusFilter) qp.set("status", statusFilter);
   let tasks = await api("/tasks?" + qp.toString());
-  if (taskFilter.tab === "created")
-    tasks = tasks.filter((t) => t.assignedById === ME.id);
+  if (taskTab === "created") tasks = tasks.filter((t) => t.assignedById === ME.id);
 
-  const rows = tasks
+  const statuses = ["", "PENDING", "IN_PROGRESS", "FORWARDED", "BLOCKED_BY_SUBTASKS", "COMPLETED"];
+  const fchips = statuses
     .map(
-      (t) => `<tr class="clickable" data-id="${t.id}">
-        <td><b>${esc(t.title)}</b>${t.templateId ? ' <span class="pill">template</span>' : ""}</td>
-        <td>${esc(t.assignedToName || "")}<div class="muted">${esc(t.assignedToDepartment || "")}</div></td>
-        <td>${esc(t.assignedByName || "")}</td>
-        <td>${fmt(t.deadline)}</td>
-        <td><span class="pill">${esc(t.priority)}</span></td>
-        <td>${badge(t)}</td></tr>`
+      (s) =>
+        `<button class="fchip ${statusFilter === s ? "sel" : ""}" data-st="${s}">${
+          statusFilter === s && s ? icon("check") : ""
+        }${s ? esc(s.replace(/_/g, " ")) : "All"}</button>`
     )
     .join("");
 
-  shell(
-    "tasks",
-    `<div class="row between">
-       <div><h1>Tasks</h1><p class="sub">${tasks.length} visible</p></div>
-       ${canCreate ? `<div class="row"><button id="newT">+ New task</button><button class="ghost" id="fromT">From template</button></div>` : ""}
+  const rows = tasks.length
+    ? tasks
+        .map(
+          (t) => `<div class="list-item" data-id="${t.id}">
+            <div class="lead p-${esc(t.priority)}">${icon(
+            t.decomposition === "SUBTASKS" ? "account_tree" : t.decomposition === "FORWARDED" ? "fast_forward" : "assignment"
+          )}</div>
+            <div class="body">
+              <div class="ttl">${esc(t.title)}</div>
+              <div class="sub">${esc(t.assignedToName || "")} · due ${fmtDate(t.deadline)}</div>
+            </div>
+            <div class="trail">${chip(t)}<span class="chev">${icon("chevron_right")}</span></div>
+          </div>`
+        )
+        .join("")
+    : `<div class="empty">${icon("inbox")}<p>No tasks here yet.</p></div>`;
+
+  view(
+    "Tasks",
+    `<div class="segmented">
+       <button data-tab="mine" class="${taskTab === "mine" ? "active" : ""}">Assigned to me</button>
+       <button data-tab="created" class="${taskTab === "created" ? "active" : ""}">Created by me</button>
+       <button data-tab="all" class="${taskTab === "all" ? "active" : ""}">All</button>
      </div>
-     <div class="card row">
-       <div class="row">
-         ${["mine", "created", "all"]
-           .map(
-             (tb) =>
-               `<button class="sm ${taskFilter.tab === tb ? "" : "ghost"}" data-tab="${tb}">${
-                 { mine: "Assigned to me", created: "Created by me", all: "All visible" }[tb]
-               }</button>`
-           )
-           .join("")}
-       </div>
-       <input id="srch" placeholder="Search title…" style="max-width:200px" value="${esc(taskFilter.search)}" />
-       <select id="fst" style="max-width:170px">
-         <option value="">Any status</option>
-         ${["PENDING", "IN_PROGRESS", "FORWARDED", "BLOCKED_BY_SUBTASKS", "COMPLETED", "CANCELLED"]
-           .map((s) => `<option ${taskFilter.status === s ? "selected" : ""}>${s}</option>`)
-           .join("")}
-       </select>
-       <select id="fpr" style="max-width:140px">
-         <option value="">Any priority</option>
-         ${["LOW", "MEDIUM", "HIGH", "URGENT"]
-           .map((p) => `<option ${taskFilter.priority === p ? "selected" : ""}>${p}</option>`)
-           .join("")}
-       </select>
-     </div>
-     <div class="card"><table>
-       <tr><th>Title</th><th>Assignee</th><th>Assigner</th><th>Deadline</th><th>Priority</th><th>Status</th></tr>
-       ${rows || `<tr><td colspan="6" class="muted">No tasks.</td></tr>`}
-     </table></div>`
+     ${canOriginate() ? `<button class="btn tonal block" id="fromTpl" style="margin-bottom:12px">${icon("dashboard_customize")} Start from a template</button>` : ""}
+     <div class="filter-row">${fchips}</div>
+     <div class="card pad0">${rows}</div>`,
+    { nav: "tasks", fab: canOriginate() ? { label: "New", onClick: createTaskModal } : null }
   );
 
   document.querySelectorAll("[data-tab]").forEach((b) =>
     b.addEventListener("click", () => {
-      taskFilter.tab = b.dataset.tab;
+      taskTab = b.dataset.tab;
       viewTasks();
     })
   );
-  document.querySelectorAll("tr[data-id]").forEach((r) =>
+  document.querySelectorAll("[data-st]").forEach((b) =>
+    b.addEventListener("click", () => {
+      statusFilter = b.dataset.st;
+      viewTasks();
+    })
+  );
+  document.querySelectorAll(".list-item[data-id]").forEach((r) =>
     r.addEventListener("click", () => (location.hash = "#/task/" + r.dataset.id))
   );
-  document.getElementById("fst").addEventListener("change", (e) => {
-    taskFilter.status = e.target.value;
-    viewTasks();
-  });
-  document.getElementById("fpr").addEventListener("change", (e) => {
-    taskFilter.priority = e.target.value;
-    viewTasks();
-  });
-  let deb;
-  document.getElementById("srch").addEventListener("input", (e) => {
-    clearTimeout(deb);
-    deb = setTimeout(() => {
-      taskFilter.search = e.target.value;
-      viewTasks();
-    }, 350);
-  });
-  if (canCreate) {
-    document.getElementById("newT").addEventListener("click", createTaskModal);
-    document.getElementById("fromT").addEventListener("click", instantiateModal);
-  }
+  $("#fromTpl")?.addEventListener("click", () => instantiateModal());
 }
 
-async function userOptions(selectedId) {
+async function assignableOptions(selectedId) {
   const users = await api("/users?assignableOnly=true");
+  if (!users.length) return "";
   return users
     .map(
       (u) =>
-        `<option value="${u.id}" ${u.id === selectedId ? "selected" : ""}>${esc(
-          u.name
-        )} — ${esc(u.role)}/${esc(u.department)} (${esc(u.regionCode)})</option>`
+        `<option value="${u.id}" ${u.id === selectedId ? "selected" : ""}>${esc(u.name)} — ${esc(u.role)} · ${esc(u.department)}</option>`
     )
     .join("");
 }
 
 async function createTaskModal() {
-  const opts = await userOptions();
-  modal(`<h2>New task</h2><form id="ct">
-    <label>Title</label><input name="title" required />
-    <label>Description</label><textarea name="description" rows="3"></textarea>
-    <label>Assign to</label><select name="assignedToId" required>${opts}</select>
-    <div class="grid2">
-      <div><label>Deadline</label><input name="deadline" type="datetime-local" required /></div>
-      <div><label>Priority</label><select name="priority">
-        ${["LOW", "MEDIUM", "HIGH", "URGENT"].map((p) => `<option ${p === "MEDIUM" ? "selected" : ""}>${p}</option>`).join("")}
-      </select></div>
-    </div>
-    <div class="row between" style="margin-top:16px">
-      <button type="button" class="ghost" id="cx">Cancel</button>
-      <button>Create</button>
-    </div><div class="err" id="ce"></div>
-  </form>`);
-  document.getElementById("cx").addEventListener("click", closeModal);
-  document.getElementById("ct").addEventListener("submit", async (e) => {
+  const opts = await assignableOptions();
+  if (!opts) return snack("You have no one you can assign to.", true);
+  dialog(`<h2>New task</h2>
+    <p class="dialog-sub">Create a task and assign it to one person.</p>
+    <form id="ct">
+      <div class="field"><label>Title</label><input name="title" required /></div>
+      <div class="field"><label>Description</label><textarea name="description" rows="3"></textarea></div>
+      <div class="field"><label>Assign to</label><select name="assignedToId" required>${opts}</select></div>
+      <div class="grid2">
+        <div class="field"><label>Deadline</label><input name="deadline" type="datetime-local" required /></div>
+        <div class="field"><label>Priority</label><select name="priority">
+          ${["LOW", "MEDIUM", "HIGH", "URGENT"].map((p) => `<option ${p === "MEDIUM" ? "selected" : ""}>${p}</option>`).join("")}
+        </select></div>
+      </div>
+      <div class="err-tile" id="ce" style="display:none"></div>
+      <div class="dialog-actions">
+        <button type="button" class="btn text" id="cx">Cancel</button>
+        <button class="btn" type="submit">Create task</button>
+      </div>
+    </form>`);
+  $("#cx").addEventListener("click", closeDialog);
+  $("#ct").addEventListener("submit", async (e) => {
     e.preventDefault();
     const f = new FormData(e.target);
     try {
@@ -262,22 +286,25 @@ async function createTaskModal() {
         deadline: new Date(f.get("deadline")).toISOString(),
         priority: f.get("priority"),
       });
-      closeModal();
+      closeDialog();
+      snack("Task created");
       viewTasks();
     } catch (err) {
-      document.getElementById("ce").textContent = err.message;
+      const el = $("#ce");
+      el.style.display = "block";
+      el.textContent = err.message;
     }
   });
 }
 
-// ── Task detail + chain ───────────────────────────────────────────
+// ── Task detail ────────────────────────────────────────────────────
 async function viewTask(id) {
-  shell("tasks", `<div class="spin">Loading…</div>`);
+  loading("Task", { back: () => (location.hash = "#/tasks") });
   let data;
   try {
     data = await api("/tasks/" + id);
   } catch (err) {
-    return shell("tasks", `<div class="card">${esc(err.message)} <a href="#/tasks">Back</a></div>`);
+    return view("Task", `<div class="err-tile">${esc(err.message)}</div>`, { back: () => (location.hash = "#/tasks") });
   }
   const t = data.task;
   const mine = t.assignedToId === ME.id;
@@ -285,86 +312,112 @@ async function viewTask(id) {
   const open = !["COMPLETED", "CANCELLED"].includes(t.status);
   const rootId = t.rootTaskId || t.id;
 
+  // Action area — the part users were getting stuck on.
+  let actionsHtml = "";
+  if (mine && open && leaf) {
+    const startBtn =
+      t.status === "PENDING"
+        ? `<button class="btn tonal block lg" id="start">${icon("play_arrow")} Start working on this</button>`
+        : "";
+    actionsHtml = `
+      <div class="section-title">What would you like to do?</div>
+      ${startBtn}
+      <button class="btn block lg" id="done" style="margin-top:8px">${icon("check_circle")} Mark complete</button>
+      <button class="btn outlined block lg" id="fwd" style="margin-top:8px">${icon("fast_forward")} Assign onward to one person</button>
+      <button class="btn outlined block lg" id="split" style="margin-top:8px">${icon("account_tree")} Split across a team</button>
+      <p class="muted" style="margin-top:8px">“Assign onward” hands the whole task to someone else. “Split” divides it into parallel tasks — you’re done when they all finish.</p>`;
+  } else if (mine && open && !leaf) {
+    actionsHtml = `<div class="help">${icon("hourglass_top")}<div>You've ${
+      t.decomposition === "SUBTASKS" ? "split this into subtasks" : "assigned this onward"
+    }. It will complete automatically once the people below you finish.</div></div>`;
+  } else if (!mine && open) {
+    actionsHtml = `<div class="help">${icon("info")}<div>This task is currently with <b>${esc(
+      t.assignedToName
+    )}</b>. Only they can act on it right now.</div></div>`;
+  }
+  const cancelBtn =
+    (ME.role === "ADMIN" || t.assignedById === ME.id) && open
+      ? `<button class="btn danger-text block" id="cancel" style="margin-top:10px">${icon("cancel")} Cancel this task & its subtasks</button>`
+      : "";
+
   const chainHtml = data.chain
     .map((c) => {
       const depth = c.id === rootId ? 0 : c.parentTaskId === rootId ? 1 : 2;
-      return `<li class="depth${depth}">
-        <div class="row between">
-          <div><b>${esc(c.title)}</b> ${badge(c)}
-            <div class="muted">${esc(c.assignedToName || "")} · ${esc(c.assignedToDepartment || "")} · due ${fmt(c.deadline)}</div>
+      const mineNode = c.assignedToId === ME.id;
+      return `<li class="depth${depth} ${mineNode ? "me" : ""}">
+        <div class="row between" style="gap:8px">
+          <div style="min-width:0">
+            <div class="node-title">${esc(c.title)} ${mineNode ? '<span class="muted">(you)</span>' : ""}</div>
+            <div class="node-sub">${esc(c.assignedToName || "")} · ${esc(c.assignedToDepartment || "")} · due ${fmtDate(c.deadline)}</div>
           </div>
-          ${c.id !== t.id ? `<a class="pill" href="#/task/${c.id}">open</a>` : ""}
+          <div style="display:flex;gap:6px;align-items:center">${chip(c)}${
+        c.id !== t.id ? `<button class="icon-btn" data-open="${c.id}">${icon("open_in_new")}</button>` : ""
+      }</div>
         </div></li>`;
     })
     .join("");
 
-  const actions = [];
-  if (mine && open && leaf && t.status === "PENDING")
-    actions.push(`<button class="sm" id="start">Mark in progress</button>`);
-  if (mine && open && leaf)
-    actions.push(`<button class="sm" id="fwd">Forward</button>`);
-  if (mine && open && leaf)
-    actions.push(`<button class="sm" id="split">Split into subtasks</button>`);
-  if (mine && open && leaf)
-    actions.push(`<button class="sm" id="done">Mark complete</button>`);
-  if ((ME.role === "ADMIN" || t.assignedById === ME.id) && open)
-    actions.push(`<button class="sm danger" id="cancel">Cancel chain</button>`);
-
-  shell(
-    "tasks",
-    `<a href="#/tasks">← Tasks</a>
-     <div class="card">
-       <div class="row between">
-         <div><h1>${esc(t.title)}</h1>
-           <p class="sub">${badge(t)} · <span class="pill">${esc(t.priority)}</span> · due ${fmt(t.deadline)}</p>
-         </div>
-       </div>
-       <p>${esc(t.description || "No description.")}</p>
-       <div class="muted" style="margin-top:8px">Assigned by ${esc(t.assignedByName)} → ${esc(t.assignedToName)}</div>
-       <div class="row" style="margin-top:14px">${actions.join("") || '<span class="muted">No actions available to you.</span>'}</div>
-       <div class="err" id="te"></div>
+  view(
+    t.title,
+    `<div class="card">
+       <div class="row" style="gap:8px;margin-bottom:8px">${chip(t)}<span class="chip">${icon("flag")} ${esc(t.priority)}</span>${
+      t.templateId ? `<span class="chip">${icon("dashboard_customize")} template</span>` : ""
+    }</div>
+       <p style="font-size:15px">${esc(t.description || "No description.")}</p>
+       <div class="muted" style="margin-top:10px">${icon("schedule")} Due ${fmtDate(t.deadline)}</div>
+       <div class="muted" style="margin-top:4px">${icon("person")} ${esc(t.assignedByName)} → ${esc(t.assignedToName)}</div>
      </div>
-     <div class="card"><h2 style="font-size:16px;margin-bottom:10px">Chain</h2>
+     <div class="card">${actionsHtml || '<p class="muted">No actions available.</p>'}${cancelBtn}
+       <div class="err-tile" id="te" style="display:none"></div>
+     </div>
+     <div class="section-title">Chain</div>
+     <div class="card">
        <ul class="timeline">${chainHtml}</ul>
-       ${ME.role === "ADMIN" || ME.role === "MANAGER" ? "" : '<p class="muted">You see your task, what you delegated, and one level up. Senior roles see the full chain.</p>'}
-     </div>`
+       ${isSenior() ? "" : `<p class="muted" style="margin-top:6px">You see your task, what you delegated, and one level up. Managers see the full chain.</p>`}
+     </div>`,
+    { back: () => (location.hash = "#/tasks") }
   );
 
-  const act = async (fn) => {
+  document.querySelectorAll("[data-open]").forEach((b) =>
+    b.addEventListener("click", () => (location.hash = "#/task/" + b.dataset.open))
+  );
+  const act = async (fn, msg) => {
     try {
       await fn();
+      if (msg) snack(msg);
       viewTask(id);
     } catch (err) {
-      document.getElementById("te").textContent =
-        err.message + (err.details ? " " + JSON.stringify(err.details) : "");
+      const el = $("#te");
+      el.style.display = "block";
+      el.textContent = err.message + (err.details ? " " + JSON.stringify(err.details) : "");
     }
   };
-  document.getElementById("start")?.addEventListener("click", () =>
-    act(() => api("/tasks/" + id, "PATCH", { status: "IN_PROGRESS" }))
-  );
-  document.getElementById("done")?.addEventListener("click", () =>
-    act(() => api("/tasks/" + id + "/complete", "POST"))
-  );
-  document.getElementById("cancel")?.addEventListener("click", () => {
-    if (confirm("Cancel this task and all its subtasks?"))
-      act(() => api("/tasks/" + id + "/cancel", "POST"));
+  $("#start")?.addEventListener("click", () => act(() => api("/tasks/" + id, "PATCH", { status: "IN_PROGRESS" }), "Marked in progress"));
+  $("#done")?.addEventListener("click", () => act(() => api("/tasks/" + id + "/complete", "POST"), "Completed 🎉"));
+  $("#cancel")?.addEventListener("click", () => {
+    if (confirm("Cancel this task and all its subtasks?")) act(() => api("/tasks/" + id + "/cancel", "POST"), "Cancelled");
   });
-  document.getElementById("fwd")?.addEventListener("click", () => forwardModal(id, t));
-  document.getElementById("split")?.addEventListener("click", () => splitModal(id, t));
+  $("#fwd")?.addEventListener("click", () => forwardModal(id, t));
+  $("#split")?.addEventListener("click", () => splitModal(id, t));
 }
 
 async function forwardModal(id, t) {
-  const opts = await userOptions();
-  modal(`<h2>Forward task</h2><form id="ff">
-    <label>Forward to</label><select name="assignedToId" required>${opts}</select>
-    <label>New deadline (≤ ${fmt(t.deadline)})</label>
-    <input name="deadline" type="datetime-local" />
-    <label>Note (optional)</label><textarea name="note" rows="2"></textarea>
-    <div class="row between" style="margin-top:14px">
-      <button type="button" class="ghost" id="x">Cancel</button><button>Forward</button>
-    </div><div class="err" id="e"></div></form>`);
-  document.getElementById("x").addEventListener("click", closeModal);
-  document.getElementById("ff").addEventListener("submit", async (e) => {
+  const opts = await assignableOptions();
+  if (!opts) return snack("You have no one you can assign to.", true);
+  dialog(`<h2>Assign onward</h2>
+    <p class="dialog-sub">Hand this whole task to one person. They can then complete it, or pass it on / split it further.</p>
+    <form id="ff">
+      <div class="field"><label>Assign to</label><select name="assignedToId" required>${opts}</select></div>
+      <div class="field"><label>New deadline (optional · must be on or before ${fmtDate(t.deadline)})</label><input name="deadline" type="datetime-local" /></div>
+      <div class="field"><label>Note (optional)</label><textarea name="note" rows="2"></textarea></div>
+      <div class="err-tile" id="fe" style="display:none"></div>
+      <div class="dialog-actions">
+        <button type="button" class="btn text" id="x">Cancel</button>
+        <button class="btn" type="submit">${icon("fast_forward")} Assign onward</button>
+      </div>
+    </form>`);
+  $("#x").addEventListener("click", closeDialog);
+  $("#ff").addEventListener("submit", async (e) => {
     e.preventDefault();
     const f = new FormData(e.target);
     try {
@@ -373,281 +426,275 @@ async function forwardModal(id, t) {
         deadline: f.get("deadline") ? new Date(f.get("deadline")).toISOString() : undefined,
         note: f.get("note") || undefined,
       });
-      closeModal();
+      closeDialog();
+      snack("Assigned onward");
       viewTask(id);
     } catch (err) {
-      document.getElementById("e").textContent = err.message;
+      const el = $("#fe");
+      el.style.display = "block";
+      el.textContent = err.message;
     }
   });
 }
 
 async function splitModal(id, t) {
   const users = await api("/users?assignableOnly=true");
-  const opt = users
-    .map((u) => `<option value="${u.id}">${esc(u.name)} — ${esc(u.department)}</option>`)
-    .join("");
-  const rowHtml = () => `<div class="subtask-row">
-      <input placeholder="Subtask title" class="st-title" />
-      <select class="st-user">${opt}</select>
-      <input type="datetime-local" class="st-deadline" />
-      <button type="button" class="ghost sm st-del">✕</button></div>`;
-  modal(`<h2>Split into subtasks</h2>
-    <p class="muted">Parent waits until every subtask is done. Deadlines must be ≤ ${fmt(t.deadline)}.</p>
+  if (!users.length) return snack("You have no one you can assign to.", true);
+  const opt = users.map((u) => `<option value="${u.id}">${esc(u.name)} — ${esc(u.department)}</option>`).join("");
+  const rowHtml = () => `<div class="subtask-card">
+      <button type="button" class="icon-btn st-del" style="position:absolute;right:6px;top:6px">${icon("close")}</button>
+      <div class="field" style="margin-bottom:8px"><label>Subtask</label><input class="st-title" placeholder="What needs doing" /></div>
+      <div class="grid2">
+        <div class="field" style="margin:0"><label>Who</label><select class="st-user">${opt}</select></div>
+        <div class="field" style="margin:0"><label>Due</label><input type="datetime-local" class="st-deadline" /></div>
+      </div></div>`;
+  dialog(`<h2>Split across a team</h2>
+    <p class="dialog-sub">Divide this into parallel subtasks for different people (e.g. Warehouse, Accounts, Dispatch). This task auto-completes when every subtask is done. Each due date must be on or before ${fmtDate(t.deadline)}.</p>
     <div id="rows">${rowHtml()}${rowHtml()}</div>
-    <button type="button" class="ghost sm" id="addRow">+ Add subtask</button>
-    <div class="row between" style="margin-top:14px">
-      <button class="ghost" id="x">Cancel</button><button id="go">Create subtasks</button>
-    </div><div class="err" id="e"></div>`);
+    <button type="button" class="btn text" id="addRow">${icon("add")} Add another</button>
+    <div class="err-tile" id="se" style="display:none"></div>
+    <div class="dialog-actions">
+      <button class="btn text" id="x">Cancel</button>
+      <button class="btn" id="go">${icon("account_tree")} Create subtasks</button>
+    </div>`);
   const bind = () =>
     document.querySelectorAll(".st-del").forEach((b) =>
       b.addEventListener("click", () => {
-        if (document.querySelectorAll(".subtask-row").length > 2) b.parentElement.remove();
+        if (document.querySelectorAll(".subtask-card").length > 2) b.closest(".subtask-card").remove();
       })
     );
   bind();
-  document.getElementById("addRow").addEventListener("click", () => {
-    document.getElementById("rows").insertAdjacentHTML("beforeend", rowHtml());
+  $("#addRow").addEventListener("click", () => {
+    $("#rows").insertAdjacentHTML("beforeend", rowHtml());
     bind();
   });
-  document.getElementById("x").addEventListener("click", closeModal);
-  document.getElementById("go").addEventListener("click", async () => {
-    const subtasks = [...document.querySelectorAll(".subtask-row")].map((r) => ({
+  $("#x").addEventListener("click", closeDialog);
+  $("#go").addEventListener("click", async () => {
+    const subtasks = [...document.querySelectorAll(".subtask-card")].map((r) => ({
       title: r.querySelector(".st-title").value,
       assignedToId: r.querySelector(".st-user").value,
-      deadline: r.querySelector(".st-deadline").value
-        ? new Date(r.querySelector(".st-deadline").value).toISOString()
-        : null,
+      deadline: r.querySelector(".st-deadline").value ? new Date(r.querySelector(".st-deadline").value).toISOString() : null,
     }));
     try {
       await api("/tasks/" + id + "/split", "POST", { subtasks });
-      closeModal();
+      closeDialog();
+      snack("Split into subtasks");
       viewTask(id);
     } catch (err) {
-      document.getElementById("e").textContent = err.message;
+      const el = $("#se");
+      el.style.display = "block";
+      el.textContent = err.message;
     }
   });
 }
 
-// ── Leaderboard ───────────────────────────────────────────────────
+// ── Leaderboard ────────────────────────────────────────────────────
 async function viewLeaderboard() {
-  shell("leaderboard", `<div class="spin">Loading…</div>`);
-  const board = await api("/tasks/leaderboard");
-  const me = await api("/tasks/me/stats");
-  const rows = board
-    .map(
-      (r, i) => `<tr><td>#${i + 1}</td><td><b>${esc(r.name)}</b></td>
-      <td>${esc(r.role)}</td><td>${esc(r.department)}</td><td>${esc(r.regionCode)}</td>
-      <td><b>${r.totalPoints}</b></td><td>🔥 ${r.currentStreak}</td><td>${r.bestStreak}</td>
-      <td>${r.badges.map((b) => `<span class="pill">${esc(b)}</span>`).join(" ")}</td></tr>`
-    )
-    .join("");
-  shell(
-    "leaderboard",
-    `<h1>Leaderboard</h1>
-     <div class="card"><div class="row">
-       <div class="stat"><b>${me.totalPoints}</b><span>Your points</span></div>
-       <div class="stat"><b>${me.currentStreak}</b><span>Streak</span></div>
-       <div class="stat"><b>${me.bestStreak}</b><span>Best</span></div>
-       <div class="stat"><b>${me.openTasks}</b><span>Open</span></div>
-       <div class="stat"><b>${me.overdueTasks}</b><span>Overdue</span></div>
-     </div></div>
-     <div class="card"><table>
-       <tr><th>#</th><th>Name</th><th>Role</th><th>Dept</th><th>Region</th><th>Points</th><th>Streak</th><th>Best</th><th>Badges</th></tr>
-       ${rows || `<tr><td colspan="9" class="muted">No data yet.</td></tr>`}
-     </table></div>`
+  loading("Board", { nav: "leaderboard" });
+  const [board, me] = [await api("/tasks/leaderboard"), await api("/tasks/me/stats")];
+  const medal = (i) => (i === 0 ? "🥇" : i === 1 ? "🥈" : i === 2 ? "🥉" : `#${i + 1}`);
+  const rows = board.length
+    ? board
+        .map(
+          (r, i) => `<div class="list-item" style="cursor:default">
+            <div class="lead">${medal(i)}</div>
+            <div class="body"><div class="ttl">${esc(r.name)}</div>
+              <div class="sub">${esc(r.role)} · ${esc(r.department)} · ${esc(r.regionCode)}</div></div>
+            <div class="trail"><b style="font-family:var(--font-display);font-size:18px">${r.totalPoints}</b>
+              <span class="muted">🔥 ${r.currentStreak}</span></div>
+          </div>`
+        )
+        .join("")
+    : `<div class="empty">${icon("emoji_events")}<p>No scores yet. Complete tasks on time to climb.</p></div>`;
+  view(
+    "Leaderboard",
+    `<div class="card filled">
+       <div class="stat-grid">
+         <div class="stat"><b>${me.totalPoints}</b><span>Your points</span></div>
+         <div class="stat"><b>${me.currentStreak}</b><span>Current streak</span></div>
+       </div>
+     </div>
+     <div class="section-title">Top performers</div>
+     <div class="card pad0">${rows}</div>`,
+    { nav: "leaderboard" }
   );
 }
 
-async function viewStats() {
-  shell("stats", `<div class="spin">Loading…</div>`);
+// ── Me / stats ─────────────────────────────────────────────────────
+async function viewMe() {
+  loading("Me", { nav: "me" });
   const s = await api("/tasks/me/stats");
-  shell(
-    "stats",
-    `<h1>My Stats</h1>
-     <div class="card"><div class="row">
+  const badges = (s.badges || []).length
+    ? s.badges.map((b) => `<span class="chip">${icon("workspace_premium")} ${esc(b)}</span>`).join(" ")
+    : '<span class="muted">No badges yet — complete tasks on time to earn them.</span>';
+  view(
+    "Me",
+    `<div class="card">
+       <div class="row" style="gap:14px">
+         <div class="lead" style="width:56px;height:56px;background:var(--primary-container);color:var(--on-primary-container)">${icon("person")}</div>
+         <div><div style="font-size:18px;font-weight:700">${esc(ME.name)}</div>
+           <div class="muted">${esc(ME.role)} · ${esc(ME.department)} · ${esc(ME.regionCode)}</div></div>
+       </div>
+     </div>
+     <div class="section-title">Your stats</div>
+     <div class="stat-grid">
        <div class="stat"><b>${s.totalPoints}</b><span>Points</span></div>
-       <div class="stat"><b>${s.currentStreak}</b><span>Current streak</span></div>
+       <div class="stat"><b>${s.currentStreak}</b><span>Streak</span></div>
        <div class="stat"><b>${s.bestStreak}</b><span>Best streak</span></div>
        <div class="stat"><b>${s.tasksCompletedOnTime}</b><span>On time</span></div>
-       <div class="stat"><b>${s.tasksCompletedLate}</b><span>Late</span></div>
-     </div>
-     <div style="margin-top:14px">${
-       s.badges.length
-         ? s.badges.map((b) => `<span class="pill">${esc(b)}</span>`).join(" ")
-         : '<span class="muted">No badges yet — complete tasks on time to earn them.</span>'
-     }</div></div>
-     <div class="card row">
        <div class="stat"><b>${s.openTasks}</b><span>Open tasks</span></div>
        <div class="stat"><b>${s.overdueTasks}</b><span>Overdue</span></div>
-     </div>`
+     </div>
+     <div class="section-title">Badges</div>
+     <div class="card">${badges}</div>
+     <button class="btn outlined block" id="lo2" style="margin-top:8px">${icon("logout")} Sign out</button>`,
+    { nav: "me" }
   );
+  $("#lo2").addEventListener("click", logout);
 }
 
-// ── Templates ─────────────────────────────────────────────────────
+// ── Templates ──────────────────────────────────────────────────────
 async function viewTemplates() {
-  shell("templates", `<div class="spin">Loading…</div>`);
+  loading("Templates", { nav: "templates", fab: ME.role === "ADMIN" ? { label: "New", onClick: () => templateEditor() } : null });
   const tpls = await api("/templates");
   const isAdmin = ME.role === "ADMIN";
-  const rows = tpls
-    .map(
-      (t) => `<tr><td><b>${esc(t.name)}</b><div class="muted">${esc(t.description || "")}</div></td>
-      <td>${t.steps.length} steps</td><td><span class="pill">${esc(t.defaultPriority)}</span></td>
-      <td>${t.defaultDeadlineHours}h</td>
-      <td><button class="sm ghost" data-prev="${t.id}">Preview</button>
-      ${["ADMIN", "MANAGER", "SUPERVISOR"].includes(ME.role) ? `<button class="sm" data-inst="${t.id}">Use</button>` : ""}
-      ${isAdmin ? `<button class="sm ghost" data-edit="${t.id}">Edit</button>` : ""}</td></tr>`
-    )
-    .join("");
-  shell(
-    "templates",
-    `<div class="row between"><div><h1>Templates</h1><p class="sub">Auto-assign a chain of subtasks</p></div>
-       ${isAdmin ? `<button id="newTpl">+ New template</button>` : ""}</div>
-     <div class="card"><table>
-       <tr><th>Name</th><th>Steps</th><th>Priority</th><th>Deadline</th><th></th></tr>
-       ${rows || `<tr><td colspan="5" class="muted">No templates.</td></tr>`}
-     </table></div>`
-  );
-  document.querySelectorAll("[data-inst]").forEach((b) =>
-    b.addEventListener("click", () => instantiateModal(b.dataset.inst))
-  );
-  document.querySelectorAll("[data-prev]").forEach((b) =>
-    b.addEventListener("click", () => previewModal(b.dataset.prev))
-  );
-  document.querySelectorAll("[data-edit]").forEach((b) =>
-    b.addEventListener("click", () => templateEditor(b.dataset.edit))
-  );
-  document.getElementById("newTpl")?.addEventListener("click", () => templateEditor());
+  const rows = tpls.length
+    ? tpls
+        .map(
+          (t) => `<div class="card">
+            <div class="row between"><div><div style="font-weight:700;font-size:16px">${esc(t.name)}</div>
+              <div class="muted">${esc(t.description || "")}</div></div>
+              <span class="chip">${t.steps.length} steps</span></div>
+            <div class="row" style="margin-top:12px">
+              <button class="btn tonal" data-inst="${t.id}">${icon("play_arrow")} Use</button>
+              <button class="btn text" data-prev="${t.id}">${icon("visibility")} Preview</button>
+              ${isAdmin ? `<button class="btn text" data-edit="${t.id}">${icon("edit")} Edit</button>` : ""}
+            </div></div>`
+        )
+        .join("")
+    : `<div class="empty">${icon("dashboard_customize")}<p>No templates yet.</p></div>`;
+  view("Templates", rows, {
+    nav: "templates",
+    fab: isAdmin ? { label: "New", onClick: () => templateEditor() } : null,
+  });
+  document.querySelectorAll("[data-inst]").forEach((b) => b.addEventListener("click", () => instantiateModal(b.dataset.inst)));
+  document.querySelectorAll("[data-prev]").forEach((b) => b.addEventListener("click", () => previewModal(b.dataset.prev)));
+  document.querySelectorAll("[data-edit]").forEach((b) => b.addEventListener("click", () => templateEditor(b.dataset.edit)));
 }
 
 async function previewModal(id) {
-  const region = prompt("Preview for region code:", ME.regionCode);
-  if (!region) return;
-  const r = await api("/templates/" + id + "/preview", "POST", { regionCode: region });
-  modal(`<h2>Resolution preview · ${esc(region)}</h2>
-    <table><tr><th>Step</th><th>Criteria</th><th>Resolves to</th></tr>
-    ${r
+  const r = await api("/templates/" + id + "/preview", "POST", { regionCode: ME.regionCode });
+  dialog(`<h2>Resolution · ${esc(ME.regionCode)}</h2>
+    <p class="dialog-sub">Who each step would be assigned to in your region right now.</p>
+    <div class="card pad0">${r
       .map(
-        (s) =>
-          `<tr><td>${esc(s.title)}</td><td class="muted">${esc(s.criteria)}</td>
-       <td>${s.resolvedUser ? esc(s.resolvedUser.name) : `<span class="err">${esc(s.reason)}</span>`}</td></tr>`
+        (s) => `<div class="list-item" style="cursor:default"><div class="body">
+        <div class="ttl">${esc(s.title)}</div><div class="sub">${esc(s.criteria)}</div></div>
+        <div class="trail">${
+          s.resolvedUser ? `<span class="chip s-COMPLETED">${esc(s.resolvedUser.name)}</span>` : `<span class="chip s-overdue">${esc(s.reason)}</span>`
+        }</div></div>`
       )
-      .join("")}</table>
-    <div class="row between" style="margin-top:14px"><span></span><button id="x">Close</button></div>`);
-  document.getElementById("x").addEventListener("click", closeModal);
+      .join("")}</div>
+    <div class="dialog-actions"><button class="btn text" id="x">Close</button></div>`);
+  $("#x").addEventListener("click", closeDialog);
 }
 
 async function instantiateModal(id) {
   const tpls = await api("/templates");
-  const opts = tpls
-    .map((t) => `<option value="${t.id}" ${t.id === id ? "selected" : ""}>${esc(t.name)}</option>`)
-    .join("");
-  modal(`<h2>Start from template</h2><form id="inf">
-    <label>Template</label><select name="tpl">${opts}</select>
-    <label>Region code</label><input name="region" value="${esc(ME.regionCode)}" />
-    <label>Deadline (hours from now, blank = template default)</label><input name="hours" type="number" />
-    <div class="row between" style="margin-top:14px">
-      <button type="button" class="ghost" id="x">Cancel</button>
-      <button type="button" class="ghost" id="pv">Preview</button>
-      <button>Create</button></div>
-    <div id="pvout" class="muted" style="margin-top:8px"></div>
-    <div class="err" id="e"></div></form>`);
-  document.getElementById("x").addEventListener("click", closeModal);
-  document.getElementById("pv").addEventListener("click", async () => {
-    const tpl = document.querySelector("[name=tpl]").value;
-    const region = document.querySelector("[name=region]").value;
-    const r = await api("/templates/" + tpl + "/preview", "POST", { regionCode: region });
-    document.getElementById("pvout").innerHTML = r
-      .map(
-        (s) =>
-          `${esc(s.title)} → ${s.resolvedUser ? esc(s.resolvedUser.name) : "⚠ " + esc(s.reason)}`
-      )
-      .join("<br>");
+  if (!tpls.length) return snack("No templates available.", true);
+  const opts = tpls.map((t) => `<option value="${t.id}" ${t.id === id ? "selected" : ""}>${esc(t.name)}</option>`).join("");
+  dialog(`<h2>Start from template</h2>
+    <p class="dialog-sub">Creates the task and auto-assigns each step to people in the chosen region.</p>
+    <form id="inf">
+      <div class="field"><label>Template</label><select name="tpl">${opts}</select></div>
+      <div class="field"><label>Region code</label><input name="region" value="${esc(ME.regionCode)}" /></div>
+      <div class="field"><label>Deadline (hours from now · blank = template default)</label><input name="hours" type="number" /></div>
+      <button type="button" class="btn outlined block" id="pv">${icon("visibility")} Preview assignees</button>
+      <div class="muted" id="pvout" style="margin-top:8px"></div>
+      <div class="err-tile" id="ie" style="display:none"></div>
+      <div class="dialog-actions">
+        <button type="button" class="btn text" id="x">Cancel</button>
+        <button class="btn" type="submit">${icon("rocket_launch")} Create</button>
+      </div>
+    </form>`);
+  $("#x").addEventListener("click", closeDialog);
+  $("#pv").addEventListener("click", async () => {
+    const r = await api("/templates/" + $("[name=tpl]").value + "/preview", "POST", { regionCode: $("[name=region]").value });
+    $("#pvout").innerHTML = r.map((s) => `${esc(s.title)} → ${s.resolvedUser ? esc(s.resolvedUser.name) : "⚠ " + esc(s.reason)}`).join("<br>");
   });
-  document.getElementById("inf").addEventListener("submit", async (e) => {
+  $("#inf").addEventListener("submit", async (e) => {
     e.preventDefault();
     const f = new FormData(e.target);
     try {
-      const r = await api(
-        "/templates/" + f.get("tpl") + "/instantiate",
-        "POST",
-        {
-          regionCode: f.get("region"),
-          deadlineHours: f.get("hours") ? Number(f.get("hours")) : undefined,
-        }
-      );
-      closeModal();
+      const r = await api("/templates/" + f.get("tpl") + "/instantiate", "POST", {
+        regionCode: f.get("region"),
+        deadlineHours: f.get("hours") ? Number(f.get("hours")) : undefined,
+      });
+      closeDialog();
+      snack("Created from template");
       location.hash = "#/task/" + r.rootTaskId;
     } catch (err) {
-      document.getElementById("e").textContent =
-        err.message + (err.details ? " — " + JSON.stringify(err.details.unresolved) : "");
+      const el = $("#ie");
+      el.style.display = "block";
+      el.textContent = err.message + (err.details?.unresolved ? " — " + err.details.unresolved.map((u) => u.title).join(", ") : "");
     }
   });
 }
 
 async function templateEditor(id) {
   const tpl = id ? await api("/templates/" + id) : null;
-  const deptOpts = (sel) =>
-    `<option value="">—</option>` +
-    META.departments
-      .map((d) => `<option ${sel === d ? "selected" : ""}>${d}</option>`)
-      .join("");
-  const roleOpts = (sel) =>
-    `<option value="">—</option>` +
-    META.roles.map((r) => `<option ${sel === r ? "selected" : ""}>${r}</option>`).join("");
-  const stepRow = (s = {}) => `<div class="card step">
-      <input class="s-title" placeholder="Step title" value="${esc(s.title || "")}" />
-      <div class="grid2" style="margin-top:6px">
-        <div><label>By role</label><select class="s-role">${roleOpts(s.assigneeRole)}</select></div>
-        <div><label>By department</label><select class="s-dept">${deptOpts(s.assigneeDepartment)}</select></div>
+  const sel = (cur, list) => `<option value="">—</option>` + list.map((x) => `<option ${cur === x ? "selected" : ""}>${x}</option>`).join("");
+  const stepRow = (s = {}) => `<div class="subtask-card">
+      <button type="button" class="icon-btn s-del" style="position:absolute;right:6px;top:6px">${icon("close")}</button>
+      <div class="field" style="margin-bottom:8px"><label>Step title</label><input class="s-title" value="${esc(s.title || "")}" /></div>
+      <div class="grid2">
+        <div class="field" style="margin:0"><label>By role</label><select class="s-role">${sel(s.assigneeRole, META.roles)}</select></div>
+        <div class="field" style="margin:0"><label>By department</label><select class="s-dept">${sel(s.assigneeDepartment, META.departments)}</select></div>
       </div>
       <div class="grid2">
-        <div><label>Priority</label><select class="s-pri">${["LOW", "MEDIUM", "HIGH", "URGENT"]
+        <div class="field" style="margin:8px 0 0"><label>Priority</label><select class="s-pri">${["LOW", "MEDIUM", "HIGH", "URGENT"]
           .map((p) => `<option ${(s.priority || "MEDIUM") === p ? "selected" : ""}>${p}</option>`)
           .join("")}</select></div>
-        <div><label>Deadline offset hrs (vs root)</label><input class="s-off" type="number" value="${
-          s.deadlineOffsetHours ?? 0
-        }" /></div>
+        <div class="field" style="margin:8px 0 0"><label>Deadline offset (hrs)</label><input class="s-off" type="number" value="${s.deadlineOffsetHours ?? 0}" /></div>
+      </div></div>`;
+  dialog(`<h2>${id ? "Edit" : "New"} template</h2>
+    <form id="tf">
+      <div class="field"><label>Name</label><input name="name" value="${esc(tpl?.name || "")}" required /></div>
+      <div class="field"><label>Description</label><textarea name="description" rows="2">${esc(tpl?.description || "")}</textarea></div>
+      <div class="grid2">
+        <div class="field"><label>Default priority</label><select name="dp">${["LOW", "MEDIUM", "HIGH", "URGENT"]
+          .map((p) => `<option ${(tpl?.defaultPriority || "MEDIUM") === p ? "selected" : ""}>${p}</option>`)
+          .join("")}</select></div>
+        <div class="field"><label>Default deadline (hrs)</label><input name="dh" type="number" value="${tpl?.defaultDeadlineHours ?? 48}" /></div>
       </div>
-      <button type="button" class="ghost sm s-del" style="margin-top:6px">Remove step</button>
-    </div>`;
-  modal(`<h2>${id ? "Edit" : "New"} template</h2><form id="tf">
-    <label>Name</label><input name="name" value="${esc(tpl?.name || "")}" required />
-    <label>Description</label><textarea name="description" rows="2">${esc(tpl?.description || "")}</textarea>
-    <div class="grid2">
-      <div><label>Default priority</label><select name="dp">${["LOW", "MEDIUM", "HIGH", "URGENT"]
-        .map((p) => `<option ${(tpl?.defaultPriority || "MEDIUM") === p ? "selected" : ""}>${p}</option>`)
-        .join("")}</select></div>
-      <div><label>Default deadline (hrs)</label><input name="dh" type="number" value="${
-        tpl?.defaultDeadlineHours ?? 48
-      }" /></div>
-    </div>
-    <h2 style="font-size:15px;margin-top:14px">Steps</h2>
-    <div id="steps">${(tpl?.steps?.length ? tpl.steps : [{}, {}]).map(stepRow).join("")}</div>
-    <button type="button" class="ghost sm" id="addStep">+ Add step</button>
-    <div class="row between" style="margin-top:14px">
-      <button type="button" class="ghost" id="x">Cancel</button>
-      ${id ? `<button type="button" class="danger" id="del">Deactivate</button>` : ""}
-      <button>Save</button></div>
-    <div class="err" id="e"></div></form>`);
+      <div class="section-title">Steps</div>
+      <div id="steps">${(tpl?.steps?.length ? tpl.steps : [{}, {}]).map(stepRow).join("")}</div>
+      <button type="button" class="btn text" id="addStep">${icon("add")} Add step</button>
+      <div class="err-tile" id="ee" style="display:none"></div>
+      <div class="dialog-actions">
+        <button type="button" class="btn text" id="x">Cancel</button>
+        ${id ? `<button type="button" class="btn danger-text" id="del">Deactivate</button>` : ""}
+        <button class="btn" type="submit">Save</button>
+      </div>
+    </form>`);
   const bindDel = () =>
-    document.querySelectorAll(".s-del").forEach((b) =>
-      b.addEventListener("click", () => b.closest(".step").remove())
-    );
+    document.querySelectorAll(".s-del").forEach((b) => b.addEventListener("click", () => b.closest(".subtask-card").remove()));
   bindDel();
-  document.getElementById("addStep").addEventListener("click", () => {
-    document.getElementById("steps").insertAdjacentHTML("beforeend", stepRow());
+  $("#addStep").addEventListener("click", () => {
+    $("#steps").insertAdjacentHTML("beforeend", stepRow());
     bindDel();
   });
-  document.getElementById("x").addEventListener("click", closeModal);
-  document.getElementById("del")?.addEventListener("click", async () => {
+  $("#x").addEventListener("click", closeDialog);
+  $("#del")?.addEventListener("click", async () => {
     await api("/templates/" + id, "DELETE");
-    closeModal();
+    closeDialog();
+    snack("Template deactivated");
     viewTemplates();
   });
-  document.getElementById("tf").addEventListener("submit", async (e) => {
+  $("#tf").addEventListener("submit", async (e) => {
     e.preventDefault();
     const f = new FormData(e.target);
-    const steps = [...document.querySelectorAll(".step")].map((s) => ({
+    const steps = [...document.querySelectorAll(".subtask-card")].map((s) => ({
       title: s.querySelector(".s-title").value,
       assigneeRole: s.querySelector(".s-role").value || null,
       assigneeDepartment: s.querySelector(".s-dept").value || null,
@@ -664,103 +711,120 @@ async function templateEditor(id) {
     try {
       if (id) await api("/templates/" + id, "PUT", payload);
       else await api("/templates", "POST", payload);
-      closeModal();
+      closeDialog();
+      snack("Template saved");
       viewTemplates();
     } catch (err) {
-      document.getElementById("e").textContent = err.message;
+      const el = $("#ee");
+      el.style.display = "block";
+      el.textContent = err.message;
     }
   });
 }
 
-// ── Org admin ─────────────────────────────────────────────────────
+// ── Org admin ──────────────────────────────────────────────────────
 async function viewOrg() {
-  shell("org", `<div class="spin">Loading…</div>`);
-  const users = await api("/users?all=true");
-  const tree = await api("/users/tree");
-  const uOpt = (sel) =>
-    `<option value="">— none —</option>` +
-    users
-      .map((u) => `<option value="${u.id}" ${sel === u.id ? "selected" : ""}>${esc(u.name)}</option>`)
-      .join("");
+  loading("Org", { nav: "org", fab: { label: "User", onClick: newUserModal } });
+  const [users, tree] = [await api("/users?all=true"), await api("/users/tree")];
   const rows = users
     .map(
-      (u) => `<tr>
-      <td><b>${esc(u.name)}</b><div class="muted">${esc(u.email)}</div></td>
-      <td><select data-f="role" data-u="${u.id}">${META.roles
-        .map((r) => `<option ${u.role === r ? "selected" : ""}>${r}</option>`)
-        .join("")}</select></td>
-      <td><select data-f="department" data-u="${u.id}">${META.departments
-        .map((d) => `<option ${u.department === d ? "selected" : ""}>${d}</option>`)
-        .join("")}</select></td>
-      <td><input data-f="regionCode" data-u="${u.id}" value="${esc(u.regionCode)}" style="width:70px" /></td>
-      <td><select data-f="reportsTo" data-u="${u.id}">${uOpt(u.reportsTo)}</select></td>
-      <td><button class="sm" data-save="${u.id}">Save</button></td></tr>`
+      (u) => `<div class="list-item" data-edit="${u.id}">
+        <div class="lead">${icon("person")}</div>
+        <div class="body"><div class="ttl">${esc(u.name)}</div>
+          <div class="sub">${esc(u.role)} · ${esc(u.department)} · ${esc(u.regionCode)}</div></div>
+        <span class="chev">${icon("edit")}</span></div>`
     )
     .join("");
   const renderTree = (n, d = 0) =>
-    `<li class="depth${Math.min(d, 2)}"><b>${esc(n.name)}</b> <span class="pill">${esc(
-      n.role
-    )}</span> <span class="muted">${esc(n.department)} · ${esc(n.regionCode)}</span>
-     ${n.reports?.length ? `<ul class="timeline">${n.reports.map((c) => renderTree(c, d + 1)).join("")}</ul>` : ""}</li>`;
-  shell(
-    "org",
-    `<div class="row between"><div><h1>Org & Users</h1><p class="sub">Manage roles, departments, hierarchy</p></div>
-       <button id="newU">+ New user</button></div>
-     <div class="card"><table>
-       <tr><th>User</th><th>Role</th><th>Dept</th><th>Region</th><th>Reports to</th><th></th></tr>
-       ${rows}
-     </table></div>
-     <div class="card"><h2 style="font-size:16px;margin-bottom:10px">Reporting tree</h2>
-       <ul class="timeline">${tree.map((r) => renderTree(r)).join("")}</ul></div>`
+    `<li class="depth${Math.min(d, 2)}"><div class="node-title">${esc(n.name)}</div>
+      <div class="node-sub">${esc(n.role)} · ${esc(n.department)} · ${esc(n.regionCode)}</div>
+      ${n.reports?.length ? `<ul class="timeline" style="margin-top:8px">${n.reports.map((c) => renderTree(c, d + 1)).join("")}</ul>` : ""}</li>`;
+  view(
+    "Org & Users",
+    `<div class="section-title">People</div>
+     <div class="card pad0">${rows}</div>
+     <div class="section-title">Reporting tree</div>
+     <div class="card"><ul class="timeline">${tree.map((r) => renderTree(r)).join("")}</ul></div>`,
+    { nav: "org", fab: { label: "User", onClick: newUserModal } }
   );
-  document.querySelectorAll("[data-save]").forEach((b) =>
-    b.addEventListener("click", async () => {
-      const uid = b.dataset.save;
-      const get = (f) =>
-        document.querySelector(`[data-f="${f}"][data-u="${uid}"]`).value;
-      try {
-        await api("/users/" + uid, "PATCH", {
-          role: get("role"),
-          department: get("department"),
-          regionCode: get("regionCode"),
-          reportsTo: get("reportsTo") || null,
-        });
-        viewOrg();
-      } catch (err) {
-        alert(err.message);
-      }
-    })
+  document.querySelectorAll("[data-edit]").forEach((r) =>
+    r.addEventListener("click", () => editUserModal(users.find((u) => u.id === r.dataset.edit), users))
   );
-  document.getElementById("newU").addEventListener("click", newUserModal);
+}
+
+function editUserModal(u, users) {
+  const sel = (cur, list) => list.map((x) => `<option ${cur === x ? "selected" : ""}>${x}</option>`).join("");
+  const mgr =
+    `<option value="">— none —</option>` +
+    users.filter((x) => x.id !== u.id).map((x) => `<option value="${x.id}" ${u.reportsTo === x.id ? "selected" : ""}>${esc(x.name)}</option>`).join("");
+  dialog(`<h2>${esc(u.name)}</h2>
+    <p class="dialog-sub">${esc(u.email)}</p>
+    <form id="uf">
+      <div class="grid2">
+        <div class="field"><label>Role</label><select name="role">${sel(u.role, META.roles)}</select></div>
+        <div class="field"><label>Department</label><select name="department">${sel(u.department, META.departments)}</select></div>
+      </div>
+      <div class="field"><label>Region code</label><input name="regionCode" value="${esc(u.regionCode)}" /></div>
+      <div class="field"><label>Reports to</label><select name="reportsTo">${mgr}</select></div>
+      <div class="err-tile" id="ue" style="display:none"></div>
+      <div class="dialog-actions">
+        <button type="button" class="btn text" id="x">Cancel</button>
+        <button class="btn" type="submit">Save</button>
+      </div>
+    </form>`);
+  $("#x").addEventListener("click", closeDialog);
+  $("#uf").addEventListener("submit", async (e) => {
+    e.preventDefault();
+    const f = new FormData(e.target);
+    try {
+      await api("/users/" + u.id, "PATCH", {
+        role: f.get("role"),
+        department: f.get("department"),
+        regionCode: f.get("regionCode"),
+        reportsTo: f.get("reportsTo") || null,
+      });
+      closeDialog();
+      snack("User updated");
+      viewOrg();
+    } catch (err) {
+      const el = $("#ue");
+      el.style.display = "block";
+      el.textContent = err.message;
+    }
+  });
 }
 
 function newUserModal() {
-  modal(`<h2>New user</h2><form id="nf">
-    <label>Name</label><input name="name" required />
-    <label>Email</label><input name="email" type="email" required />
-    <label>Password</label><input name="password" required />
-    <div class="grid2">
-      <div><label>Role</label><select name="role">${META.roles
-        .map((r) => `<option ${r === "OPERATOR" ? "selected" : ""}>${r}</option>`)
-        .join("")}</select></div>
-      <div><label>Department</label><select name="department">${META.departments
-        .map((d) => `<option>${d}</option>`)
-        .join("")}</select></div>
-    </div>
-    <label>Region code</label><input name="regionCode" value="KA" />
-    <div class="row between" style="margin-top:14px">
-      <button type="button" class="ghost" id="x">Cancel</button><button>Create</button></div>
-    <div class="err" id="e"></div></form>`);
-  document.getElementById("x").addEventListener("click", closeModal);
-  document.getElementById("nf").addEventListener("submit", async (e) => {
+  const sel = (list, def) => list.map((x) => `<option ${x === def ? "selected" : ""}>${x}</option>`).join("");
+  dialog(`<h2>New user</h2>
+    <form id="nf">
+      <div class="field"><label>Name</label><input name="name" required /></div>
+      <div class="field"><label>Email</label><input name="email" type="email" required /></div>
+      <div class="field"><label>Password</label><input name="password" required /></div>
+      <div class="grid2">
+        <div class="field"><label>Role</label><select name="role">${sel(META.roles, "OPERATOR")}</select></div>
+        <div class="field"><label>Department</label><select name="department">${sel(META.departments)}</select></div>
+      </div>
+      <div class="field"><label>Region code</label><input name="regionCode" value="KA" /></div>
+      <div class="err-tile" id="ne" style="display:none"></div>
+      <div class="dialog-actions">
+        <button type="button" class="btn text" id="x">Cancel</button>
+        <button class="btn" type="submit">Create user</button>
+      </div>
+    </form>`);
+  $("#x").addEventListener("click", closeDialog);
+  $("#nf").addEventListener("submit", async (e) => {
     e.preventDefault();
     const f = new FormData(e.target);
     try {
       await api("/users", "POST", Object.fromEntries(f));
-      closeModal();
+      closeDialog();
+      snack("User created");
       viewOrg();
     } catch (err) {
-      document.getElementById("e").textContent = err.message;
+      const el = $("#ne");
+      el.style.display = "block";
+      el.textContent = err.message;
     }
   });
 }
