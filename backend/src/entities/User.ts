@@ -7,7 +7,7 @@ import {
   OneToMany,
   Index,
 } from "typeorm";
-import { UserRole, RegionCode } from "../types/enums";
+import { UserRole, RegionCode, Department } from "../types/enums";
 import type { ErpMetadata } from "../types/erp-metadata";
 import { Visit } from "./Visit";
 
@@ -35,6 +35,10 @@ export class User {
 
   @Column({ type: "enum", enum: RegionCode })
   regionCode!: RegionCode;
+
+  /** Functional department — used for task-template auto-assignment */
+  @Column({ type: "enum", enum: Department, nullable: true })
+  department!: Department | null;
 
   @Column({ type: "varchar", length: 100, nullable: true })
   district!: string | null;
