@@ -8,6 +8,7 @@ import PhotoCapture from "@/components/ui/PhotoCapture";
 import { api, NetworkError } from "@/lib/api-client";
 import { addToPendingQueue } from "@/lib/offline-store";
 import { requestBackgroundSync } from "@/lib/sync-manager";
+import GeofenceMap from "@/components/ui/GeofenceMap";
 
 interface Visit {
   id: string;
@@ -447,19 +448,16 @@ function CheckinPage() {
         )}
       </div>
 
-      {/* Map placeholder */}
+      {/* Geofence Map */}
       {position && visit?.customer.location && (
         <Card>
           <div className="p-4">
-            <div className="flex h-40 items-center justify-center rounded-lg bg-stone-100 text-sm text-stone-400">
-              <div className="text-center">
-                <p>Map View (Phase 3.3)</p>
-                <p className="mt-1 text-xs">
-                  You: {position.latitude.toFixed(4)}, {position.longitude.toFixed(4)} |
-                  Customer: {visit.customer.location.latitude.toFixed(4)}, {visit.customer.location.longitude.toFixed(4)}
-                </p>
-              </div>
-            </div>
+            <GeofenceMap
+              center={{ latitude: visit.customer.location.latitude, longitude: visit.customer.location.longitude }}
+              markers={[{ latitude: position.latitude, longitude: position.longitude, label: "You", color: "green" }]}
+              showGeofence={true}
+              height="160px"
+            />
           </div>
         </Card>
       )}

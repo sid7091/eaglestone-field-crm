@@ -7,6 +7,7 @@ import StatusBadge from "@/components/ui/StatusBadge";
 import Button from "@/components/ui/Button";
 import PlanVisitModal from "@/components/ui/PlanVisitModal";
 import SitePhotos from "@/components/ui/SitePhotos";
+import GeofenceMap from "@/components/ui/GeofenceMap";
 import { api } from "@/lib/api-client";
 import { formatCurrency, formatDate } from "@/lib/utils";
 
@@ -276,8 +277,12 @@ export default function CustomerDetailPage() {
                 )}
               </div>
               {customer.location && (
-                <div className="mt-4 flex h-32 items-center justify-center rounded-sm bg-surface-2 font-display text-[10px] tracking-wide text-brand-olive/30">
-                  MAP VIEW
+                <div className="mt-4">
+                  <GeofenceMap
+                    center={{ latitude: customer.location.latitude, longitude: customer.location.longitude }}
+                    showGeofence={false}
+                    height="128px"
+                  />
                 </div>
               )}
             </CardContent>

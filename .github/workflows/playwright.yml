@@ -8,10 +8,6 @@ jobs:
   test:
     timeout-minutes: 60
     runs-on: ubuntu-latest
-    # Prisma 7's `migrate dev` requires DATABASE_URL — set it once for every
-    # step so migrate, seed, build and the Playwright tests all see it.
-    env:
-      DATABASE_URL: "file:./dev.db"
     steps:
     - uses: actions/checkout@v4
     - uses: actions/setup-node@v4
