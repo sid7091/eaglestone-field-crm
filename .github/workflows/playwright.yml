@@ -8,6 +8,12 @@ jobs:
   test:
     timeout-minutes: 60
     runs-on: ubuntu-latest
+    # prisma.config.ts maps datasource.url to process.env.DATABASE_URL. CI has
+    # no .env (it's git-ignored), so without this the value is undefined and
+    # `prisma migrate dev` fails with "datasource.url property is required".
+    # Job-level so migrate, seed, build and the tests all see it.
+    env:
+      DATABASE_URL: "file:./dev.db"
     steps:
     - uses: actions/checkout@v4
     - uses: actions/setup-node@v4
@@ -20,6 +26,10 @@ jobs:
     - name: Setup Database
       run: |
         npm run db:migrate
+        # The client is generated into src/generated/prisma, which is
+        # git-ignored, so it never exists on a fresh checkout. Without this
+        # the seed (and the build) fail with ERR_MODULE_NOT_FOUND.
+        npx prisma generate
         npm run db:seed
     - name: Build Next.js App
       run: npm run build
