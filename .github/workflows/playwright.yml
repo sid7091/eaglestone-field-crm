@@ -26,6 +26,10 @@ jobs:
     - name: Setup Database
       run: |
         npm run db:migrate
+        # The client is generated into src/generated/prisma, which is
+        # git-ignored, so it never exists on a fresh checkout. Without this
+        # the seed (and the build) fail with ERR_MODULE_NOT_FOUND.
+        npx prisma generate
         npm run db:seed
     - name: Build Next.js App
       run: npm run build
