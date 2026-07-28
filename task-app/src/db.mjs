@@ -94,6 +94,20 @@ CREATE TABLE IF NOT EXISTS user_gamification (
 );
 `);
 
+// ── migrations ─────────────────────────────────────────────────────
+// Additive only, and safe to re-run: each column is added once, when an
+// existing database predates it.
+function addColumn(table, column, definition) {
+  const cols = db.prepare(`PRAGMA table_info(${table})`).all();
+  if (cols.some((c) => c.name === column)) return;
+  db.exec(`ALTER TABLE ${table} ADD COLUMN ${column} ${definition}`);
+}
+
+// Free-form org-chart coordinates. NULL means "never positioned" — the
+// client auto-lays-out those nodes and saves the result back.
+addColumn("users", "chartX", "REAL");
+addColumn("users", "chartY", "REAL");
+
 export function nowISO() {
   return new Date().toISOString();
 }

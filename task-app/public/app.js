@@ -1,4 +1,6 @@
 // Eagle Tasks — Material Design 3 mobile-first SPA (vanilla, no build step)
+import { createOrgChart } from "./orgchart.js";
+
 const app = document.getElementById("app");
 const modalRoot = document.getElementById("modal-root");
 const snackRoot = document.getElementById("snackbar");
@@ -103,7 +105,7 @@ function navItems() {
   const items = [{ key: "tasks", label: "Tasks", icon: "checklist" }];
   items.push({ key: "leaderboard", label: "Board", icon: "emoji_events" });
   if (canOriginate()) items.push({ key: "templates", label: "Templates", icon: "dashboard_customize" });
-  if (ME.role === "ADMIN") items.push({ key: "org", label: "Org", icon: "groups" });
+  if (isSenior()) items.push({ key: "org", label: "Org", icon: "groups" });
   items.push({ key: "me", label: "Me", icon: "person" });
   return items;
 }
@@ -155,6 +157,20 @@ function view(title, html, opts = {}) {
 }
 const loading = (title, opts) => view(title, `<div class="spin">${icon("hourglass_empty")}<p>Loading…</p></div>`, opts);
 
+// The chart owns #/org; the older list lives on #/people. Helpers are handed
+// over rather than imported back, so there's no app ⇄ orgchart import cycle.
+const { viewOrgChart } = createOrgChart({
+  api,
+  esc,
+  icon,
+  dialog,
+  closeDialog,
+  snack,
+  view,
+  getMe: () => ME,
+  getMeta: () => META,
+});
+
 // ── router ─────────────────────────────────────────────────────────
 function route() {
   if (!ME) return renderLogin();
@@ -165,7 +181,8 @@ function route() {
     task: () => viewTask(arg),
     leaderboard: viewLeaderboard,
     templates: viewTemplates,
-    org: viewOrg,
+    org: viewOrgChart,
+    people: viewOrg,
     me: viewMe,
   }[page] || viewTasks)();
 }
@@ -724,15 +741,17 @@ async function templateEditor(id) {
 
 // ── Org admin ──────────────────────────────────────────────────────
 async function viewOrg() {
-  loading("Org", { nav: "org", fab: { label: "User", onClick: newUserModal } });
+  const isAdmin = ME.role === "ADMIN";
+  const fab = isAdmin ? { label: "User", onClick: newUserModal } : null;
+  loading("Org", { nav: "org", fab });
   const [users, tree] = [await api("/users?all=true"), await api("/users/tree")];
   const rows = users
     .map(
-      (u) => `<div class="list-item" data-edit="${u.id}">
+      (u) => `<div class="list-item" ${isAdmin ? `data-edit="${u.id}"` : ""}>
         <div class="lead">${icon("person")}</div>
         <div class="body"><div class="ttl">${esc(u.name)}</div>
           <div class="sub">${esc(u.role)} · ${esc(u.department)} · ${esc(u.regionCode)}</div></div>
-        <span class="chev">${icon("edit")}</span></div>`
+        ${isAdmin ? `<span class="chev">${icon("edit")}</span>` : ""}</div>`
     )
     .join("");
   const renderTree = (n, d = 0) =>
@@ -741,12 +760,17 @@ async function viewOrg() {
       ${n.reports?.length ? `<ul class="timeline" style="margin-top:8px">${n.reports.map((c) => renderTree(c, d + 1)).join("")}</ul>` : ""}</li>`;
   view(
     "Org & Users",
-    `<div class="section-title">People</div>
+    `<div class="oc-seg standalone">
+       <button id="toChart">${icon("account_tree")}<span>Chart</span></button>
+       <button class="active">${icon("list")}<span>List</span></button>
+     </div>
+     <div class="section-title">People</div>
      <div class="card pad0">${rows}</div>
      <div class="section-title">Reporting tree</div>
      <div class="card"><ul class="timeline">${tree.map((r) => renderTree(r)).join("")}</ul></div>`,
-    { nav: "org", fab: { label: "User", onClick: newUserModal } }
+    { nav: "org", fab }
   );
+  $("#toChart").addEventListener("click", () => (location.hash = "#/org"));
   document.querySelectorAll("[data-edit]").forEach((r) =>
     r.addEventListener("click", () => editUserModal(users.find((u) => u.id === r.dataset.edit), users))
   );
