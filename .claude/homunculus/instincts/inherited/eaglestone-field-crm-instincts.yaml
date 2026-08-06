@@ -1,0 +1,322 @@
+# Instincts generated from https://github.com/sid7091/eaglestone-field-crm
+# Generated: 2026-06-17T08:33:28.244Z
+# Version: 2.0
+# NOTE: This file supplements (does not replace) any existing curated instincts.
+# High-confidence manually curated instincts should be preserved alongside these.
+
+---
+id: eaglestone-field-crm-commit-length
+trigger: "when writing a commit message"
+confidence: 0.6
+domain: git
+source: repo-analysis
+source_repo: https://github.com/sid7091/eaglestone-field-crm
+---
+
+# Eaglestone Field Crm Commit Length
+
+## Action
+
+Write moderate-length commit messages (~56 characters)
+
+## Evidence
+
+- Average commit message length: 56 chars
+- Based on 3 commits
+
+---
+id: eaglestone-field-crm-naming-files
+trigger: "when creating a new file"
+confidence: 0.8
+domain: code-style
+source: repo-analysis
+source_repo: https://github.com/sid7091/eaglestone-field-crm
+---
+
+# Eaglestone Field Crm Naming Files
+
+## Action
+
+Use camelCase naming convention
+
+## Evidence
+
+- Analyzed file naming patterns in repository
+- Dominant pattern: camelCase
+
+---
+id: eaglestone-field-crm-import-relative
+trigger: "when importing modules"
+confidence: 0.75
+domain: code-style
+source: repo-analysis
+source_repo: https://github.com/sid7091/eaglestone-field-crm
+---
+
+# Eaglestone Field Crm Import Relative
+
+## Action
+
+Use relative imports for project files
+
+## Evidence
+
+- Import analysis shows relative import pattern
+- Example: import { x } from '../lib/x'
+
+---
+id: eaglestone-field-crm-export-style
+trigger: "when exporting from a module"
+confidence: 0.7
+domain: code-style
+source: repo-analysis
+source_repo: https://github.com/sid7091/eaglestone-field-crm
+---
+
+# Eaglestone Field Crm Export Style
+
+## Action
+
+Prefer named exports
+
+## Evidence
+
+- Export pattern analysis
+- Dominant style: named
+
+---
+id: eaglestone-field-crm-test-separate
+trigger: "when writing tests"
+confidence: 0.8
+domain: testing
+source: repo-analysis
+source_repo: https://github.com/sid7091/eaglestone-field-crm
+---
+
+# Eaglestone Field Crm Test Separate
+
+## Action
+
+Place tests in the tests/ or __tests__/ directory, mirroring src structure
+
+## Evidence
+
+- Separate test directory pattern detected
+- Tests live in dedicated test folders
+
+---
+id: eaglestone-field-crm-workflow-ui-theme-or-style-revamp-in-isolated-app
+trigger: "when doing ui theme or style revamp in isolated app"
+confidence: 0.55
+domain: workflow
+source: repo-analysis
+source_repo: https://github.com/sid7091/eaglestone-field-crm
+---
+
+# Eaglestone Field Crm Workflow Ui Theme Or Style Revamp In Isolated App
+
+## Action
+
+Follow the ui-theme-or-style-revamp-in-isolated-app workflow:
+1. Edit public/index.html to adjust structure, fonts, and layout containers.
+2. Edit public/styles.css to update color palette, fonts, shadows, radii, and other design tokens.
+3. Edit public/app.js to restructure UI components, update action areas, and improve interactivity (if needed).
+
+## Evidence
+
+- Workflow detected from commit patterns
+- Frequency: ~1x per month
+- Files: task-app/public/index.html, task-app/public/styles.css, task-app/public/app.js
+
+---
+id: eaglestone-field-crm-instinct-file-naming
+trigger: "When creating or renaming a file in the codebase"
+confidence: 0.8
+domain: code-style
+source: repo-analysis
+source_repo: sid7091/eaglestone-field-crm
+---
+
+# Eaglestone Field Crm Instinct File Naming
+
+## Action
+
+Name the file using camelCase (e.g., taskManager.js)
+
+## Evidence
+
+- Pattern in codeStyle.namingConventions.files
+
+---
+id: eaglestone-field-crm-instinct-function-naming
+trigger: "When defining a function"
+confidence: 0.8
+domain: code-style
+source: repo-analysis
+source_repo: sid7091/eaglestone-field-crm
+---
+
+# Eaglestone Field Crm Instinct Function Naming
+
+## Action
+
+Name the function using camelCase (e.g., handleSubmit)
+
+## Evidence
+
+- Pattern in codeStyle.namingConventions.functions
+
+---
+id: eaglestone-field-crm-instinct-class-naming
+trigger: "When defining a class"
+confidence: 0.8
+domain: code-style
+source: repo-analysis
+source_repo: sid7091/eaglestone-field-crm
+---
+
+# Eaglestone Field Crm Instinct Class Naming
+
+## Action
+
+Name the class using PascalCase (e.g., TaskManager)
+
+## Evidence
+
+- Pattern in codeStyle.namingConventions.classes
+
+---
+id: eaglestone-field-crm-instinct-constant-naming
+trigger: "When declaring a constant value"
+confidence: 0.8
+domain: code-style
+source: repo-analysis
+source_repo: sid7091/eaglestone-field-crm
+---
+
+# Eaglestone Field Crm Instinct Constant Naming
+
+## Action
+
+Name the constant using SCREAMING_SNAKE_CASE (e.g., MAX_TASKS)
+
+## Evidence
+
+- Pattern in codeStyle.namingConventions.constants
+
+---
+id: eaglestone-field-crm-instinct-import-style
+trigger: "When importing modules"
+confidence: 0.8
+domain: code-style
+source: repo-analysis
+source_repo: sid7091/eaglestone-field-crm
+---
+
+# Eaglestone Field Crm Instinct Import Style
+
+## Action
+
+Use relative import paths (e.g., import x from './x')
+
+## Evidence
+
+- Pattern in codeStyle.importStyle
+
+---
+id: eaglestone-field-crm-instinct-export-style
+trigger: "When exporting functions or variables"
+confidence: 0.8
+domain: code-style
+source: repo-analysis
+source_repo: sid7091/eaglestone-field-crm
+---
+
+# Eaglestone Field Crm Instinct Export Style
+
+## Action
+
+Use named exports (e.g., export { myFunction })
+
+## Evidence
+
+- Pattern in codeStyle.exportStyle
+
+---
+id: eaglestone-field-crm-instinct-try-catch-error-handling
+trigger: "When handling errors in code"
+confidence: 0.8
+domain: code-style
+source: repo-analysis
+source_repo: sid7091/eaglestone-field-crm
+---
+
+# Eaglestone Field Crm Instinct Try Catch Error Handling
+
+## Action
+
+Use try-catch blocks for error handling
+
+## Evidence
+
+- Pattern in errorHandling.style
+
+---
+id: eaglestone-field-crm-instinct-commit-format
+trigger: "When writing a git commit message"
+confidence: 0.7
+domain: git
+source: repo-analysis
+source_repo: sid7091/eaglestone-field-crm
+---
+
+# Eaglestone Field Crm Instinct Commit Format
+
+## Action
+
+Write a concise, freeform message describing the change (average ~56 characters, no enforced prefix)
+
+## Evidence
+
+- Pattern in commits.examples
+- Pattern in commits.averageLength
+
+---
+id: eaglestone-field-crm-instinct-ui-theme-revamp-workflow
+trigger: "When updating the visual style or user experience of the self-contained app to match branding or adopt a new UI framework"
+confidence: 0.9
+domain: workflow
+source: repo-analysis
+source_repo: sid7091/eaglestone-field-crm
+---
+
+# Eaglestone Field Crm Instinct Ui Theme Revamp Workflow
+
+## Action
+
+Edit task-app/public/index.html, task-app/public/styles.css, and task-app/public/app.js to adjust structure, design tokens, and UI components as needed
+
+## Evidence
+
+- Workflow: ui-theme-or-style-revamp-in-isolated-app
+- Commits: Edit public/index.html, styles.css, app.js
+
+---
+id: eaglestone-field-crm-instinct-test-location
+trigger: "When adding or updating tests"
+confidence: 0.7
+domain: testing
+source: repo-analysis
+source_repo: sid7091/eaglestone-field-crm
+---
+
+# Eaglestone Field Crm Instinct Test Location
+
+## Action
+
+Place test files in a separate location from source files
+
+## Evidence
+
+- Pattern in architecture.folderStructure.testLocation
+
