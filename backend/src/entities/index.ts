@@ -3,3 +3,7 @@ export { Customer } from "./Customer";
 export { Visit } from "./Visit";
 export { Inventory } from "./Inventory";
 export { SyncQueue } from "./SyncQueue";
+export { Task } from "./Task";
+export { TaskTemplate } from "./TaskTemplate";
+export { TaskTemplateStep } from "./TaskTemplateStep";
+export { UserGamification } from "./UserGamification";

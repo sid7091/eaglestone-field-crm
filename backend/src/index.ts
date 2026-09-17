@@ -11,6 +11,9 @@ import customerRoutes from "./routes/customer.routes";
 import inventoryRoutes from "./routes/inventory.routes";
 import uploadRoutes, { ensureUploadsDirExists, UPLOADS_ROOT } from "./routes/upload.routes";
 import analyticsRoutes from "./routes/analytics.routes";
+import taskRoutes from "./routes/task.routes";
+import taskTemplateRoutes from "./routes/task-template.routes";
+import usersRoutes from "./routes/users.routes";
 
 const app = express();
 const PORT = parseInt(process.env.PORT || "4000", 10);
@@ -41,6 +44,9 @@ app.use("/api/v1/customers", customerRoutes);
 app.use("/api/v1/inventory", inventoryRoutes);
 app.use("/api/v1/uploads", uploadRoutes);
 app.use("/api/v1/analytics", analyticsRoutes);
+app.use("/api/v1/tasks", taskRoutes);
+app.use("/api/v1/task-templates", taskTemplateRoutes);
+app.use("/api/v1/users", usersRoutes);
 
 // ─── Bootstrap ───────────────────────────────────────────────
 async function bootstrap(): Promise<void> {

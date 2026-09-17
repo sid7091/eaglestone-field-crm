@@ -118,3 +118,45 @@ export enum SyncDirection {
   OUTBOUND = "OUTBOUND",  // CRM → ERP
   INBOUND = "INBOUND",    // ERP → CRM
 }
+
+/**
+ * Functional department a user belongs to. Drives template auto-assignment
+ * (a template step can target "the WAREHOUSE person in the task's region").
+ */
+export enum Department {
+  SALES = "SALES",
+  WAREHOUSE = "WAREHOUSE",
+  ACCOUNTS = "ACCOUNTS",
+  DISPATCH = "DISPATCH",
+  OPERATIONS = "OPERATIONS",
+  FIELD = "FIELD",
+  ADMIN = "ADMIN",
+}
+
+export enum TaskStatus {
+  PENDING = "PENDING",
+  IN_PROGRESS = "IN_PROGRESS",
+  FORWARDED = "FORWARDED",
+  BLOCKED_BY_SUBTASKS = "BLOCKED_BY_SUBTASKS",
+  COMPLETED = "COMPLETED",
+  CANCELLED = "CANCELLED",
+}
+
+export enum TaskPriority {
+  LOW = "LOW",
+  MEDIUM = "MEDIUM",
+  HIGH = "HIGH",
+  URGENT = "URGENT",
+}
+
+/**
+ * How a task was broken down:
+ *  - NONE       → a leaf task, the owner does the work themselves
+ *  - FORWARDED  → delegated whole to exactly one downstream user
+ *  - SUBTASKS   → split into N parallel children that must all complete
+ */
+export enum TaskDecomposition {
+  NONE = "NONE",
+  FORWARDED = "FORWARDED",
+  SUBTASKS = "SUBTASKS",
+}
