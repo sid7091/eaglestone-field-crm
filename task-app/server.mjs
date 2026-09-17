@@ -30,6 +30,7 @@ import {
   instantiate,
 } from "./src/templates.mjs";
 import { listUsers, orgTree, updateUser, createUser } from "./src/users.mjs";
+import { orgGraph, savePositions, setManager, removeUser } from "./src/org.mjs";
 import { ROLES, DEPARTMENTS } from "./src/permissions.mjs";
 
 const __dirname = dirname(fileURLToPath(import.meta.url));
@@ -269,6 +270,15 @@ const server = createServer(async (req, res) => {
       return send(res, 201, createUser(actor, await readBody(req)));
     if (path === "/api/users/tree" && req.method === "GET")
       return send(res, 200, orgTree(actor));
+
+    // ── Org chart ─────────────────────────────────────────────────
+    if (path === "/api/org/graph" && req.method === "GET")
+      return send(res, 200, orgGraph(actor, { includeInactive: q.includeInactive }));
+    if (path === "/api/org/positions" && req.method === "POST") {
+      const b = await readBody(req);
+      return send(res, 200, savePositions(actor, b.positions));
+    }
+
     const userMatch = path.match(/^\/api\/users\/([^/]+)$/);
     if (userMatch && req.method === "PATCH")
       return send(
@@ -276,6 +286,14 @@ const server = createServer(async (req, res) => {
         200,
         updateUser(actor, userMatch[1], await readBody(req))
       );
+    if (userMatch && req.method === "DELETE")
+      return send(res, 200, removeUser(actor, userMatch[1], { force: q.force === "true" }));
+
+    const managerMatch = path.match(/^\/api\/users\/([^/]+)\/manager$/);
+    if (managerMatch && req.method === "PUT") {
+      const b = await readBody(req);
+      return send(res, 200, setManager(actor, managerMatch[1], b.managerId ?? null));
+    }
 
     return send(res, 404, { error: "Unknown endpoint" });
   } catch (err) {

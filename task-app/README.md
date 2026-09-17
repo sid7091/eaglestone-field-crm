@@ -28,8 +28,15 @@ Demo logins (password `password123`): `admin@`, `manager@`, `supervisor@`,
 
 ## Features
 
+- **Org chart editor** — a drag-and-drop canvas of the org (`Org` tab). Cards
+  are placed freely like a brainstorming board and their positions persist.
+  Tap (phone) or hover (PC) a card for a floating info panel with **Add
+  report / Edit / Manager / Remove**. Dropping a card onto another re-parents
+  that person, with an *Undo*; a card's own reports are never offered as a
+  drop target, so a reporting loop can't be made. **Tidy** re-runs the
+  auto-layout. `ADMIN` edits, `MANAGER` gets a read-only view of their region.
 - **Hierarchy** — admin manages each user's role, department, region and
-  `reportsTo`; reporting-tree view, cycle-guarded.
+  `reportsTo`; cycle-guarded. A `List` view remains for bulk edits.
 - **Delegation chain** — a task owner can *forward* a task; parent + child stay
   linked and the chain auto-completes upward.
 - **Parallel subtasks** — *split* a task into N department subtasks (e.g.
@@ -43,6 +50,14 @@ Demo logins (password `password123`): `admin@`, `manager@`, `supervisor@`,
 - **Gamification** — on-time completions build a streak (resets when late) and
   award priority-weighted points + milestone badges; leaderboard + personal
   stats.
+
+### Removing someone
+
+Removal deactivates rather than hard-deletes — tasks, gamification rows and
+template steps all reference users, so deleting the row would destroy task
+history. Their direct reports are lifted to the removed person's own manager so
+the chart never fractures. Removal is refused while they still hold open tasks
+unless confirmed, and you can remove neither yourself nor the last active admin.
 
 ## Roles
 
@@ -63,7 +78,9 @@ task-app/
   src/tasks.mjs        task domain (create/forward/split/complete/cancel)
   src/templates.mjs    template CRUD + resolution + instantiate
   src/users.mjs        directory, org tree, admin updates
+  src/org.mjs          org-chart graph, positions, re-parent, remove
   src/seed.mjs         demo data
-  public/              vanilla-JS single-page UI
+  public/app.js        vanilla-JS single-page UI
+  public/orgchart.js   drag-and-drop org chart editor
   data/tasks.db        runtime SQLite file (git-ignored)
 ```

@@ -4,7 +4,7 @@ import { canAssign, ROLES, DEPARTMENTS } from "./permissions.mjs";
 import { TaskError } from "./tasks.mjs";
 
 const PUBLIC =
-  "id,email,name,role,department,phone,isActive,regionCode,reportsTo,createdAt,updatedAt";
+  "id,email,name,role,department,phone,isActive,regionCode,reportsTo,chartX,chartY,createdAt,updatedAt";
 
 export function listUsers(actor, filters = {}) {
   let rows = db
@@ -53,7 +53,7 @@ export function orgTree(actor) {
   return roots;
 }
 
-function wouldCycle(userId, newManagerId) {
+export function wouldCycle(userId, newManagerId) {
   let cur = newManagerId;
   let guard = 0;
   while (cur) {
@@ -83,11 +83,23 @@ export function updateUser(actor, userId, patch) {
     if (wouldCycle(userId, patch.reportsTo))
       throw new TaskError("That change would create a reporting cycle");
   }
+  if (patch.name !== undefined && !String(patch.name).trim())
+    throw new TaskError("Name cannot be empty");
+  if (patch.email !== undefined) {
+    const email = String(patch.email).trim();
+    if (!email) throw new TaskError("Email cannot be empty");
+    const clash = db.prepare("SELECT id FROM users WHERE email=?").get(email);
+    if (clash && clash.id !== userId)
+      throw new TaskError("Email already in use", 409);
+  }
 
   db.prepare(
-    `UPDATE users SET role=?, department=?, regionCode=?, reportsTo=?,
-       isActive=?, updatedAt=? WHERE id=?`
+    `UPDATE users SET name=?, email=?, phone=?, role=?, department=?,
+       regionCode=?, reportsTo=?, isActive=?, updatedAt=? WHERE id=?`
   ).run(
+    patch.name !== undefined ? String(patch.name).trim() : user.name,
+    patch.email !== undefined ? String(patch.email).trim() : user.email,
+    patch.phone === undefined ? user.phone : patch.phone || null,
     patch.role ?? user.role,
     patch.department ?? user.department,
     patch.regionCode ?? user.regionCode,
@@ -102,19 +114,32 @@ export function updateUser(actor, userId, patch) {
 export function createUser(actor, body) {
   if (actor.role !== "ADMIN")
     throw new TaskError("Only an admin can create users", 403);
-  const { email, name, password, role, department, regionCode, reportsTo, phone } =
-    body;
+  const {
+    email,
+    name,
+    password,
+    role,
+    department,
+    regionCode,
+    reportsTo,
+    phone,
+    chartX,
+    chartY,
+  } = body;
   if (!email || !name || !password)
     throw new TaskError("email, name and password are required");
   if (db.prepare("SELECT id FROM users WHERE email=?").get(email))
     throw new TaskError("Email already in use", 409);
+  if (reportsTo && !db.prepare("SELECT id FROM users WHERE id=?").get(reportsTo))
+    throw new TaskError("Manager not found", 404);
 
+  const num = (v) => (Number.isFinite(Number(v)) ? Number(v) : null);
   const id = crypto.randomUUID();
   const ts = nowISO();
   db.prepare(
     `INSERT INTO users
-       (id,email,password,name,role,department,phone,isActive,regionCode,reportsTo,createdAt,updatedAt)
-     VALUES (?,?,?,?,?,?,?,1,?,?,?,?)`
+       (id,email,password,name,role,department,phone,isActive,regionCode,reportsTo,chartX,chartY,createdAt,updatedAt)
+     VALUES (?,?,?,?,?,?,?,1,?,?,?,?,?,?)`
   ).run(
     id,
     email,
@@ -125,6 +150,8 @@ export function createUser(actor, body) {
     phone ?? null,
     regionCode || "RJ",
     reportsTo || null,
+    num(chartX),
+    num(chartY),
     ts,
     ts
   );

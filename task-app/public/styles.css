@@ -529,3 +529,266 @@ body {
   animation: sheet-up 0.2s ease;
 }
 .snack.err { background: var(--error); }
+
+/* ══════════════════════════════════════════════════════════════════
+   Org chart editor
+   A free-form canvas: cards are dragged in world coordinates, the
+   world is panned/zoomed as a whole, and reporting lines are an SVG
+   layer underneath. Sized with position:fixed so it fills the space
+   between the app bar and the bottom nav on every screen.
+   ══════════════════════════════════════════════════════════════════ */
+.oc-wrap {
+  /* Card size lives here so JS layout/hit-testing reads one source of truth. */
+  --oc-node-w: 176px;
+  --oc-node-h: 84px;
+  position: fixed;
+  left: 0;
+  right: 0;
+  top: var(--top-bar-h);
+  bottom: var(--bottom-nav-h);
+  z-index: 5;
+  display: flex;
+  flex-direction: column;
+  background: var(--background);
+}
+
+/* ── toolbar ───────────────────────────────────────────────────── */
+.oc-toolbar {
+  flex: 0 0 auto;
+  display: flex;
+  align-items: center;
+  justify-content: space-between;
+  gap: 8px;
+  padding: 8px 10px;
+  background: var(--surface-1);
+  border-bottom: 1px solid var(--outline-variant);
+}
+.oc-seg { display: flex; background: var(--surface-3); border-radius: 999px; padding: 3px; }
+.oc-seg button {
+  display: inline-flex;
+  align-items: center;
+  gap: 5px;
+  border: none;
+  background: none;
+  color: var(--on-surface-variant);
+  font: 500 13px/1 var(--font);
+  padding: 7px 13px;
+  border-radius: 999px;
+  cursor: pointer;
+}
+.oc-seg button.active { background: var(--surface); color: var(--on-surface); box-shadow: var(--e1); }
+.oc-seg .material-symbols-outlined { font-size: 17px; }
+.oc-tools { display: flex; align-items: center; gap: 2px; }
+.btn.sm { min-height: 36px; font-size: 13px; padding: 0 12px; gap: 5px; }
+.icon-btn.sm { width: 32px; height: 32px; }
+.hint { display: block; font-size: 11.5px; color: var(--on-surface-variant); margin-top: 5px; }
+
+/* On a phone the tool labels are noise — the icons carry it. */
+@media (max-width: 560px) {
+  .oc-seg button span { display: none; }
+  .oc-seg button { padding: 7px 11px; }
+  #ocTidy span { display: none; }
+  #ocTidy { padding: 0 10px; }
+}
+
+/* ── canvas ────────────────────────────────────────────────────── */
+.oc-viewport {
+  position: relative;
+  flex: 1 1 auto;
+  overflow: hidden;
+  touch-action: none; /* we own every gesture in here */
+  cursor: grab;
+  background:
+    radial-gradient(circle at 1px 1px, var(--outline-variant) 1px, transparent 0) 0 0 / 22px 22px,
+    var(--background);
+}
+.oc-viewport:active { cursor: grabbing; }
+.oc-world { position: absolute; left: 0; top: 0; transform-origin: 0 0; will-change: transform; }
+.oc-edges { position: absolute; left: 0; top: 0; overflow: visible; pointer-events: none; }
+.oc-edge { fill: none; stroke: var(--outline); stroke-width: 2; stroke-linecap: round; opacity: 0.55; }
+.oc-nodes { position: absolute; left: 0; top: 0; }
+
+/* ── person card ───────────────────────────────────────────────── */
+.oc-node {
+  position: absolute;
+  left: 0;
+  top: 0;
+  width: var(--oc-node-w);
+  height: var(--oc-node-h);
+  display: flex;
+  align-items: center;
+  gap: 9px;
+  padding: 10px 11px 10px 14px;
+  background: var(--surface);
+  border: 1px solid var(--outline-variant);
+  border-radius: var(--shape);
+  box-shadow: var(--e1);
+  cursor: grab;
+  overflow: hidden;
+  will-change: transform;
+  transition: box-shadow 0.16s ease, border-color 0.16s ease;
+}
+.oc-node:focus-visible { outline: 2px solid var(--primary); outline-offset: 2px; }
+.oc-node.selected { border-color: var(--primary); box-shadow: var(--e2); }
+.oc-node.dragging { box-shadow: var(--e3); opacity: 0.92; cursor: grabbing; z-index: 3; }
+.oc-node.drop-target {
+  border-color: var(--primary);
+  background: var(--primary-container);
+  box-shadow: 0 0 0 3px var(--primary-container), var(--e2);
+}
+.oc-accent { position: absolute; left: 0; top: 0; bottom: 0; width: 5px; background: var(--primary); }
+.oc-avatar {
+  flex: 0 0 auto;
+  width: 34px;
+  height: 34px;
+  border-radius: 50%;
+  display: grid;
+  place-items: center;
+  background: var(--secondary-container);
+  color: var(--on-secondary-container);
+  font: 700 12.5px/1 var(--font);
+  letter-spacing: 0.02em;
+}
+.oc-avatar.lg { width: 44px; height: 44px; font-size: 15px; }
+.oc-meta { min-width: 0; display: flex; flex-direction: column; gap: 1px; }
+.oc-name {
+  font: 600 13.5px/1.2 var(--font);
+  color: var(--on-surface);
+  white-space: nowrap;
+  overflow: hidden;
+  text-overflow: ellipsis;
+}
+.oc-role { font: 500 10.5px/1.2 var(--font); color: var(--primary); letter-spacing: 0.04em; }
+.oc-dept {
+  font: 400 10.5px/1.2 var(--font);
+  color: var(--on-surface-variant);
+  white-space: nowrap;
+  overflow: hidden;
+  text-overflow: ellipsis;
+}
+.oc-badges { position: absolute; right: 7px; bottom: 6px; display: flex; gap: 4px; }
+.oc-badge {
+  display: inline-flex;
+  align-items: center;
+  gap: 2px;
+  font: 600 10px/1 var(--font);
+  color: var(--on-surface-variant);
+  background: var(--surface-2);
+  border-radius: 999px;
+  padding: 3px 6px;
+}
+.oc-badge.open { background: var(--warning-container); color: #6b4610; }
+.oc-badge .material-symbols-outlined { font-size: 12px; }
+
+/* Department colour-coding, so a branch reads at a glance. */
+.dept-PRODUCTION { background: #6f5b3e; }
+.dept-SALES      { background: #3d6355; }
+.dept-PURCHASE   { background: #8a6224; }
+.dept-ACCOUNTS   { background: #46587a; }
+.dept-HR         { background: #7d4a63; }
+.dept-ADMIN      { background: #5a4a7d; }
+.dept-WAREHOUSE  { background: #66692f; }
+.dept-DISPATCH   { background: #8b5334; }
+
+/* ── floating info card ────────────────────────────────────────── */
+.oc-card {
+  position: fixed;
+  z-index: 40;
+  width: 280px;
+  max-width: calc(100vw - 16px);
+  background: var(--surface);
+  border: 1px solid var(--outline-variant);
+  border-radius: var(--shape-lg);
+  box-shadow: var(--e3);
+  padding: 12px;
+  display: none;
+  animation: oc-pop 0.14s ease;
+}
+.oc-card.show { display: block; }
+/* A hover preview is a peek, not a target: it must never swallow the press
+   meant for the card underneath it. Clicking a person pins the panel, and a
+   pinned panel takes pointer events so its buttons work. */
+.oc-card.hover { pointer-events: none; }
+.oc-card.pinned { pointer-events: auto; }
+.oc-card.sheet {
+  width: auto;
+  border-radius: var(--shape-xl);
+  padding: 14px 16px 16px;
+  animation: sheet-up 0.2s ease;
+  max-height: 70vh;
+  overflow-y: auto;
+}
+@keyframes oc-pop { from { opacity: 0; transform: scale(0.97); } to { opacity: 1; transform: scale(1); } }
+
+.oc-info-head { display: flex; align-items: center; gap: 10px; }
+.oc-info-id { flex: 1; min-width: 0; }
+.oc-info-name { font: 600 15px/1.25 var(--font); }
+.oc-info-role { font: 500 11.5px/1.3 var(--font); color: var(--primary); letter-spacing: 0.03em; }
+.oc-info-body { margin: 10px 0 12px; display: flex; flex-direction: column; gap: 6px; }
+.oc-info-line { display: flex; align-items: center; gap: 8px; font-size: 12.5px; color: var(--on-surface-variant); }
+.oc-info-line .material-symbols-outlined { font-size: 16px; opacity: 0.75; }
+.oc-info-line span { min-width: 0; overflow: hidden; text-overflow: ellipsis; white-space: nowrap; }
+.oc-info-actions { display: grid; grid-template-columns: 1fr 1fr; gap: 7px; }
+/* min-width:0 keeps a long label (or an icon font that failed to load, which
+   renders the ligature name as text) from pushing the grid past the sheet. */
+.oc-info-actions .btn {
+  width: 100%;
+  min-width: 0;
+  justify-content: center;
+  overflow: hidden;
+  white-space: nowrap;
+  text-overflow: ellipsis;
+}
+.oc-info-actions .btn .material-symbols-outlined { flex: 0 0 auto; }
+.oc-info-note { font-size: 12px; color: var(--on-surface-variant); font-style: italic; }
+.oc-warn { font-size: 12.5px; color: var(--on-surface-variant); display: flex; gap: 7px; align-items: flex-start; margin: 10px 0; }
+.oc-warn.danger { color: var(--error); }
+.oc-warn .material-symbols-outlined { font-size: 17px; }
+
+/* ── hint strip ────────────────────────────────────────────────── */
+.oc-hint {
+  position: absolute;
+  left: 10px;
+  right: 10px;
+  top: 10px;
+  z-index: 6;
+  display: flex;
+  align-items: center;
+  gap: 8px;
+  padding: 8px 8px 8px 11px;
+  background: var(--surface-2);
+  border: 1px solid var(--outline-variant);
+  border-radius: 999px;
+  font-size: 11.5px;
+  color: var(--on-surface-variant);
+  box-shadow: var(--e1);
+  /* Advisory only — it must never swallow a tap meant for the card beneath. */
+  pointer-events: none;
+}
+.oc-hint .icon-btn { pointer-events: auto; }
+.oc-hint span { flex: 1; min-width: 0; }
+.oc-hint .material-symbols-outlined { font-size: 16px; }
+
+/* Undo affordance inside the snackbar (the bar itself ignores pointers). */
+.snack { pointer-events: auto; display: flex; align-items: center; gap: 14px; }
+.snack-action {
+  background: none;
+  border: none;
+  color: var(--primary-container);
+  font: 700 12.5px/1 var(--font);
+  letter-spacing: 0.06em;
+  text-transform: uppercase;
+  cursor: pointer;
+  padding: 4px 2px;
+}
+
+/* ── PC affordances ────────────────────────────────────────────── */
+@media (min-width: 900px) {
+  .oc-wrap { --oc-node-w: 212px; --oc-node-h: 90px; }
+  .oc-name { font-size: 14.5px; }
+  .oc-card { width: 306px; }
+  .oc-hint { left: 50%; right: auto; transform: translateX(-50%); max-width: 620px; }
+}
+
+/* Chart/List switch when it sits in normal page flow (the list view). */
+.oc-seg.standalone { display: inline-flex; margin-bottom: 4px; }
